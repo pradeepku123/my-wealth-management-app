@@ -1,0 +1,54 @@
+# Environment Variables
+.env
+.env.local
+.env.production
+
+# Python Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.installed.cfg
+*.egg-info/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database files
+*.db
+*.sqlite3
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# FastAPI Specific
+*.pid
+instance/
+.webassets-cache

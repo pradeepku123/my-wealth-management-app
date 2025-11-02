@@ -5,3 +5,13 @@
     - Angular
 - BackEnd
     - FastAPI
+
+# Createing backend
+- python -m venv venv
+- source venv/bin/activate  # On Windows: venv\Scripts\activate
+- pip install fastapi uvicorn
+- pip freeze > requirements.txt
+- uvicorn app.main:app --reload
+
+
+
