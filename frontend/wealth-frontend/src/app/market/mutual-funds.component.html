@@ -1,0 +1,34 @@
+<div class="mutual-funds-container">
+  <div class="header">
+    <h1>Indian Mutual Funds (NAV)</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" (click)="toggleView()">
+        <mat-icon>filter_list</mat-icon>
+        {{ showFiltered ? 'Show All' : 'My Funds (145137, 147946)' }}
+      </button>
+      <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading">
+        <mat-icon>refresh</mat-icon>
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="funds-grid">
+    <mat-card class="fund-card" *ngFor="let fund of getCurrentFunds()">
+      <mat-card-header>
+        <mat-card-title class="fund-name">{{ getFundShortName(fund.scheme_name) }}</mat-card-title>
+        <mat-card-subtitle>Code: {{ fund.scheme_code }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="fund-nav">₹{{ fund.nav }}</div>
+        <div class="fund-date">{{ fund.date }}</div>
+        <div class="fund-house" *ngIf="fund.fund_house">{{ fund.fund_house }}</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="getCurrentFunds().length === 0 && !loading" class="no-data">
+    <mat-icon>info</mat-icon>
+    <p>No mutual fund data available</p>
+  </div>
+</div>

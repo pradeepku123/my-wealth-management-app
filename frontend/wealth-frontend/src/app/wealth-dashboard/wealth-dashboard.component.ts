@@ -11,17 +11,6 @@ import { CommonModule } from '@angular/common';
   imports: [MatCardModule, MatButtonModule, MatIconModule, CommonModule],
   templateUrl: './wealth-dashboard.component.html',
   styleUrl: './wealth-dashboard.component.scss'
-  styles: [`
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .dashboard-card {
-      text-align: center;
-    }
-  `]
 })
 export class WealthDashboardComponent implements OnInit {
   assetBreakdown: any[] = [];

@@ -291,3 +291,137 @@ def get_asset_breakdown():
         })
     
     return result
+
+
+@app.get("/market/mutual-funds")
+def get_mutual_fund_nav():
+    """Get Indian mutual fund NAV data."""
+    import requests
+    
+    try:
+        # AMFI NAV data URL
+        url = "https://www.amfiindia.com/spages/NAVAll.txt"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code != 200:
+            # Fallback to mock data
+            return get_mock_mutual_funds()
+        
+        lines = response.text.strip().split('\n')
+        funds = []
+        
+        for line in lines[1:]:  # Skip header
+            if ';' in line:
+                parts = line.split(';')
+                if len(parts) >= 6:
+                    scheme_code = parts[0]
+                    scheme_name = parts[3]
+                    nav = parts[4]
+                    date = parts[5]
+                    
+                    # Filter popular funds
+                    if any(keyword in scheme_name.upper() for keyword in ['SBI', 'HDFC', 'ICICI', 'AXIS', 'KOTAK']):
+                        if 'DIRECT' in scheme_name.upper() and 'GROWTH' in scheme_name.upper():
+                            try:
+                                funds.append({
+                                    "scheme_code": scheme_code,
+                                    "scheme_name": scheme_name,
+                                    "nav": float(nav),
+                                    "date": date
+                                })
+                                if len(funds) >= 10:  # Limit to 10 funds
+                                    break
+                            except ValueError:
+                                continue
+        
+        return funds[:10] if funds else get_mock_mutual_funds()
+        
+    except Exception as e:
+        return get_mock_mutual_funds()
+
+
+def get_mock_mutual_funds():
+    """Mock mutual fund data for fallback."""
+    return [
+        {"scheme_code": "120503", "scheme_name": "SBI Bluechip Fund - Direct Plan - Growth", "nav": 65.45, "date": "15-Jan-2024"},
+        {"scheme_code": "119551", "scheme_name": "HDFC Top 100 Fund - Direct Plan - Growth", "nav": 785.23, "date": "15-Jan-2024"},
+        {"scheme_code": "120716", "scheme_name": "ICICI Prudential Value Discovery Fund - Direct - Growth", "nav": 156.78, "date": "15-Jan-2024"},
+        {"scheme_code": "118989", "scheme_name": "Axis Bluechip Fund - Direct Plan - Growth", "nav": 45.67, "date": "15-Jan-2024"},
+        {"scheme_code": "119226", "scheme_name": "Kotak Standard Multicap Fund - Direct Plan - Growth", "nav": 52.34, "date": "15-Jan-2024"}
+    ]
+
+
+@app.get("/market/mutual-funds/filter")
+def get_filtered_mutual_funds(codes: str):
+    """Get mutual funds by specific scheme codes (comma-separated)."""
+    import requests
+    
+    scheme_codes = [code.strip() for code in codes.split(',')]
+    
+    try:
+        url = "https://www.amfiindia.com/spages/NAVAll.txt"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code != 200:
+            return []
+        
+        lines = response.text.strip().split('\n')
+        funds = []
+        
+        for line in lines[1:]:
+            if ';' in line:
+                parts = line.split(';')
+                if len(parts) >= 6 and parts[0] in scheme_codes:
+                    try:
+                        funds.append({
+                            "scheme_code": parts[0],
+                            "scheme_name": parts[3],
+                            "nav": float(parts[4]),
+                            "date": parts[5],
+                            "fund_house": parts[2] if len(parts) > 2 else "Unknown"
+                        })
+                    except ValueError:
+                        continue
+        
+        return funds
+        
+    except Exception as e:
+        return []
+
+
+@app.get("/market/mutual-fund/{scheme_code}")
+def get_mutual_fund_details(scheme_code: str):
+    """Get specific mutual fund details by scheme code."""
+    import requests
+    
+    try:
+        url = "https://www.amfiindia.com/spages/NAVAll.txt"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            lines = response.text.strip().split('\n')
+            
+            for line in lines[1:]:
+                if ';' in line:
+                    parts = line.split(';')
+                    if len(parts) >= 6 and parts[0] == scheme_code:
+                        return {
+                            "scheme_code": parts[0],
+                            "scheme_name": parts[3],
+                            "nav": float(parts[4]),
+                            "date": parts[5],
+                            "fund_house": parts[2] if len(parts) > 2 else "Unknown"
+                        }
+        
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Mutual fund with scheme code {scheme_code} not found"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Mutual fund data service unavailable"
+        )
