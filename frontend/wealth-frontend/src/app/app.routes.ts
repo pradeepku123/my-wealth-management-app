@@ -2,12 +2,14 @@ import { Routes } from '@angular/router';
 import { WealthDashboardComponent } from './wealth-dashboard/wealth-dashboard.component';
 import { LoginComponent } from './login/login.component';
 import { DashboardLayoutComponent } from './layout/dashboard-layout.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent, canActivate: [loginGuard] },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
   {
     path: '',
     component: DashboardLayoutComponent,

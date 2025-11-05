@@ -7,38 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-wealth-dashboard',
   standalone: true,
   imports: [MatCardModule, MatButtonModule, MatIconModule],
-  template: `
-    <h1>Dashboard Overview</h1>
-    
-    <div class="cards-grid">
-      <mat-card class="dashboard-card">
-        <mat-card-header>
-          <mat-card-title>Total Portfolio Value</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <h2>$125,430.50</h2>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="dashboard-card">
-        <mat-card-header>
-          <mat-card-title>Monthly Growth</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <h2>+5.2%</h2>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="dashboard-card">
-        <mat-card-header>
-          <mat-card-title>Active Investments</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <h2>12</h2>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
+  templateUrl: './wealth-dashboard.component.html',
   styles: [`
     .cards-grid {
       display: grid;
