@@ -13,5 +13,12 @@
 - pip freeze > requirements.txt
 - uvicorn app.main:app --reload
 
+# Build Docker image
+
+- sudo docker compose up --build
+
+
+
+
 
 
