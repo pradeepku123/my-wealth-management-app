@@ -1,7 +1,22 @@
 import { Routes } from '@angular/router';
 import { WealthDashboardComponent } from './wealth-dashboard/wealth-dashboard.component';
+import { LoginComponent } from './login/login.component';
+import { DashboardLayoutComponent } from './layout/dashboard-layout.component';
+import { authGuard } from './guards/auth.guard';
+import { loginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
-  { path: '', component: WealthDashboardComponent },
-  { path: 'dashboard', component: WealthDashboardComponent }
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent, canActivate: [loginGuard] },
+  {
+    path: '',
+    component: DashboardLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: WealthDashboardComponent },
+      { path: 'portfolio', component: WealthDashboardComponent },
+      { path: 'investments', component: WealthDashboardComponent },
+      { path: 'reports', component: WealthDashboardComponent }
+    ]
+  }
 ];
