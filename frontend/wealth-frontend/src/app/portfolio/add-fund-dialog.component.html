@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>{{ dialogTitle }}</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Investment Type</mat-label>
+    <mat-select [(ngModel)]="fundData.investment_type" required>
+      <mat-option *ngFor="let type of investmentTypes" [value]="type.value">
+        {{ type.label }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Investment Name</mat-label>
+    <input matInput [(ngModel)]="fundData.fund_name" required>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Invested Amount</mat-label>
+    <input matInput type="number" [(ngModel)]="fundData.invested_amount" required>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Current Value</mat-label>
+    <input matInput type="number" [(ngModel)]="fundData.current_value" required>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!isValid()">
+    {{ isEditMode ? 'Update' : 'Save' }}
+  </button>
+</mat-dialog-actions>

@@ -3,6 +3,7 @@ import { WealthDashboardComponent } from './wealth-dashboard/wealth-dashboard.co
 import { LoginComponent } from './login/login.component';
 import { DashboardLayoutComponent } from './layout/dashboard-layout.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { PortfolioComponent } from './portfolio/portfolio.component';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
 
@@ -16,7 +17,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: WealthDashboardComponent },
-      { path: 'portfolio', component: WealthDashboardComponent },
+      { path: 'portfolio', component: PortfolioComponent },
       { path: 'investments', component: WealthDashboardComponent },
       { path: 'reports', component: WealthDashboardComponent }
     ]

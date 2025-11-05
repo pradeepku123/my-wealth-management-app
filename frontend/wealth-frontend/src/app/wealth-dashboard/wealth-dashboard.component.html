@@ -1,30 +1,28 @@
-<h1>Dashboard Overview</h1>
-
-<div class="cards-grid">
-  <mat-card class="dashboard-card">
+<h1>Asset Portfolio</h1>
+<div class="asset-cards">
+  <mat-card class="asset-card" *ngFor="let asset of assetBreakdown">
     <mat-card-header>
-      <mat-card-title>Total Portfolio Value</mat-card-title>
+      <mat-card-title>{{ getAssetTypeLabel(asset.investment_type) }}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <h2>$125,430.50</h2>
-    </mat-card-content>
-  </mat-card>
-
-  <mat-card class="dashboard-card">
-    <mat-card-header>
-      <mat-card-title>Monthly Growth</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <h2>+5.2%</h2>
-    </mat-card-content>
-  </mat-card>
-
-  <mat-card class="dashboard-card">
-    <mat-card-header>
-      <mat-card-title>Active Investments</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <h2>12</h2>
+      <div class="asset-details">
+        <div class="asset-row">
+          <span>Invested:</span>
+          <span>₹{{ asset.total_invested | number:'1.2-2' }}</span>
+        </div>
+        <div class="asset-row">
+          <span>Current:</span>
+          <span>₹{{ asset.total_current | number:'1.2-2' }}</span>
+        </div>
+        <div class="asset-row" [class.positive]="asset.total_returns >= 0" [class.negative]="asset.total_returns < 0">
+          <span>Returns:</span>
+          <span>₹{{ asset.total_returns | number:'1.2-2' }}</span>
+        </div>
+        <div class="asset-row" [class.positive]="asset.return_percentage >= 0" [class.negative]="asset.return_percentage < 0">
+          <span>Return %:</span>
+          <span>{{ asset.return_percentage | number:'1.2-2' }}%</span>
+        </div>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

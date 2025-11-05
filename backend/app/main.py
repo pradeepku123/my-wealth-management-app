@@ -129,3 +129,165 @@ def reset_password(reset_data: dict):
         )
     
     return {"message": "Password reset successfully"}
+
+
+@app.get("/portfolio/funds")
+def get_funds():
+    """Get all investments."""
+    conn = psycopg2.connect(
+        host="db",
+        database="wealth_db",
+        user="postgres",
+        password="examplepassword",
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM investments ORDER BY id")
+    funds = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return funds
+
+
+@app.post("/portfolio/funds")
+def add_fund(fund_data: dict):
+    """Add new investment."""
+    conn = psycopg2.connect(
+        host="db",
+        database="wealth_db",
+        user="postgres",
+        password="examplepassword",
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO investments (investment_type, fund_name, invested_amount, current_value) VALUES (%s, %s, %s, %s) RETURNING id",
+        (fund_data['investment_type'], fund_data['fund_name'], fund_data['invested_amount'], fund_data['current_value'])
+    )
+    fund_id = cursor.fetchone()['id']
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"id": fund_id, "message": "Investment added successfully"}
+
+
+@app.put("/portfolio/funds/{fund_id}")
+def update_fund(fund_id: int, fund_data: dict):
+    """Update investment."""
+    conn = psycopg2.connect(
+        host="db",
+        database="wealth_db",
+        user="postgres",
+        password="examplepassword",
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE investments SET investment_type = %s, fund_name = %s, invested_amount = %s, current_value = %s WHERE id = %s RETURNING id",
+        (fund_data['investment_type'], fund_data['fund_name'], fund_data['invested_amount'], fund_data['current_value'], fund_id)
+    )
+    updated_fund = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    if not updated_fund:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Investment not found"
+        )
+    
+    return {"message": "Investment updated successfully"}
+
+
+@app.delete("/portfolio/funds/{fund_id}")
+def delete_fund(fund_id: int):
+    """Delete investment."""
+    conn = psycopg2.connect(
+        host="db",
+        database="wealth_db",
+        user="postgres",
+        password="examplepassword",
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM investments WHERE id = %s", (fund_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "Investment deleted successfully"}
+
+
+@app.get("/portfolio/summary")
+def get_portfolio_summary():
+    """Get portfolio summary for dashboard."""
+    conn = psycopg2.connect(
+        host="db",
+        database="wealth_db",
+        user="postgres",
+        password="examplepassword",
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT SUM(invested_amount) as total_invested, SUM(current_value) as total_current FROM investments"
+    )
+    summary = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    total_invested = summary['total_invested'] or 0
+    total_current = summary['total_current'] or 0
+    total_returns = total_current - total_invested
+    
+    return {
+        "total_invested": total_invested,
+        "total_current": total_current,
+        "total_returns": total_returns,
+        "return_percentage": (total_returns / total_invested * 100) if total_invested > 0 else 0
+    }
+
+
+@app.get("/portfolio/asset-breakdown")
+def get_asset_breakdown():
+    """Get portfolio breakdown by asset type."""
+    conn = psycopg2.connect(
+        host="db",
+        database="wealth_db",
+        user="postgres",
+        password="examplepassword",
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT 
+            investment_type,
+            SUM(invested_amount) as total_invested,
+            SUM(current_value) as total_current
+        FROM investments 
+        GROUP BY investment_type
+        ORDER BY investment_type
+        """
+    )
+    breakdown = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    # Calculate returns for each asset type
+    result = []
+    for asset in breakdown:
+        total_invested = asset['total_invested'] or 0
+        total_current = asset['total_current'] or 0
+        total_returns = total_current - total_invested
+        return_percentage = (total_returns / total_invested * 100) if total_invested > 0 else 0
+        
+        result.append({
+            "investment_type": asset['investment_type'],
+            "total_invested": total_invested,
+            "total_current": total_current,
+            "total_returns": total_returns,
+            "return_percentage": return_percentage
+        })
+    
+    return result

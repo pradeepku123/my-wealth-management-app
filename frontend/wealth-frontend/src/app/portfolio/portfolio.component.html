@@ -1,0 +1,93 @@
+<div class="portfolio-container">
+  <div class="header">
+    <h1>{{ username }}'s Portfolio</h1>
+    <button mat-raised-button color="primary" (click)="addFund()">
+      <mat-icon>add</mat-icon>
+      Add Investment
+    </button>
+  </div>
+
+  <div class="summary-cards">
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <h3>Total Invested</h3>
+        <h2>₹{{ totalInvested | number:'1.2-2' }}</h2>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <h3>Current Value</h3>
+        <h2>₹{{ totalCurrent | number:'1.2-2' }}</h2>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card" [class.positive]="totalReturns >= 0" [class.negative]="totalReturns < 0">
+      <mat-card-content>
+        <h3>Total Returns</h3>
+        <h2>₹{{ totalReturns | number:'1.2-2' }}</h2>
+        <p>{{ ((totalReturns / totalInvested) * 100) | number:'1.2-2' }}%</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-card class="funds-table">
+    <mat-card-header>
+      <mat-card-title>Fund Holdings</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="funds" class="full-width">
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let fund">
+            <span class="investment-type">{{ getInvestmentTypeLabel(fund.investment_type) }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Investment Name</th>
+          <td mat-cell *matCellDef="let fund">{{ fund.fund_name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="invested">
+          <th mat-header-cell *matHeaderCellDef>Invested</th>
+          <td mat-cell *matCellDef="let fund">₹{{ fund.invested_amount | number:'1.2-2' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="current">
+          <th mat-header-cell *matHeaderCellDef>Current Value</th>
+          <td mat-cell *matCellDef="let fund">₹{{ fund.current_value | number:'1.2-2' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="returns">
+          <th mat-header-cell *matHeaderCellDef>Returns</th>
+          <td mat-cell *matCellDef="let fund" [class.positive]="(fund.current_value - fund.invested_amount) >= 0" [class.negative]="(fund.current_value - fund.invested_amount) < 0">
+            ₹{{ (fund.current_value - fund.invested_amount) | number:'1.2-2' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="percentage">
+          <th mat-header-cell *matHeaderCellDef>Returns %</th>
+          <td mat-cell *matCellDef="let fund" [class.positive]="(fund.current_value - fund.invested_amount) >= 0" [class.negative]="(fund.current_value - fund.invested_amount) < 0">
+            {{ (((fund.current_value - fund.invested_amount) / fund.invested_amount) * 100) | number:'1.2-2' }}%
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let fund">
+            <button mat-icon-button color="primary" (click)="editFund(fund)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteFund(fund.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
