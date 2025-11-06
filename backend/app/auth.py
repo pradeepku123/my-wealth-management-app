@@ -2,20 +2,11 @@
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
-from pydantic import BaseModel
 from app.database import get_db_connection
 
 SECRET_KEY = "your-secret-key-here"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class UserLogin(BaseModel):
-    user_id: str
-    password: str
 
 def authenticate_user(user_id: str, password: str):
     conn = get_db_connection()

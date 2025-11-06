@@ -1,0 +1,201 @@
+<div class="database-viewer-container">
+  <div class="header">
+    <h1>Database Administration</h1>
+    <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  <mat-tab-group>
+    <!-- Database Overview Tab -->
+    <mat-tab label="Database Overview">
+      <div class="tab-content">
+        <mat-card *ngIf="dbStats">
+          <mat-card-header>
+            <mat-card-title>Database Statistics</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <strong>Database Name:</strong> {{ dbStats.database_name }}
+              </div>
+              <div class="stat-item">
+                <strong>PostgreSQL Version:</strong> {{ dbStats.postgresql_version }}
+              </div>
+              <div class="stat-item">
+                <strong>Total Tables:</strong> {{ dbStats.total_tables }}
+              </div>
+              <div class="stat-item">
+                <strong>Total Records:</strong> {{ dbStats.total_records }}
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Tables Tab -->
+    <mat-tab label="Tables">
+      <div class="tab-content">
+        <div class="tables-section">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>Database Tables</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <table mat-table [dataSource]="tables" class="tables-table">
+                <ng-container matColumnDef="table_name">
+                  <th mat-header-cell *matHeaderCellDef>Table Name</th>
+                  <td mat-cell *matCellDef="let table">{{ table.table_name }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="column_count">
+                  <th mat-header-cell *matHeaderCellDef>Columns</th>
+                  <td mat-cell *matCellDef="let table">{{ table.column_count }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="row_count">
+                  <th mat-header-cell *matHeaderCellDef>Records</th>
+                  <td mat-cell *matCellDef="let table">{{ table.row_count }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let table">
+                    <button mat-button color="primary" (click)="selectTable(table)">
+                      <mat-icon>visibility</mat-icon>
+                      View
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="['table_name', 'column_count', 'row_count', 'actions']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['table_name', 'column_count', 'row_count', 'actions']"></tr>
+              </table>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Table Details Tab -->
+    <mat-tab label="Table Details" [disabled]="!selectedTable">
+      <div class="tab-content" *ngIf="selectedTable">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ selectedTable.table_name }} - Schema</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <table mat-table [dataSource]="tableSchema" class="schema-table">
+              <ng-container matColumnDef="column_name">
+                <th mat-header-cell *matHeaderCellDef>Column Name</th>
+                <td mat-cell *matCellDef="let column">
+                  {{ column.column_name }}
+                  <mat-icon *ngIf="column.is_primary_key" class="primary-key-icon">key</mat-icon>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="data_type">
+                <th mat-header-cell *matHeaderCellDef>Data Type</th>
+                <td mat-cell *matCellDef="let column">{{ column.data_type }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="is_nullable">
+                <th mat-header-cell *matHeaderCellDef>Nullable</th>
+                <td mat-cell *matCellDef="let column">{{ column.is_nullable }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="column_default">
+                <th mat-header-cell *matHeaderCellDef>Default</th>
+                <td mat-cell *matCellDef="let column">{{ column.column_default || 'NULL' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="['column_name', 'data_type', 'is_nullable', 'column_default']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['column_name', 'data_type', 'is_nullable', 'column_default']"></tr>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Table Data Tab -->
+    <mat-tab label="Table Data" [disabled]="!selectedTable">
+      <div class="tab-content" *ngIf="selectedTable && tableData">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ selectedTable.table_name }} - Data</mat-card-title>
+            <mat-card-subtitle>{{ tableData.total_count }} total records</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="bulk-actions" *ngIf="hasSelection()">
+              <span>{{ selectedRecords.size }} record(s) selected</span>
+              <button mat-raised-button color="warn" (click)="deleteSelected()">
+                <mat-icon>delete</mat-icon>
+                Delete Selected
+              </button>
+            </div>
+            <table mat-table [dataSource]="tableData.data" class="data-table">
+              <ng-container matColumnDef="select">
+                <th mat-header-cell *matHeaderCellDef>
+                  <mat-checkbox (change)="toggleAll()" 
+                               [checked]="isAllSelected()"
+                               [indeterminate]="hasSelection() && !isAllSelected()">
+                  </mat-checkbox>
+                </th>
+                <td mat-cell *matCellDef="let row">
+                  <mat-checkbox (change)="toggleRecord(row)" 
+                               [checked]="isSelected(row)">
+                  </mat-checkbox>
+                </td>
+              </ng-container>
+
+              <ng-container *ngFor="let column of getDisplayedColumns()" [matColumnDef]="column">
+                <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+                <td mat-cell *matCellDef="let row">
+                  <input *ngIf="isEditing(row)" 
+                         [(ngModel)]="editingRecord[column]" 
+                         class="edit-input">
+                  <span *ngIf="!isEditing(row)">{{ row[column] }}</span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let row">
+                  <div *ngIf="!isEditing(row)">
+                    <button mat-icon-button color="primary" (click)="editRecord(row)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteRecord(row)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                  <div *ngIf="isEditing(row)">
+                    <button mat-icon-button color="primary" (click)="saveRecord()">
+                      <mat-icon>save</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="cancelEdit()">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="getColumnsWithSelect()"></tr>
+              <tr mat-row *matRowDef="let row; columns: getColumnsWithSelect()"></tr>
+            </table>
+
+            <mat-paginator
+              [length]="tableData.total_count"
+              [pageSize]="pageSize"
+              [pageIndex]="pageIndex"
+              [pageSizeOptions]="[5, 10, 25, 100]"
+              (page)="onPageChange($event)">
+            </mat-paginator>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

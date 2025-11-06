@@ -5,6 +5,7 @@ import { DashboardLayoutComponent } from './layout/dashboard-layout.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { MutualFundsComponent } from './market/mutual-funds.component';
+import { DatabaseViewerComponent } from './admin/database-viewer.component';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
 
@@ -20,6 +21,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: WealthDashboardComponent },
       { path: 'portfolio', component: PortfolioComponent },
       { path: 'mutual-funds', component: MutualFundsComponent },
+      { path: 'database-admin', component: DatabaseViewerComponent },
       { path: 'investments', component: WealthDashboardComponent },
       { path: 'reports', component: WealthDashboardComponent }
     ]

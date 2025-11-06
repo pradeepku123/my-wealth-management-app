@@ -1,33 +1,46 @@
-<div class="login-container">
+<div class="login-wrapper">
+  <div class="brand-header">
+    <mat-icon class="logo-icon">account_balance</mat-icon>
+    <h1>WealthTracker</h1>
+    <p>Manage your investments with confidence</p>
+  </div>
+  
   <mat-card class="login-card">
     <mat-card-header>
-      <mat-card-title>Wealth Management Login</mat-card-title>
+      <mat-card-title>Welcome Back</mat-card-title>
+      <mat-card-subtitle>Sign in to your account</mat-card-subtitle>
     </mat-card-header>
+    
     <mat-card-content>
-      <form (ngSubmit)="onLogin()">
+      <form (ngSubmit)="onLogin()" class="login-form">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>User ID</mat-label>
           <input matInput [(ngModel)]="userId" name="userId" required>
+          <mat-icon matSuffix>person</mat-icon>
         </mat-form-field>
         
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Password</mat-label>
-          <input matInput type="password" [(ngModel)]="password" name="password" required>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="password" name="password" required>
+          <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="password-toggle">
+            {{hidePassword ? 'visibility_off' : 'visibility'}}
+          </mat-icon>
         </mat-form-field>
         
-        <div class="error-container">
-          <div class="error-message" [class.show]="errorMessage">
-            <mat-icon>error</mat-icon>
-            <span>{{ errorMessage || 'Error message placeholder' }}</span>
-          </div>
+        <div class="error-message" [class.show]="errorMessage">
+          <mat-icon *ngIf="errorMessage">error_outline</mat-icon>
+          <span *ngIf="errorMessage">{{ errorMessage }}</span>
         </div>
         
-        <button mat-raised-button color="primary" type="submit" class="full-width" [disabled]="isLoading">
-          {{ isLoading ? 'Logging in...' : 'Login' }}
+        <button mat-flat-button color="primary" type="submit" class="full-width login-btn" [disabled]="isLoading">
+          <mat-icon *ngIf="isLoading" class="loading-icon">refresh</mat-icon>
+          {{ isLoading ? 'Signing in...' : 'Sign In' }}
         </button>
         
-        <div class="forgot-password">
-          <a href="#" (click)="onForgotPassword($event)">Forgot Password?</a>
+        <div class="form-footer">
+          <a href="#" (click)="onForgotPassword($event)" class="forgot-link">
+            Forgot your password?
+          </a>
         </div>
       </form>
     </mat-card-content>

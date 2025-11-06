@@ -22,6 +22,7 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
   isLoading = false;
+  hidePassword = true;
   private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(private router: Router, private http: HttpClient, private snackBar: MatSnackBar) {}
