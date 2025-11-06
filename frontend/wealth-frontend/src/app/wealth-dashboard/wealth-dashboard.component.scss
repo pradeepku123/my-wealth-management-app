@@ -5,6 +5,14 @@
   margin-top: 20px;
   
   .asset-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
     .asset-details {
       .asset-row {
         display: flex;
