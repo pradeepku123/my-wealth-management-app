@@ -15,12 +15,21 @@ async def startup_event():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=[
+        "http://localhost:4200",
+        "https://*.app.github.dev",
+        "https://scaling-capybara-9jx4prpxpqfxrj7-4200.app.github.dev"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
+
+@app.options("/{path:path}")
+def options_handler(path: str):
+    """Handle CORS preflight requests."""
+    return {"message": "OK"}
 
 @app.get("/")
 def read_root():
