@@ -27,6 +27,7 @@ export class AddFundDialogComponent {
   
   isEditMode = false;
   dialogTitle = 'Add Investment';
+  private apiUrl = window.location.origin.replace('4200', '8000');
 
   investmentTypes = [
     { value: 'mutual_fund', label: 'Mutual Fund' },
@@ -59,8 +60,8 @@ export class AddFundDialogComponent {
 
   onSave() {
     const request = this.isEditMode 
-      ? this.http.put(`http://localhost:8000/portfolio/funds/${this.fundData.id}`, this.fundData)
-      : this.http.post('http://localhost:8000/portfolio/funds', this.fundData);
+      ? this.http.put(`${this.apiUrl}/portfolio/funds/${this.fundData.id}`, this.fundData)
+      : this.http.post(`${this.apiUrl}/portfolio/funds`, this.fundData);
     
     request.subscribe({
       next: () => {

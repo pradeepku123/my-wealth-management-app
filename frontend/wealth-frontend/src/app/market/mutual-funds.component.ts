@@ -17,6 +17,7 @@ export class MutualFundsComponent implements OnInit {
   filteredFunds: any[] = [];
   loading = false;
   showFiltered = false;
+  private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(private http: HttpClient) {}
 
@@ -27,7 +28,7 @@ export class MutualFundsComponent implements OnInit {
 
   loadMutualFunds() {
     this.loading = true;
-    this.http.get<any[]>('http://localhost:8000/market/mutual-funds').subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/market/mutual-funds`).subscribe({
       next: (data) => {
         this.mutualFunds = data;
         this.loading = false;
@@ -41,7 +42,7 @@ export class MutualFundsComponent implements OnInit {
 
   loadFilteredFunds() {
     this.loading = true;
-    this.http.get<any[]>('http://localhost:8000/market/mutual-funds/filter?codes=145137,147946').subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/market/mutual-funds/filter?codes=145137,147946`).subscribe({
       next: (data) => {
         this.filteredFunds = data;
         this.loading = false;

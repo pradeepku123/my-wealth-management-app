@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 })
 export class WealthDashboardComponent implements OnInit {
   assetBreakdown: any[] = [];
+  private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(private http: HttpClient) {}
 
@@ -22,7 +23,7 @@ export class WealthDashboardComponent implements OnInit {
   }
 
   loadAssetBreakdown() {
-    this.http.get('http://localhost:8000/portfolio/asset-breakdown').subscribe({
+    this.http.get(`${this.apiUrl}/portfolio/asset-breakdown`).subscribe({
       next: (data: any) => {
         this.assetBreakdown = data;
       },

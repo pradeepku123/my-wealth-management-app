@@ -22,6 +22,7 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
   isLoading = false;
+  private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(private router: Router, private http: HttpClient, private snackBar: MatSnackBar) {}
 
@@ -29,7 +30,7 @@ export class LoginComponent {
     this.errorMessage = '';
     this.isLoading = true;
     
-    this.http.post('http://localhost:8000/auth/login', {
+    this.http.post(`${this.apiUrl}/auth/login`, {
       user_id: this.userId,
       password: this.password
     }).subscribe({
@@ -52,7 +53,7 @@ export class LoginComponent {
       return;
     }
     
-    this.http.post('http://localhost:8000/auth/forgot-password', {
+    this.http.post(`${this.apiUrl}/auth/forgot-password`, {
       user_id: this.userId
     }).subscribe({
       next: (response: any) => {

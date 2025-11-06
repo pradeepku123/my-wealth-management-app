@@ -64,7 +64,8 @@
               "buildTarget": "wealth-frontend:build:production"
             },
             "development": {
-              "buildTarget": "wealth-frontend:build:development"
+              "buildTarget": "wealth-frontend:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

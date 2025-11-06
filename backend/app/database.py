@@ -1,6 +1,7 @@
 """Database configuration."""
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import time
 
 DATABASE_CONFIG = {
     "host": "db",
@@ -11,8 +12,16 @@ DATABASE_CONFIG = {
 }
 
 def get_db_connection():
-    """Get database connection."""
-    return psycopg2.connect(**DATABASE_CONFIG, cursor_factory=RealDictCursor)
+    """Get database connection with retry."""
+    max_retries = 30
+    for attempt in range(max_retries):
+        try:
+            return psycopg2.connect(**DATABASE_CONFIG, cursor_factory=RealDictCursor)
+        except psycopg2.OperationalError:
+            if attempt < max_retries - 1:
+                time.sleep(1)
+                continue
+            raise
 
 def init_database():
     """Initialize database tables."""

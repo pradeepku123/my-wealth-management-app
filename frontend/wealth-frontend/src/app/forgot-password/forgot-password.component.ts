@@ -23,6 +23,7 @@ export class ForgotPasswordComponent {
   confirmPassword = '';
   errorMessage = '';
   isLoading = false;
+  private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(
     private router: Router, 
@@ -53,7 +54,7 @@ export class ForgotPasswordComponent {
     
     this.isLoading = true;
     
-    this.http.post('http://localhost:8000/auth/reset-password', {
+    this.http.post(`${this.apiUrl}/auth/reset-password`, {
       user_id: this.userId,
       new_password: this.newPassword
     }).subscribe({

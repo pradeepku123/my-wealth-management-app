@@ -24,6 +24,7 @@ export class PortfolioComponent implements OnInit {
   totalCurrent = 0;
   totalReturns = 0;
   username = '';
+  private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(private http: HttpClient, private dialog: MatDialog) {}
 
@@ -33,7 +34,7 @@ export class PortfolioComponent implements OnInit {
   }
 
   loadFunds() {
-    this.http.get<any[]>('http://localhost:8000/portfolio/funds').subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/portfolio/funds`).subscribe({
       next: (funds) => {
         this.funds = funds;
         this.calculateTotals();
@@ -74,7 +75,7 @@ export class PortfolioComponent implements OnInit {
   }
 
   deleteFund(id: number) {
-    this.http.delete(`http://localhost:8000/portfolio/funds/${id}`).subscribe({
+    this.http.delete(`${this.apiUrl}/portfolio/funds/${id}`).subscribe({
       next: () => this.loadFunds(),
       error: (error) => console.error('Error deleting fund:', error)
     });
