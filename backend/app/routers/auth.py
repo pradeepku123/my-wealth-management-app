@@ -1,6 +1,7 @@
 """Authentication routes."""
 from fastapi import APIRouter, HTTPException, status
 from app.models import UserLogin, Token, ForgotPasswordRequest, ResetPasswordRequest, MessageResponse
+from app.response_models import APIResponse, success_response, error_response
 from app.auth import authenticate_user, create_access_token
 from app.database import get_db_connection
 import logging
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-@router.post("/login", response_model=Token, responses={
+@router.post("/login", response_model=APIResponse, responses={
     401: {"description": "Invalid credentials"},
     500: {"description": "Internal server error"}
 })
@@ -39,7 +40,10 @@ def login(user_credentials: UserLogin):
                 detail="Incorrect user ID or password"
             )
         access_token = create_access_token(data={"sub": user["user_id"]})
-        return {"access_token": access_token, "token_type": "bearer"}
+        return success_response(
+            data={"access_token": access_token, "token_type": "bearer"},
+            message="Login successful"
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -50,7 +54,7 @@ def login(user_credentials: UserLogin):
         )
 
 
-@router.post("/forgot-password", response_model=MessageResponse, responses={
+@router.post("/forgot-password", response_model=APIResponse, responses={
     404: {"description": "User not found"},
     500: {"description": "Internal server error"}
 })
@@ -81,7 +85,9 @@ def forgot_password(request: ForgotPasswordRequest):
                 detail="User not found"
             )
         
-        return {"message": f"Password reset instructions sent to {request.user_id}"}
+        return success_response(
+            message=f"Password reset instructions sent to {request.user_id}"
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -92,7 +98,7 @@ def forgot_password(request: ForgotPasswordRequest):
         )
 
 
-@router.post("/reset-password", response_model=MessageResponse, responses={
+@router.post("/reset-password", response_model=APIResponse, responses={
     404: {"description": "User not found"},
     500: {"description": "Internal server error"}
 })
@@ -131,7 +137,9 @@ def reset_password(request: ResetPasswordRequest):
                 detail="User not found"
             )
         
-        return {"message": "Password reset successfully"}
+        return success_response(
+            message="Password reset successfully"
+        )
     except HTTPException:
         raise
     except Exception as e:

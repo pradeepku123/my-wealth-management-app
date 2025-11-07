@@ -2,13 +2,14 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Dict, Any
 from app.database import get_db_connection
+from app.response_models import APIResponse, success_response, error_response
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["database-admin"])
 
 
-@router.get("/tables", response_model=List[Dict[str, Any]], responses={
+@router.get("/tables", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
 def get_tables():
@@ -52,7 +53,7 @@ def get_tables():
         
         cursor.close()
         conn.close()
-        return tables
+        return success_response(data=tables, message="Database tables retrieved successfully")
         
     except Exception as e:
         logger.error(f"Get tables error: {str(e)}")
@@ -62,7 +63,7 @@ def get_tables():
         )
 
 
-@router.get("/tables/{table_name}/schema", response_model=List[Dict[str, Any]], responses={
+@router.get("/tables/{table_name}/schema", response_model=APIResponse, responses={
     404: {"description": "Table not found"},
     500: {"description": "Internal server error"}
 })
@@ -133,7 +134,7 @@ def get_table_schema(table_name: str):
         
         cursor.close()
         conn.close()
-        return result
+        return success_response(data=result, message=f"Schema for table '{table_name}' retrieved successfully")
         
     except HTTPException:
         raise
@@ -145,7 +146,7 @@ def get_table_schema(table_name: str):
         )
 
 
-@router.get("/tables/{table_name}/data", response_model=Dict[str, Any], responses={
+@router.get("/tables/{table_name}/data", response_model=APIResponse, responses={
     404: {"description": "Table not found"},
     500: {"description": "Internal server error"}
 })
@@ -193,13 +194,16 @@ def get_table_data(table_name: str, limit: int = 100, offset: int = 0):
         cursor.close()
         conn.close()
         
-        return {
-            "table_name": table_name,
-            "total_count": total_count,
-            "limit": limit,
-            "offset": offset,
-            "data": data
-        }
+        return success_response(
+            data={
+                "table_name": table_name,
+                "total_count": total_count,
+                "limit": limit,
+                "offset": offset,
+                "data": data
+            },
+            message=f"Data from table '{table_name}' retrieved successfully"
+        )
         
     except HTTPException:
         raise
@@ -211,7 +215,7 @@ def get_table_data(table_name: str, limit: int = 100, offset: int = 0):
         )
 
 
-@router.get("/database/stats", response_model=Dict[str, Any], responses={
+@router.get("/database/stats", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
 def get_database_stats():
@@ -268,13 +272,16 @@ def get_database_stats():
         cursor.close()
         conn.close()
         
-        return {
-            "database_name": db_name,
-            "postgresql_version": version.split()[1] if version else "Unknown",
-            "total_tables": table_count,
-            "total_records": total_records,
-            "tables": table_details
-        }
+        return success_response(
+            data={
+                "database_name": db_name,
+                "postgresql_version": version.split()[1] if version else "Unknown",
+                "total_tables": table_count,
+                "total_records": total_records,
+                "tables": table_details
+            },
+            message="Database statistics retrieved successfully"
+        )
         
     except Exception as e:
         logger.error(f"Get database stats error: {str(e)}")
@@ -332,7 +339,7 @@ def delete_record(table_name: str, record_id: int):
         cursor.close()
         conn.close()
         
-        return {"message": f"Record {record_id} deleted successfully"}
+        return success_response(message=f"Record {record_id} deleted successfully")
         
     except HTTPException:
         raise
@@ -413,7 +420,7 @@ def update_record(table_name: str, record_id: int, data: Dict[str, Any]):
         cursor.close()
         conn.close()
         
-        return {"message": f"Record {record_id} updated successfully"}
+        return success_response(message=f"Record {record_id} updated successfully")
         
     except HTTPException:
         raise

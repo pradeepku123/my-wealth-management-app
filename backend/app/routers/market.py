@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from app.models import MutualFund
+from app.response_models import APIResponse, success_response, error_response
 import requests
 import logging
 
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/market", tags=["market"])
 
 
-@router.get("/mutual-funds", response_model=List[MutualFund], responses={
+@router.get("/mutual-funds", response_model=APIResponse, responses={
     503: {"description": "Service unavailable"}
 })
 def get_mutual_fund_nav():
@@ -65,14 +66,20 @@ def get_mutual_fund_nav():
                             except ValueError:
                                 continue
         
-        return funds[:10] if funds else get_mock_mutual_funds()
+        return success_response(
+            data=funds[:10] if funds else get_mock_mutual_funds(),
+            message="Mutual funds data retrieved successfully"
+        )
         
     except Exception as e:
         logger.error(f"Mutual funds error: {str(e)}")
-        return get_mock_mutual_funds()
+        return success_response(
+            data=get_mock_mutual_funds(),
+            message="Mutual funds data retrieved (fallback)"
+        )
 
 
-@router.get("/mutual-funds/filter", response_model=List[MutualFund], responses={
+@router.get("/mutual-funds/filter", response_model=APIResponse, responses={
     400: {"description": "Invalid scheme codes"},
     503: {"description": "Service unavailable"}
 })
@@ -130,14 +137,14 @@ def get_filtered_mutual_funds(codes: str):
                     except ValueError:
                         continue
         
-        return funds
+        return success_response(data=funds, message="Filtered mutual funds retrieved successfully")
         
     except Exception as e:
         logger.error(f"Filtered mutual funds error: {str(e)}")
-        return []
+        return success_response(data=[], message="No mutual funds found for given codes")
 
 
-@router.get("/mutual-fund/{scheme_code}", response_model=MutualFund, responses={
+@router.get("/mutual-fund/{scheme_code}", response_model=APIResponse, responses={
     404: {"description": "Mutual fund not found"},
     503: {"description": "Service unavailable"}
 })
@@ -176,13 +183,16 @@ def get_mutual_fund_details(scheme_code: str):
                 if ';' in line:
                     parts = line.split(';')
                     if len(parts) >= 6 and parts[0] == scheme_code:
-                        return {
-                            "scheme_code": parts[0],
-                            "scheme_name": parts[3],
-                            "nav": float(parts[4]),
-                            "date": parts[5],
-                            "fund_house": parts[2] if len(parts) > 2 else "Unknown"
-                        }
+                        return success_response(
+                            data={
+                                "scheme_code": parts[0],
+                                "scheme_name": parts[3],
+                                "nav": float(parts[4]),
+                                "date": parts[5],
+                                "fund_house": parts[2] if len(parts) > 2 else "Unknown"
+                            },
+                            message="Mutual fund details retrieved successfully"
+                        )
         
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

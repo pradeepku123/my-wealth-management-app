@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from app.models import Investment, InvestmentCreate, InvestmentUpdate, MessageResponse, PortfolioSummary, AssetBreakdown
+from app.response_models import APIResponse, success_response, error_response
 from app.database import get_db_connection
 import logging
 
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
 
-@router.get("/funds", response_model=List[Investment], responses={
+@router.get("/funds", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
 def get_funds():
@@ -29,7 +30,7 @@ def get_funds():
         funds = cursor.fetchall()
         cursor.close()
         conn.close()
-        return funds
+        return success_response(data=funds, message="Investments retrieved successfully")
     except Exception as e:
         logger.error(f"Get funds error: {str(e)}")
         raise HTTPException(
@@ -38,7 +39,7 @@ def get_funds():
         )
 
 
-@router.post("/funds", response_model=dict, responses={
+@router.post("/funds", response_model=APIResponse, responses={
     400: {"description": "Invalid input data"},
     500: {"description": "Internal server error"}
 })
@@ -64,7 +65,7 @@ def add_fund(fund_data: InvestmentCreate):
         conn.commit()
         cursor.close()
         conn.close()
-        return {"id": fund_id, "message": "Investment added successfully"}
+        return success_response(data={"id": fund_id}, message="Investment added successfully")
     except Exception as e:
         logger.error(f"Add fund error: {str(e)}")
         raise HTTPException(
@@ -73,7 +74,7 @@ def add_fund(fund_data: InvestmentCreate):
         )
 
 
-@router.put("/funds/{fund_id}", response_model=MessageResponse, responses={
+@router.put("/funds/{fund_id}", response_model=APIResponse, responses={
     404: {"description": "Investment not found"},
     500: {"description": "Internal server error"}
 })
@@ -104,7 +105,7 @@ def update_fund(fund_id: int, fund_data: InvestmentUpdate):
                 detail="Investment not found"
             )
         
-        return {"message": "Investment updated successfully"}
+        return success_response(message="Investment updated successfully")
     except HTTPException:
         raise
     except Exception as e:
@@ -115,7 +116,7 @@ def update_fund(fund_id: int, fund_data: InvestmentUpdate):
         )
 
 
-@router.delete("/funds/{fund_id}", response_model=MessageResponse, responses={
+@router.delete("/funds/{fund_id}", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
 def delete_fund(fund_id: int):
@@ -133,7 +134,7 @@ def delete_fund(fund_id: int):
         conn.commit()
         cursor.close()
         conn.close()
-        return {"message": "Investment deleted successfully"}
+        return success_response(message="Investment deleted successfully")
     except Exception as e:
         logger.error(f"Delete fund error: {str(e)}")
         raise HTTPException(
@@ -142,7 +143,7 @@ def delete_fund(fund_id: int):
         )
 
 
-@router.get("/summary", response_model=PortfolioSummary, responses={
+@router.get("/summary", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
 def get_portfolio_summary():
@@ -171,12 +172,15 @@ def get_portfolio_summary():
         total_current = summary['total_current'] or 0
         total_returns = total_current - total_invested
         
-        return {
-            "total_invested": total_invested,
-            "total_current": total_current,
-            "total_returns": total_returns,
-            "return_percentage": (total_returns / total_invested * 100) if total_invested > 0 else 0
-        }
+        return success_response(
+            data={
+                "total_invested": total_invested,
+                "total_current": total_current,
+                "total_returns": total_returns,
+                "return_percentage": (total_returns / total_invested * 100) if total_invested > 0 else 0
+            },
+            message="Portfolio summary retrieved successfully"
+        )
     except Exception as e:
         logger.error(f"Portfolio summary error: {str(e)}")
         raise HTTPException(
@@ -185,7 +189,7 @@ def get_portfolio_summary():
         )
 
 
-@router.get("/asset-breakdown", response_model=List[AssetBreakdown], responses={
+@router.get("/asset-breakdown", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
 def get_asset_breakdown():
@@ -235,7 +239,7 @@ def get_asset_breakdown():
                 "return_percentage": return_percentage
             })
         
-        return result
+        return success_response(data=result, message="Asset breakdown retrieved successfully")
     except Exception as e:
         logger.error(f"Asset breakdown error: {str(e)}")
         raise HTTPException(
