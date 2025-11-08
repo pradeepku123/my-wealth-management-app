@@ -14,7 +14,7 @@
         <mat-icon matListItemIcon>show_chart</mat-icon>
         <span matListItemTitle>Mutual Funds</span>
       </a>
-      <a mat-list-item routerLink="/database-admin" class="nav-item">
+      <a mat-list-item routerLink="/database-admin" class="nav-item" *ngIf="isAdmin()">
         <mat-icon matListItemIcon>storage</mat-icon>
         <span matListItemTitle>Database Admin</span>
       </a>

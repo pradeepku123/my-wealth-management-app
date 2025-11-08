@@ -9,6 +9,8 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AddFundDialogComponent } from './add-fund-dialog.component';
+import { APIResponse } from '../services/api-response.interface';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
   selector: 'app-portfolio',
@@ -26,7 +28,7 @@ export class PortfolioComponent implements OnInit {
   username = '';
   private apiUrl = window.location.origin.replace('4200', '8000');
 
-  constructor(private http: HttpClient, private dialog: MatDialog) {}
+  constructor(private http: HttpClient, private dialog: MatDialog, private errorHandler: ErrorHandlerService) {}
 
   ngOnInit() {
     this.loadFunds();
@@ -34,24 +36,40 @@ export class PortfolioComponent implements OnInit {
   }
 
   loadFunds() {
-    this.http.get<any[]>(`${this.apiUrl}/portfolio/funds`).subscribe({
-      next: (funds) => {
-        this.funds = funds;
-        this.calculateTotals();
+    console.log('Loading funds from:', `${this.apiUrl}/portfolio/funds`);
+    this.http.get<APIResponse>(`${this.apiUrl}/portfolio/funds`).subscribe({
+      next: (response: APIResponse) => {
+        console.log('Funds response:', response);
+        if (response.success && response.data) {
+          this.funds = response.data.filter((fund: any) => fund.fund_name && fund.fund_name.trim() !== '');
+          console.log('Filtered funds:', this.funds);
+          this.calculateTotals();
+        }
       },
-      error: (error) => console.error('Error loading funds:', error)
+      error: (error) => {
+        console.error('Error loading funds:', this.errorHandler.extractErrorMessage(error));
+        console.error('Full error:', error);
+      }
     });
   }
 
   calculateTotals() {
-    this.totalInvested = this.funds.reduce((sum, fund) => sum + fund.invested_amount, 0);
-    this.totalCurrent = this.funds.reduce((sum, fund) => sum + fund.current_value, 0);
+    this.totalInvested = this.funds.reduce((sum, fund) => sum + parseFloat(fund.invested_amount || 0), 0);
+    this.totalCurrent = this.funds.reduce((sum, fund) => sum + parseFloat(fund.current_value || 0), 0);
     this.totalReturns = this.totalCurrent - this.totalInvested;
+    console.log('Calculated totals:', {
+      totalInvested: this.totalInvested,
+      totalCurrent: this.totalCurrent,
+      totalReturns: this.totalReturns,
+      fundsCount: this.funds.length
+    });
   }
 
   addFund() {
     const dialogRef = this.dialog.open(AddFundDialogComponent, {
-      width: '450px'
+      width: '500px',
+      disableClose: false,
+      autoFocus: true
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -63,7 +81,9 @@ export class PortfolioComponent implements OnInit {
 
   editFund(fund: any) {
     const dialogRef = this.dialog.open(AddFundDialogComponent, {
-      width: '450px',
+      width: '500px',
+      disableClose: false,
+      autoFocus: true,
       data: { fund: fund }
     });
 
@@ -75,9 +95,13 @@ export class PortfolioComponent implements OnInit {
   }
 
   deleteFund(id: number) {
-    this.http.delete(`${this.apiUrl}/portfolio/funds/${id}`).subscribe({
-      next: () => this.loadFunds(),
-      error: (error) => console.error('Error deleting fund:', error)
+    this.http.delete<APIResponse>(`${this.apiUrl}/portfolio/funds/${id}`).subscribe({
+      next: (response: APIResponse) => {
+        if (response.success) {
+          this.loadFunds();
+        }
+      },
+      error: (error) => console.error('Error deleting fund:', this.errorHandler.extractErrorMessage(error))
     });
   }
 

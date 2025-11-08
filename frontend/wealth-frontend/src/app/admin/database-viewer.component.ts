@@ -11,6 +11,8 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
+import { APIResponse } from '../services/api-response.interface';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
   selector: 'app-database-viewer',
@@ -34,7 +36,7 @@ export class DatabaseViewerComponent implements OnInit {
   pageSize = 10;
   pageIndex = 0;
   
-  constructor(private http: HttpClient, private dialog: MatDialog) {}
+  constructor(private http: HttpClient, private dialog: MatDialog, private errorHandler: ErrorHandlerService) {}
 
   ngOnInit() {
     this.loadTables();
@@ -43,24 +45,28 @@ export class DatabaseViewerComponent implements OnInit {
 
   loadTables() {
     this.loading = true;
-    this.http.get<any[]>(`${this.apiUrl}/admin/tables`).subscribe({
-      next: (data) => {
-        this.tables = data;
+    this.http.get<APIResponse>(`${this.apiUrl}/admin/tables`).subscribe({
+      next: (response: APIResponse) => {
+        if (response.success && response.data) {
+          this.tables = response.data;
+        }
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading tables:', error);
+        console.error('Error loading tables:', this.errorHandler.extractErrorMessage(error));
         this.loading = false;
       }
     });
   }
 
   loadDatabaseStats() {
-    this.http.get<any>(`${this.apiUrl}/admin/database/stats`).subscribe({
-      next: (data) => {
-        this.dbStats = data;
+    this.http.get<APIResponse>(`${this.apiUrl}/admin/database/stats`).subscribe({
+      next: (response: APIResponse) => {
+        if (response.success && response.data) {
+          this.dbStats = response.data;
+        }
       },
-      error: (error) => console.error('Error loading database stats:', error)
+      error: (error) => console.error('Error loading database stats:', this.errorHandler.extractErrorMessage(error))
     });
   }
 
@@ -71,23 +77,27 @@ export class DatabaseViewerComponent implements OnInit {
   }
 
   loadTableSchema(tableName: string) {
-    this.http.get<any[]>(`${this.apiUrl}/admin/tables/${tableName}/schema`).subscribe({
-      next: (data) => {
-        this.tableSchema = data;
+    this.http.get<APIResponse>(`${this.apiUrl}/admin/tables/${tableName}/schema`).subscribe({
+      next: (response: APIResponse) => {
+        if (response.success && response.data) {
+          this.tableSchema = response.data;
+        }
       },
-      error: (error) => console.error('Error loading table schema:', error)
+      error: (error) => console.error('Error loading table schema:', this.errorHandler.extractErrorMessage(error))
     });
   }
 
   loadTableData(tableName: string, offset: number = 0) {
     this.loading = true;
-    this.http.get<any>(`${this.apiUrl}/admin/tables/${tableName}/data?limit=${this.pageSize}&offset=${offset}`).subscribe({
-      next: (data) => {
-        this.tableData = data;
+    this.http.get<APIResponse>(`${this.apiUrl}/admin/tables/${tableName}/data?limit=${this.pageSize}&offset=${offset}`).subscribe({
+      next: (response: APIResponse) => {
+        if (response.success && response.data) {
+          this.tableData = response.data;
+        }
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading table data:', error);
+        console.error('Error loading table data:', this.errorHandler.extractErrorMessage(error));
         this.loading = false;
       }
     });

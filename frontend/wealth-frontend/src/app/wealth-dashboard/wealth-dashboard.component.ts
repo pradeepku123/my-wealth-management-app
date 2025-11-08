@@ -4,6 +4,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { APIResponse } from '../services/api-response.interface';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
   selector: 'app-wealth-dashboard',
@@ -16,18 +18,26 @@ export class WealthDashboardComponent implements OnInit {
   assetBreakdown: any[] = [];
   private apiUrl = window.location.origin.replace('4200', '8000');
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) {}
 
   ngOnInit() {
     this.loadAssetBreakdown();
   }
 
   loadAssetBreakdown() {
-    this.http.get(`${this.apiUrl}/portfolio/asset-breakdown`).subscribe({
-      next: (data: any) => {
-        this.assetBreakdown = data;
+    console.log('Loading asset breakdown from:', `${this.apiUrl}/portfolio/asset-breakdown`);
+    this.http.get<APIResponse>(`${this.apiUrl}/portfolio/asset-breakdown`).subscribe({
+      next: (response: APIResponse) => {
+        console.log('Asset breakdown response:', response);
+        if (response.success && response.data) {
+          this.assetBreakdown = response.data.filter((asset: any) => asset.investment_type !== '');
+          console.log('Filtered asset breakdown:', this.assetBreakdown);
+        }
       },
-      error: (error) => console.error('Error loading asset breakdown:', error)
+      error: (error) => {
+        console.error('Error loading asset breakdown:', this.errorHandler.extractErrorMessage(error));
+        console.error('Full error:', error);
+      }
     });
   }
 

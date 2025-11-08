@@ -1,32 +1,61 @@
-<h2 mat-dialog-title>{{ dialogTitle }}</h2>
-<mat-dialog-content>
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Investment Type</mat-label>
-    <mat-select [(ngModel)]="fundData.investment_type" required>
-      <mat-option *ngFor="let type of investmentTypes" [value]="type.value">
-        {{ type.label }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon>account_balance_wallet</mat-icon>
+  {{ dialogTitle }}
+</h2>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Investment Name</mat-label>
-    <input matInput [(ngModel)]="fundData.fund_name" required>
-  </mat-form-field>
+<mat-dialog-content class="dialog-content">
+  <div class="form-grid">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Investment Type</mat-label>
+      <mat-select [(ngModel)]="fundData.investment_type" required>
+        <mat-option *ngFor="let type of investmentTypes" [value]="type.value">
+          <mat-icon class="option-icon">{{ type.icon }}</mat-icon>
+          {{ type.label }}
+        </mat-option>
+      </mat-select>
+      <mat-hint>Select the type of investment</mat-hint>
+    </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Invested Amount</mat-label>
-    <input matInput type="number" [(ngModel)]="fundData.invested_amount" required>
-  </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Investment Name</mat-label>
+      <input matInput [(ngModel)]="fundData.fund_name" required placeholder="e.g., SBI Bluechip Fund">
+      <mat-icon matSuffix>edit</mat-icon>
+    </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Current Value</mat-label>
-    <input matInput type="number" [(ngModel)]="fundData.current_value" required>
-  </mat-form-field>
+    <div class="amount-row">
+      <mat-form-field appearance="outline" class="amount-field">
+        <mat-label>Invested Amount</mat-label>
+        <input matInput type="number" [(ngModel)]="fundData.invested_amount" required min="0" step="0.01">
+        <span matTextPrefix>₹&nbsp;</span>
+        <mat-hint>Amount you invested</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="amount-field">
+        <mat-label>Current Value</mat-label>
+        <input matInput type="number" [(ngModel)]="fundData.current_value" required min="0" step="0.01">
+        <span matTextPrefix>₹&nbsp;</span>
+        <mat-hint>Current market value</mat-hint>
+      </mat-form-field>
+    </div>
+    
+    <div class="returns-info" *ngIf="fundData.invested_amount && fundData.current_value">
+      <div class="returns-card">
+        <span class="returns-label">Returns:</span>
+        <span class="returns-value" [class.positive]="getReturns() > 0" [class.negative]="getReturns() < 0">
+          ₹{{ getReturns() | number:'1.2-2' }} ({{ getReturnsPercentage() | number:'1.2-2' }}%)
+        </span>
+      </div>
+    </div>
+  </div>
 </mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!isValid()">
+
+<mat-dialog-actions class="dialog-actions">
+  <button mat-button (click)="onCancel()" class="cancel-btn">
+    <mat-icon>close</mat-icon>
+    Cancel
+  </button>
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="!isValid()" class="save-btn">
+    <mat-icon>{{ isEditMode ? 'update' : 'save' }}</mat-icon>
     {{ isEditMode ? 'Update' : 'Save' }}
   </button>
 </mat-dialog-actions>

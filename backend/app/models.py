@@ -112,6 +112,23 @@ class MutualFund(BaseModel):
     fund_house: Optional[str] = None
 
 
+class UserRegistration(BaseModel):
+    user_id: str
+    password: str
+    full_name: str
+    email: str
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "user_id": "john_doe",
+                "password": "securepassword123",
+                "full_name": "John Doe",
+                "email": "john.doe@example.com"
+            }
+        }
+
+
 class HealthCheck(BaseModel):
     status: str
     message: Optional[str] = None

@@ -6,12 +6,15 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { MutualFundsComponent } from './market/mutual-funds.component';
 import { DatabaseViewerComponent } from './admin/database-viewer.component';
+import { RegisterComponent } from './register/register.component';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
+import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent, canActivate: [loginGuard] },
+  { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   {
     path: '',
@@ -21,7 +24,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: WealthDashboardComponent },
       { path: 'portfolio', component: PortfolioComponent },
       { path: 'mutual-funds', component: MutualFundsComponent },
-      { path: 'database-admin', component: DatabaseViewerComponent },
+      { path: 'database-admin', component: DatabaseViewerComponent, canActivate: [AdminGuard] },
       { path: 'investments', component: WealthDashboardComponent },
       { path: 'reports', component: WealthDashboardComponent }
     ]

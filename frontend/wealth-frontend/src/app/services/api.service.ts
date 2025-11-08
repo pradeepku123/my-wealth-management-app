@@ -44,16 +44,7 @@ export class ApiService {
   }
 
   private handleError = (error: HttpErrorResponse) => {
-    let errorMessage = 'An error occurred';
-    
-    if (error.error?.message) {
-      errorMessage = error.error.message;
-    } else if (error.error?.detail) {
-      errorMessage = error.error.detail;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    return throwError(() => new Error(errorMessage));
+    // Let components handle errors directly for better control
+    return throwError(() => error);
   };
 }

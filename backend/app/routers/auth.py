@@ -1,6 +1,6 @@
 """Authentication routes."""
 from fastapi import APIRouter, HTTPException, status
-from app.models import UserLogin, Token, ForgotPasswordRequest, ResetPasswordRequest, MessageResponse
+from app.models import UserLogin, Token, ForgotPasswordRequest, ResetPasswordRequest, MessageResponse, UserRegistration
 from app.response_models import APIResponse, success_response, error_response
 from app.auth import authenticate_user, create_access_token
 from app.database import get_db_connection
@@ -39,7 +39,10 @@ def login(user_credentials: UserLogin):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect user ID or password"
             )
-        access_token = create_access_token(data={"sub": user["user_id"]})
+        access_token = create_access_token(
+            data={"sub": user["user_id"]}, 
+            role=user.get("role", "user")
+        )
         return success_response(
             data={"access_token": access_token, "token_type": "bearer"},
             message="Login successful"
@@ -147,4 +150,62 @@ def reset_password(request: ResetPasswordRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Password reset service unavailable"
+        )
+
+
+@router.post("/register", response_model=APIResponse, responses={
+    400: {"description": "User already exists"},
+    500: {"description": "Internal server error"}
+})
+def register_user(user_data: UserRegistration):
+    """
+    Register a new user.
+    
+    Creates a new user account with the provided details.
+    
+    **Request Body:**
+    - **user_id**: Unique user identifier
+    - **password**: User password
+    - **full_name**: User's full name
+    - **email**: User's email address
+    
+    **Response:**
+    - Confirmation message that user was created successfully
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check if user already exists
+        cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (user_data.user_id,))
+        existing_user = cursor.fetchone()
+        
+        if existing_user:
+            cursor.close()
+            conn.close()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User already exists"
+            )
+        
+        # Create new user
+        cursor.execute(
+            "INSERT INTO users (user_id, password, full_name, email, role) VALUES (%s, %s, %s, %s, %s)",
+            (user_data.user_id, user_data.password, user_data.full_name, user_data.email, "user")
+        )
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return success_response(
+            message="User registered successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration service unavailable"
         )

@@ -1,0 +1,68 @@
+<div class="register-wrapper">
+  <div class="brand-header">
+    <mat-icon class="logo-icon">account_balance</mat-icon>
+    <h1>WealthTracker</h1>
+    <p>Create your investment account</p>
+  </div>
+  
+  <mat-card class="register-card">
+    <mat-card-header>
+      <mat-card-title>Create Account</mat-card-title>
+      <mat-card-subtitle>Join WealthTracker today</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form (ngSubmit)="onRegister()" class="register-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>User ID</mat-label>
+          <input matInput [(ngModel)]="userData.user_id" name="userId" required>
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Full Name</mat-label>
+          <input matInput [(ngModel)]="userData.full_name" name="fullName" required>
+          <mat-icon matSuffix>badge</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [(ngModel)]="userData.email" name="email" required>
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="userData.password" name="password" required>
+          <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="password-toggle">
+            {{hidePassword ? 'visibility_off' : 'visibility'}}
+          </mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirm Password</mat-label>
+          <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" [(ngModel)]="userData.confirmPassword" name="confirmPassword" required>
+          <mat-icon matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" class="password-toggle">
+            {{hideConfirmPassword ? 'visibility_off' : 'visibility'}}
+          </mat-icon>
+        </mat-form-field>
+        
+        <div class="error-message" [class.show]="errorMessage">
+          <mat-icon *ngIf="errorMessage">error_outline</mat-icon>
+          <span *ngIf="errorMessage">{{ errorMessage }}</span>
+        </div>
+        
+        <button mat-flat-button color="primary" type="submit" class="full-width register-btn" [disabled]="isLoading || !isValid()">
+          <mat-icon *ngIf="isLoading" class="loading-icon">refresh</mat-icon>
+          {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+        </button>
+        
+        <div class="form-footer">
+          <p>Already have an account? 
+            <a href="#" (click)="goToLogin()" class="login-link">Sign in here</a>
+          </p>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
