@@ -51,23 +51,37 @@ def init_database():
         )
     """)
     
+    # Create mutual_funds table for NAV data
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS mutual_funds (
+            id SERIAL PRIMARY KEY,
+            scheme_code VARCHAR(20) UNIQUE NOT NULL,
+            scheme_name VARCHAR(500) NOT NULL,
+            nav DECIMAL(10,4) NOT NULL,
+            nav_date VARCHAR(20) NOT NULL,
+            fund_house VARCHAR(200),
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # Add role column to users table if it doesn't exist
+    cursor.execute("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user'
+    """)
+    
+    # Add email column to users table if it doesn't exist
+    cursor.execute("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(100)
+    """)
+    
     # Insert default users
     cursor.execute("""
-        INSERT INTO users (user_id, password, full_name) 
-        VALUES (%s, %s, %s), (%s, %s, %s)
+        INSERT INTO users (user_id, password, full_name, role) 
+        VALUES (%s, %s, %s, %s), (%s, %s, %s, %s)
         ON CONFLICT (user_id) DO NOTHING
-    """, ("admin", "password123", "Admin User", "user1", "mypassword", "John Doe"))
+    """, ("admin", "password123", "Admin User", "admin", "user1", "mypassword", "John Doe", "user"))
     
-    # Insert sample investments
-    cursor.execute("""
-        INSERT INTO investments (investment_type, fund_name, invested_amount, current_value) 
-        VALUES 
-            ('mutual_fund', 'SBI Bluechip Fund', 50000, 55000),
-            ('epf', 'Company EPF Account', 75000, 78000),
-            ('ppf', 'SBI PPF Account', 40000, 42000),
-            ('fd', 'HDFC Bank FD', 100000, 105000)
-        ON CONFLICT DO NOTHING
-    """)
+
     
     conn.commit()
     cursor.close()

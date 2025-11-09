@@ -62,6 +62,11 @@ def add_fund(fund_data: InvestmentCreate):
             (fund_data.investment_type, fund_data.fund_name, fund_data.invested_amount, fund_data.current_value)
         )
         fund_id = cursor.fetchone()['id']
+        
+        # If it's a mutual fund, update the mutual_funds table
+        if fund_data.investment_type == 'mutual_fund':
+            update_mutual_fund_data(cursor, fund_data.fund_name)
+        
         conn.commit()
         cursor.close()
         conn.close()
@@ -246,3 +251,157 @@ def get_asset_breakdown():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to retrieve asset breakdown"
         )
+
+
+@router.get("/mutual-funds-nav", response_model=APIResponse, responses={
+    500: {"description": "Internal server error"}
+})
+def get_user_mutual_funds_nav():
+    """
+    Get NAV data for user's invested mutual funds from database.
+    
+    Returns NAV data for mutual funds that the user has invested in,
+    stored in the mutual_funds table.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get mutual fund data from database for user's investments
+        cursor.execute(
+            """
+            SELECT DISTINCT mf.scheme_code, mf.scheme_name, mf.nav, mf.nav_date, mf.fund_house, mf.category, mf.sub_category
+            FROM mutual_funds mf
+            INNER JOIN investments i ON i.investment_type = 'mutual_fund'
+            WHERE i.fund_name LIKE '%(' || mf.scheme_code || ')%'
+            ORDER BY mf.category, mf.sub_category, mf.scheme_name
+            """
+        )
+        funds_data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        result = []
+        for fund in funds_data:
+            result.append({
+                "scheme_code": fund['scheme_code'],
+                "scheme_name": fund['scheme_name'],
+                "nav": float(fund['nav']),
+                "date": fund['nav_date'],
+                "fund_house": fund['fund_house'],
+                "category": fund['category'],
+                "sub_category": fund['sub_category']
+            })
+        
+        return success_response(data=result, message="Mutual funds NAV data retrieved successfully")
+        
+    except Exception as e:
+        logger.error(f"Mutual funds NAV error: {str(e)}")
+        return success_response(data=[], message="Unable to fetch mutual funds NAV data")
+
+
+def update_mutual_fund_data(cursor, fund_name):
+    """Update mutual fund NAV data for a specific fund."""
+    try:
+        # Extract scheme code from fund name
+        scheme_code = None
+        if '(' in fund_name and ')' in fund_name:
+            code = fund_name.split('(')[-1].split(')')[0]
+            if code.isdigit():
+                scheme_code = code
+        
+        if not scheme_code:
+            return
+        
+        # Fetch NAV data from AMFI
+        import requests
+        url = "https://www.amfiindia.com/spages/NAVAll.txt"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code != 200:
+            return
+        
+        lines = response.text.strip().split('\n')
+        
+        for line in lines[1:]:
+            if ';' in line:
+                parts = line.split(';')
+                if len(parts) >= 6 and parts[0] == scheme_code:
+                    try:
+                        # Insert or update mutual fund data
+                        cursor.execute(
+                            """
+                            INSERT INTO mutual_funds (scheme_code, scheme_name, nav, nav_date, fund_house, updated_at)
+                            VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                            ON CONFLICT (scheme_code) DO UPDATE SET
+                                scheme_name = EXCLUDED.scheme_name,
+                                nav = EXCLUDED.nav,
+                                nav_date = EXCLUDED.nav_date,
+                                fund_house = EXCLUDED.fund_house,
+                                updated_at = CURRENT_TIMESTAMP
+                            """,
+                            (parts[0], parts[3], float(parts[4]), parts[5], parts[2] if len(parts) > 2 else "Unknown")
+                        )
+                        break
+                    except ValueError:
+                        continue
+    except Exception as e:
+        logger.error(f"Update mutual fund data error: {str(e)}")
+
+@router.post("/sync-mutual-funds", response_model=APIResponse)
+def sync_mutual_funds():
+    """Manually sync mutual fund data for common scheme codes."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Common mutual fund scheme codes
+        scheme_codes = ['145137', '147946', '120503', '119551', '120716', '118989', '119226']
+        
+        import requests
+        url = "https://www.amfiindia.com/spages/NAVAll.txt"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code != 200:
+            return success_response(data=[], message="Unable to fetch NAV data from AMFI")
+        
+        lines = response.text.strip().split('\n')
+        updated_count = 0
+        
+        for line in lines[1:]:
+            if ';' in line:
+                parts = line.split(';')
+                if len(parts) >= 6 and parts[0] in scheme_codes:
+                    try:
+                        from app.scheduler import classify_fund
+                        scheme_name = parts[3]
+                        category, sub_category = classify_fund(scheme_name)
+                        
+                        cursor.execute(
+                            """
+                            INSERT INTO mutual_funds (scheme_code, scheme_name, nav, nav_date, fund_house, category, sub_category, updated_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                            ON CONFLICT (scheme_code) DO UPDATE SET
+                                scheme_name = EXCLUDED.scheme_name,
+                                nav = EXCLUDED.nav,
+                                nav_date = EXCLUDED.nav_date,
+                                fund_house = EXCLUDED.fund_house,
+                                category = EXCLUDED.category,
+                                sub_category = EXCLUDED.sub_category,
+                                updated_at = CURRENT_TIMESTAMP
+                            """,
+                            (parts[0], scheme_name, float(parts[4]), parts[5], parts[2] if len(parts) > 2 else "Unknown", category, sub_category)
+                        )
+                        updated_count += 1
+                    except ValueError:
+                        continue
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return success_response(data={"updated_count": updated_count}, message=f"Synced {updated_count} mutual funds")
+        
+    except Exception as e:
+        logger.error(f"Sync mutual funds error: {str(e)}")
+        return success_response(data={"updated_count": 0}, message="Failed to sync mutual funds")

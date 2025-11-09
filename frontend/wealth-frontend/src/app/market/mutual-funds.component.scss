@@ -1,85 +1,32 @@
-.mutual-funds-container {
-  padding: 20px;
+.category-header {
+  color: #1976d2;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 20px 0 10px 0;
+  border-bottom: 2px solid #1976d2;
+  padding-bottom: 5px;
+}
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+.sub-category-header {
+  color: #424242;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 15px 0 10px 20px;
+  padding-left: 10px;
+  border-left: 3px solid #ff9800;
+}
 
-    h1 {
-      margin: 0;
-      color: #333;
-    }
+.funds-container {
+  margin-bottom: 30px;
+}
 
-    .header-actions {
-      display: flex;
-      gap: 10px;
-    }
-  }
+.sub-category-container {
+  margin-bottom: 20px;
+}
 
-  .funds-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-
-    .fund-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-      }
-
-      .fund-name {
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
-        line-height: 1.3;
-      }
-
-      .fund-nav {
-        font-size: 24px;
-        font-weight: bold;
-        color: #2e7d32;
-        margin: 10px 0;
-      }
-
-      .fund-date {
-        font-size: 12px;
-        color: #666;
-        margin-bottom: 5px;
-      }
-
-      .fund-house {
-        font-size: 14px;
-        color: #1976d2;
-        font-weight: 500;
-      }
-
-      mat-card-subtitle {
-        font-size: 12px;
-        color: #888;
-      }
-    }
-  }
-
-  .no-data {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-
-    mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 16px;
-    }
-
-    p {
-      font-size: 16px;
-      margin: 0;
-    }
-  }
+.funds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-left: 30px;
 }

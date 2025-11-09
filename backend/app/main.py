@@ -2,12 +2,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_database, get_db_connection
-from app.routers import auth, portfolio, market, admin
+from app.routers import auth, portfolio, admin
 from app.models import HealthCheck, MessageResponse
 from app.response_models import APIResponse, success_response
 from app.exception_handlers import http_exception_handler, general_exception_handler
 from fastapi import HTTPException
+from app.scheduler import update_all_nav_data, daily_nav_scheduler
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +81,10 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     init_database()
+    # Update NAV data on startup
+    asyncio.create_task(update_all_nav_data())
+    # Start daily scheduler
+    asyncio.create_task(daily_nav_scheduler())
 
 # CORS middleware
 app.add_middleware(
@@ -96,7 +102,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 # Include routers
 app.include_router(auth.router)
 app.include_router(portfolio.router)
-app.include_router(market.router)
+
 app.include_router(admin.router)
 
 
