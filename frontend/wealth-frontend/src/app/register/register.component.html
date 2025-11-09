@@ -1,68 +1,164 @@
-<div class="register-wrapper">
-  <div class="brand-header">
-    <mat-icon class="logo-icon">account_balance</mat-icon>
-    <h1>WealthTracker</h1>
-    <p>Create your investment account</p>
-  </div>
-  
-  <mat-card class="register-card">
-    <mat-card-header>
-      <mat-card-title>Create Account</mat-card-title>
-      <mat-card-subtitle>Join WealthTracker today</mat-card-subtitle>
-    </mat-card-header>
-    
-    <mat-card-content>
-      <form (ngSubmit)="onRegister()" class="register-form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>User ID</mat-label>
-          <input matInput [(ngModel)]="userData.user_id" name="userId" required>
-          <mat-icon matSuffix>person</mat-icon>
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Full Name</mat-label>
-          <input matInput [(ngModel)]="userData.full_name" name="fullName" required>
-          <mat-icon matSuffix>badge</mat-icon>
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" [(ngModel)]="userData.email" name="email" required>
-          <mat-icon matSuffix>email</mat-icon>
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="userData.password" name="password" required>
-          <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="password-toggle">
-            {{hidePassword ? 'visibility_off' : 'visibility'}}
-          </mat-icon>
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Confirm Password</mat-label>
-          <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" [(ngModel)]="userData.confirmPassword" name="confirmPassword" required>
-          <mat-icon matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" class="password-toggle">
-            {{hideConfirmPassword ? 'visibility_off' : 'visibility'}}
-          </mat-icon>
-        </mat-form-field>
-        
-        <div class="error-message" [class.show]="errorMessage">
-          <mat-icon *ngIf="errorMessage">error_outline</mat-icon>
-          <span *ngIf="errorMessage">{{ errorMessage }}</span>
+<div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl shadow-lg mb-6">
+        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">WealthTracker</h1>
+      <p class="text-gray-600 text-lg">Create Your Investment Account</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Create Account</h2>
+        <p class="text-gray-600">Join WealthTracker today</p>
+      </div>
+
+      <form (ngSubmit)="onRegister()" class="space-y-5">
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-gray-700">User ID</label>
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="userData.user_id"
+              name="userId"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Enter your user ID"
+              required>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+          </div>
         </div>
-        
-        <button mat-flat-button color="primary" type="submit" class="full-width register-btn" [disabled]="isLoading || !isValid()">
-          <mat-icon *ngIf="isLoading" class="loading-icon">refresh</mat-icon>
-          {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-gray-700">Full Name</label>
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="userData.full_name"
+              name="fullName"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Enter your full name"
+              required>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-gray-700">Email</label>
+          <div class="relative">
+            <input
+              type="email"
+              [(ngModel)]="userData.email"
+              name="email"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Enter your email"
+              required>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-gray-700">Password</label>
+          <div class="relative">
+            <input
+              [type]="hidePassword ? 'password' : 'text'"
+              [(ngModel)]="userData.password"
+              name="password"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Enter your password"
+              required>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <button
+                type="button"
+                (click)="hidePassword = !hidePassword"
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="hidePassword">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
+                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="!hidePassword">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-gray-700">Confirm Password</label>
+          <div class="relative">
+            <input
+              [type]="hideConfirmPassword ? 'password' : 'text'"
+              [(ngModel)]="userData.confirmPassword"
+              name="confirmPassword"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Confirm your password"
+              required>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <button
+                type="button"
+                (click)="hideConfirmPassword = !hideConfirmPassword"
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="hideConfirmPassword">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
+                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="!hideConfirmPassword">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div class="flex items-center space-x-3">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <span class="text-red-700 text-sm">{{ errorMessage }}</span>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="isLoading || !isValid()"
+          class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-xl shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300">
+          <div class="flex items-center justify-center space-x-2">
+            <svg *ngIf="isLoading" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ isLoading ? 'Creating Account...' : 'Create Account' }}</span>
+          </div>
         </button>
-        
-        <div class="form-footer">
-          <p>Already have an account? 
-            <a href="#" (click)="goToLogin()" class="login-link">Sign in here</a>
-          </p>
+
+        <div class="text-center pt-4">
+          <div class="text-gray-600 text-sm">
+            Already have an account? 
+            <a 
+              href="#" 
+              (click)="goToLogin()" 
+              class="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 ml-1">
+              Sign in here
+            </a>
+          </div>
         </div>
       </form>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>

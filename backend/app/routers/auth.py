@@ -209,3 +209,37 @@ def register_user(user_data: UserRegistration):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Registration service unavailable"
         )
+@router.get("/user-info", response_model=APIResponse)
+def get_user_info(user_id: str):
+    """Get user information by user ID."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id, full_name, role, email FROM users WHERE user_id = %s", (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        return success_response(
+            data={
+                "user_id": user["user_id"],
+                "full_name": user["full_name"],
+                "role": user["role"],
+                "email": user["email"]
+            },
+            message="User information retrieved successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get user info error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to retrieve user information"
+        )

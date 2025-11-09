@@ -25,6 +25,9 @@ export class LoginComponent {
   errorMessage = '';
   isLoading = false;
   hidePassword = true;
+  showError = false;
+  userIdTouched = false;
+  passwordTouched = false;
   private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(
@@ -34,20 +37,53 @@ export class LoginComponent {
     private errorHandler: ErrorHandlerService
   ) {}
 
+  get isUserIdValid(): boolean {
+    return this.userId.trim().length >= 3;
+  }
+
+  get isPasswordValid(): boolean {
+    return this.password.length >= 6;
+  }
+
+  get isFormValid(): boolean {
+    return this.isUserIdValid && this.isPasswordValid;
+  }
+
+  onUserIdBlur() {
+    this.userIdTouched = true;
+  }
+
+  onPasswordBlur() {
+    this.passwordTouched = true;
+  }
+
+  showErrorMessage(message: string) {
+    this.errorMessage = message;
+    this.showError = true;
+    setTimeout(() => {
+      this.showError = false;
+    }, 5000);
+  }
+
+  clearError() {
+    this.showError = false;
+    this.errorMessage = '';
+  }
+
 
 
   onLogin() {
-    this.errorMessage = '';
+    this.clearError();
     
-    if (!this.userId.trim() || !this.password.trim()) {
-      this.errorMessage = 'Please enter both User ID and Password';
+    if (!this.isFormValid) {
+      this.showErrorMessage('Please enter valid User ID (min 3 chars) and Password (min 6 chars)');
       return;
     }
     
     this.isLoading = true;
     
     this.http.post<APIResponse>(`${this.apiUrl}/auth/login`, {
-      user_id: this.userId,
+      user_id: this.userId.trim(),
       password: this.password
     }).subscribe({
       next: (response: APIResponse) => {
@@ -57,35 +93,37 @@ export class LoginComponent {
           this.snackBar.open(response.message || 'Login successful!', 'Close', { duration: 3000 });
           this.router.navigate(['/dashboard']);
         } else {
-          this.errorMessage = response.message || 'Login failed';
+          this.showErrorMessage(response.message || 'Login failed');
         }
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = this.errorHandler.extractErrorMessage(error);
+        this.showErrorMessage(this.errorHandler.extractErrorMessage(error));
       }
     });
   }
 
   onForgotPassword(event: Event) {
     event.preventDefault();
-    if (!this.userId) {
-      this.errorMessage = 'Please enter your User ID first';
+    this.clearError();
+    
+    if (!this.userId.trim()) {
+      this.showErrorMessage('Please enter your User ID first to reset password');
       return;
     }
     
     this.http.post<APIResponse>(`${this.apiUrl}/auth/forgot-password`, {
-      user_id: this.userId
+      user_id: this.userId.trim()
     }).subscribe({
       next: (response: APIResponse) => {
         if (response.success) {
-          this.router.navigate(['/forgot-password'], { queryParams: { userId: this.userId } });
+          this.router.navigate(['/forgot-password'], { queryParams: { userId: this.userId.trim() } });
         } else {
-          this.errorMessage = response.message || 'Request failed';
+          this.showErrorMessage(response.message || 'Request failed');
         }
       },
       error: (error) => {
-        this.errorMessage = this.errorHandler.extractErrorMessage(error);
+        this.showErrorMessage(this.errorHandler.extractErrorMessage(error));
       }
     });
   }
