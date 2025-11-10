@@ -1,0 +1,38 @@
+<div class="p-6 space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-gray-900">Financial Goals</h1>
+    <button mat-raised-button class="bg-blue-600 text-white">Add Goal</button>
+  </div>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let goal of goals" class="bg-white rounded-xl border border-gray-200 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">{{ goal.name }}</h3>
+        <span class="text-sm text-gray-500">{{ goal.targetDate }}</span>
+      </div>
+      
+      <div class="mb-4">
+        <div class="flex justify-between text-sm mb-2">
+          <span>Progress</span>
+          <span>{{ goal.progress }}%</span>
+        </div>
+        <mat-progress-bar [value]="goal.progress" class="h-2"></mat-progress-bar>
+      </div>
+      
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-600">Current:</span>
+          <span class="font-medium">₹{{ goal.current | number:'1.0-0' }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Target:</span>
+          <span class="font-medium">₹{{ goal.target | number:'1.0-0' }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Monthly SIP:</span>
+          <span class="font-medium">₹{{ goal.monthlySip | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
