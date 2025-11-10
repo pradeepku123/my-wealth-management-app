@@ -84,6 +84,12 @@
           </div>
           
           <div class="flex items-center space-x-3">
+            <div *ngIf="showSessionTimer" class="flex items-center bg-orange-100 rounded-lg px-3 py-2 text-sm animate-pulse">
+              <svg class="w-4 h-4 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="text-orange-700 font-mono font-bold">{{ sessionTimeRemaining }}</span>
+            </div>
             <div class="flex items-center bg-gray-100 rounded-xl px-3 py-2 min-w-0">
               <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
