@@ -10,19 +10,19 @@ import { NotificationsComponent } from './notifications/notifications.component'
 import { GoalsComponent } from './goals/goals.component';
 import { DatabaseViewerComponent } from './admin/database-viewer.component';
 import { RegisterComponent } from './register/register.component';
-import { authGuard } from './guards/auth.guard';
-import { loginGuard } from './guards/login.guard';
+import { LoginGuard } from './guards/login.guard';
+import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent, canActivate: [loginGuard] },
+  { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   {
     path: '',
     component: DashboardLayoutComponent,
-    canActivate: [authGuard],
+    canActivate: [AuthGuard],
     children: [
       { path: 'dashboard', component: WealthDashboardComponent },
       { path: 'portfolio', component: PortfolioComponent },

@@ -111,6 +111,16 @@ class MutualFund(BaseModel):
     date: str
     fund_house: Optional[str] = None
 
+class MutualFundCreate(BaseModel):
+    scheme_code: str
+    scheme_name: str
+    nav: float
+    nav_date: str
+    fund_house: Optional[str] = None
+    category: Optional[str] = None
+    sub_category: Optional[str] = None
+
+
 
 class UserRegistration(BaseModel):
     user_id: str

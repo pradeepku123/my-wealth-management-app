@@ -79,7 +79,7 @@ def init_database():
         INSERT INTO users (user_id, password, full_name, role) 
         VALUES (%s, %s, %s, %s), (%s, %s, %s, %s)
         ON CONFLICT (user_id) DO NOTHING
-    """, ("admin", "password123", "Admin User", "admin", "user1", "mypassword", "John Doe", "user"))
+    """, ("admin", "superadmin", "Admin User", "admin", "user1", "admin", "John Doe", "user"))
     
 
     

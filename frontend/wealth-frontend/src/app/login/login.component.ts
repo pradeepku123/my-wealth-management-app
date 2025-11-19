@@ -1,9 +1,4 @@
 import { Component } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -15,20 +10,19 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, FormsModule, CommonModule, RouterModule],
+  imports: [FormsModule, CommonModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  userId = '';
+  username = '';
   password = '';
   errorMessage = '';
   isLoading = false;
   hidePassword = true;
   showError = false;
-  userIdTouched = false;
+  usernameTouched = false;
   passwordTouched = false;
-  private apiUrl = window.location.origin.replace('4200', '8000');
 
   constructor(
     private router: Router, 
@@ -37,8 +31,8 @@ export class LoginComponent {
     private errorHandler: ErrorHandlerService
   ) {}
 
-  get isUserIdValid(): boolean {
-    return this.userId.trim().length >= 3;
+  get isUsernameValid(): boolean {
+    return this.username.trim().length >= 3;
   }
 
   get isPasswordValid(): boolean {
@@ -46,11 +40,11 @@ export class LoginComponent {
   }
 
   get isFormValid(): boolean {
-    return this.isUserIdValid && this.isPasswordValid;
+    return this.isUsernameValid && this.isPasswordValid;
   }
 
-  onUserIdBlur() {
-    this.userIdTouched = true;
+  onUsernameBlur() {
+    this.usernameTouched = true;
   }
 
   onPasswordBlur() {
@@ -76,24 +70,27 @@ export class LoginComponent {
     this.clearError();
     
     if (!this.isFormValid) {
-      this.showErrorMessage('Please enter valid User ID (min 3 chars) and Password (min 6 chars)');
+      this.showErrorMessage('Please enter valid Username (min 3 chars) and Password (min 6 chars)');
       return;
     }
     
     this.isLoading = true;
     
-    this.http.post<APIResponse>(`${this.apiUrl}/auth/login`, {
-      user_id: this.userId.trim(),
-      password: this.password
+    const body = new URLSearchParams();
+    body.set('username', this.username.trim());
+    body.set('password', this.password);
+
+    this.http.post<any>(`/api/v1/auth/login/access-token`, body, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     }).subscribe({
-      next: (response: APIResponse) => {
+      next: (response: any) => {
         this.isLoading = false;
-        if (response.success && response.data) {
-          localStorage.setItem('token', response.data.access_token);
-          this.snackBar.open(response.message || 'Login successful!', 'Close', { duration: 3000 });
+        if (response.access_token) {
+          localStorage.setItem('token', response.access_token);
+          this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
           this.router.navigate(['/dashboard']);
         } else {
-          this.showErrorMessage(response.message || 'Login failed');
+          this.showErrorMessage('Login failed: Invalid response from server');
         }
       },
       error: (error) => {
@@ -107,17 +104,17 @@ export class LoginComponent {
     event.preventDefault();
     this.clearError();
     
-    if (!this.userId.trim()) {
-      this.showErrorMessage('Please enter your User ID first to reset password');
+    if (!this.username.trim()) {
+      this.showErrorMessage('Please enter your Username first to reset password');
       return;
     }
     
-    this.http.post<APIResponse>(`${this.apiUrl}/auth/forgot-password`, {
-      user_id: this.userId.trim()
+    this.http.post<APIResponse>(`/api/v1/auth/forgot-password`, {
+      user_id: this.username.trim()
     }).subscribe({
       next: (response: APIResponse) => {
         if (response.success) {
-          this.router.navigate(['/forgot-password'], { queryParams: { userId: this.userId.trim() } });
+          this.router.navigate(['/forgot-password'], { queryParams: { username: this.username.trim() } });
         } else {
           this.showErrorMessage(response.message || 'Request failed');
         }
