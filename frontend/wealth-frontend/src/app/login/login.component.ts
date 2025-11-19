@@ -79,6 +79,10 @@ export class LoginComponent {
     const body = new URLSearchParams();
     body.set('username', this.username.trim());
     body.set('password', this.password);
+    body.set('grant_type', 'password');
+    body.set('scope', '');
+    body.set('client_id', 'string');
+    body.set('client_secret', '********');
 
     this.http.post<any>(`/api/v1/auth/login/access-token`, body, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
