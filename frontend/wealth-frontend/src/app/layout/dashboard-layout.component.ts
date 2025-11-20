@@ -45,7 +45,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
   userRole = '';
   sessionTimeRemaining = '';
   showSessionTimer = false;
-  private apiUrl = window.location.origin.replace('4200', '8000');
+  private apiUrl = '/api/v1';
   private sessionSubscription: Subscription = new Subscription();
 
   constructor(

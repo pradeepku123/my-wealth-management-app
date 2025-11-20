@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api import deps
 from app.response_models import APIResponse, success_response, error_response
+from fastapi.encoders import jsonable_encoder
 import logging
 from sqlalchemy import func
 from app.models.investment import Investment
@@ -13,7 +14,7 @@ import requests
 from app.scheduler import classify_fund
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/portfolio", tags=["portfolio"])
+router = APIRouter()
 
 
 @router.get("/funds", response_model=APIResponse, responses={
@@ -24,7 +25,10 @@ def get_funds(db: Session = Depends(deps.get_db)):
     Retrieve all investments in the portfolio.
     """
     funds = crud.investment.get_multi(db)
-    return success_response(data=funds, message="Investments retrieved successfully")
+    # SQLAlchemy model instances are not directly serializable by Pydantic's JSON encoder
+    # Convert to JSON-able structures before returning
+    funds_serialized = jsonable_encoder(funds)
+    return success_response(data=funds_serialized, message="Investments retrieved successfully")
 
 
 @router.post("/funds", response_model=APIResponse, responses={
@@ -151,8 +155,9 @@ def get_user_mutual_funds_nav(db: Session = Depends(deps.get_db)):
         MutualFund.sub_category,
         MutualFund.scheme_name
     ).all()
-    
-    return success_response(data=funds_data, message="Mutual funds NAV data retrieved successfully")
+    # Serialize ORM objects
+    funds_serialized = jsonable_encoder(funds_data)
+    return success_response(data=funds_serialized, message="Mutual funds NAV data retrieved successfully")
 
 
 def update_mutual_fund_data(db: Session, fund_name: str):

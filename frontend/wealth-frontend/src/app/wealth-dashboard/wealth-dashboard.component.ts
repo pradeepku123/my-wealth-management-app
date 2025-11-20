@@ -16,7 +16,7 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 })
 export class WealthDashboardComponent implements OnInit {
   assetBreakdown: any[] = [];
-  private apiUrl = window.location.origin.replace('4200', '8000');
+  private apiUrl = '/api/v1';
 
   constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) {}
 

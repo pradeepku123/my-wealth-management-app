@@ -25,8 +25,9 @@ def login_access_token(
     )
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
+    # Use the user's email as the token subject so frontend can call user-info by email
     return {
-        "access_token": create_access_token(subject=user.id),
+        "access_token": create_access_token(subject=user.email),
         "token_type": "bearer",
     }
 

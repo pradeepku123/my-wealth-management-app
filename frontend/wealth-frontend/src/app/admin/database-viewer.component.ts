@@ -22,7 +22,7 @@ import { ErrorHandlerService } from '../services/error-handler.service';
   styleUrl: './database-viewer.component.scss'
 })
 export class DatabaseViewerComponent implements OnInit {
-  private apiUrl = window.location.origin.replace('4200', '8000');
+  private apiUrl = '/api/v1';
   
   tables: any[] = [];
   selectedTable: any = null;

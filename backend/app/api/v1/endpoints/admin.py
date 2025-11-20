@@ -6,7 +6,7 @@ from app.response_models import APIResponse, success_response, error_response
 import logging
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/admin", tags=["database-admin"])
+router = APIRouter()
 
 
 @router.get("/tables", response_model=APIResponse, responses={

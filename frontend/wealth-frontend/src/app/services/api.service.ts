@@ -8,7 +8,8 @@ import { APIResponse, PaginatedResponse } from './api-response.interface';
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = window.location.origin.replace('4200', '8000') + '/api/v1';
+  // Use relative API base so dev-server proxy is used in development and docker setups
+  private apiUrl = '/api/v1';
 
   constructor(private http: HttpClient) {}
 

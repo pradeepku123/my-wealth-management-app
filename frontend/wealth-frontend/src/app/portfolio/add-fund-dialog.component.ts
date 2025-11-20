@@ -11,6 +11,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { EventBusService } from '../services/event-bus.service';
 
 @Component({
   selector: 'app-add-fund-dialog',
@@ -30,7 +31,7 @@ export class AddFundDialogComponent {
   
   isEditMode = false;
   dialogTitle = 'Add Investment';
-  private apiUrl = window.location.origin.replace('4200', '8000');
+  private apiUrl = '/api/v1';
 
   investmentTypes = [
     { value: 'mutual_fund', label: 'Mutual Fund', icon: 'trending_up' },
@@ -46,6 +47,7 @@ export class AddFundDialogComponent {
     private http: HttpClient,
     private snackBar: MatSnackBar,
     private errorHandler: ErrorHandlerService,
+    private eventBus: EventBusService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     if (data && data.fund) {
@@ -79,6 +81,16 @@ export class AddFundDialogComponent {
     request.subscribe({
       next: (response: APIResponse) => {
         if (response.success) {
+          // Notify other parts of the app about mutual fund changes
+          try {
+            if (this.fundData && this.fundData.investment_type === 'mutual_fund') {
+              this.eventBus.emitMutualFundUpdated({ fund: this.fundData });
+            }
+          } catch (e) {
+            // non-fatal - continue
+            console.warn('EventBus emit failed', e);
+          }
+
           this.snackBar.open(response.message, 'Close', { duration: 3000 });
           this.dialogRef.close(true);
         } else {

@@ -4,8 +4,10 @@ WORKDIR /app
 COPY wealth-frontend/package*.json ./
 RUN npm install
 COPY wealth-frontend/ .
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh || true
 EXPOSE 4200
-CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
+CMD ["sh", "/usr/local/bin/entrypoint.sh"]
 
 # Production stage
 FROM node:20-alpine as build

@@ -31,7 +31,7 @@ export class RegisterComponent {
   isLoading = false;
   hidePassword = true;
   hideConfirmPassword = true;
-  private apiUrl = window.location.origin.replace('4200', '8000');
+  private apiUrl = '/api/v1';
 
   constructor(
     private router: Router,

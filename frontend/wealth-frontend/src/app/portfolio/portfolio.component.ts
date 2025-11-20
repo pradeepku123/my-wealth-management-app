@@ -26,7 +26,7 @@ export class PortfolioComponent implements OnInit {
   totalCurrent = 0;
   totalReturns = 0;
   username = '';
-  private apiUrl = window.location.origin.replace('4200', '8000');
+  private apiUrl = '/api/v1';
 
   constructor(private http: HttpClient, private dialog: MatDialog, private errorHandler: ErrorHandlerService) {}
 

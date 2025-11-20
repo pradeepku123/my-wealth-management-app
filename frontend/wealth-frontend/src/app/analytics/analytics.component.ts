@@ -26,7 +26,7 @@ export class AnalyticsComponent implements OnInit {
   riskLevel = 'Low';
   diversificationScore = 0;
   loading = false;
-  private apiUrl = window.location.origin.replace('4200', '8000');
+  private apiUrl = '/api/v1';
 
   constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) {}
   
