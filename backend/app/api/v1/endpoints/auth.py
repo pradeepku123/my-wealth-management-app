@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api import deps
 from app.core.security import create_access_token, get_password_hash
-from app.response_models import APIResponse, success_response
+from app.schemas.response import APIResponse
+from app.utils.response import success_response
 from app.services.user_service import authenticate_user
 
 

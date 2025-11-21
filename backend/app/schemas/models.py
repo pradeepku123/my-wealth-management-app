@@ -108,8 +108,13 @@ class MutualFund(BaseModel):
     scheme_code: str
     scheme_name: str
     nav: float
-    date: str
+    nav_date: str # The data from AMFI is a string like '05-Jul-2024'
     fund_house: Optional[str] = None
+    category: Optional[str] = None
+    sub_category: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class MutualFundCreate(BaseModel):
     scheme_code: str

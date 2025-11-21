@@ -4,7 +4,8 @@ from typing import List
 from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api import deps
-from app.response_models import APIResponse, success_response, error_response
+from app.schemas.response import APIResponse
+from app.utils.response import success_response, error_response
 from fastapi.encoders import jsonable_encoder
 import logging
 from sqlalchemy import func

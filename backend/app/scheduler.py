@@ -2,25 +2,24 @@
 import asyncio
 import logging
 from datetime import datetime, time
-from app.database import get_db_connection
 import requests
+from sqlalchemy.orm import Session
+from app.db.session import SessionLocal
+from app.models.mutual_fund import MutualFund
+from app.crud import crud_mutual_fund
+from app.schemas.models import MutualFundCreate
+from app.utils.fund_classifier import classify_fund
 
 logger = logging.getLogger(__name__)
 
-async def update_all_nav_data():
+async def update_all_nav_data(db: Session):
     """Update NAV data for all mutual funds in database."""
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # Get all unique scheme codes from mutual_funds table
-        cursor.execute("SELECT DISTINCT scheme_code FROM mutual_funds")
-        scheme_codes = [row['scheme_code'] for row in cursor.fetchall()]
+        scheme_codes_result = db.query(MutualFund.scheme_code).distinct().all()
+        scheme_codes = [row.scheme_code for row in scheme_codes_result]
         
         if not scheme_codes:
             logger.info("No mutual funds found to update")
-            cursor.close()
-            conn.close()
             return
         
         # Fetch NAV data from AMFI
@@ -29,8 +28,6 @@ async def update_all_nav_data():
         
         if response.status_code != 200:
             logger.error("Failed to fetch NAV data from AMFI")
-            cursor.close()
-            conn.close()
             return
         
         lines = response.text.strip().split('\n')
@@ -44,27 +41,19 @@ async def update_all_nav_data():
                         scheme_name = parts[3]
                         category, sub_category = classify_fund(scheme_name)
                         
-                        cursor.execute(
-                            """
-                            UPDATE mutual_funds SET 
-                                scheme_name = %s,
-                                nav = %s,
-                                nav_date = %s,
-                                fund_house = %s,
-                                category = %s,
-                                sub_category = %s,
-                                updated_at = CURRENT_TIMESTAMP
-                            WHERE scheme_code = %s
-                            """,
-                            (scheme_name, float(parts[4]), parts[5], parts[2] if len(parts) > 2 else "Unknown", category, sub_category, parts[0])
+                        fund_in = MutualFundCreate(
+                            scheme_code=parts[0],
+                            scheme_name=scheme_name,
+                            nav=float(parts[4]),
+                            nav_date=parts[5],
+                            fund_house=parts[2] if len(parts) > 2 else "Unknown",
+                            category=category,
+                            sub_category=sub_category
                         )
+                        crud_mutual_fund.mutual_fund.upsert(db, obj_in=fund_in)
                         updated_count += 1
                     except ValueError:
                         continue
-        
-        conn.commit()
-        cursor.close()
-        conn.close()
         
         logger.info(f"Updated NAV data for {updated_count} mutual funds")
         
@@ -87,46 +76,5 @@ async def daily_nav_scheduler():
         await asyncio.sleep(seconds_until_midnight)
         
         logger.info("Starting daily NAV update...")
-        await update_all_nav_data()
-
-def classify_fund(scheme_name):
-    """Classify mutual fund by category and sub-category based on scheme name."""
-    name_upper = scheme_name.upper()
-    
-    # Determine category (Equity or Debt)
-    if any(keyword in name_upper for keyword in ['EQUITY', 'BLUECHIP', 'LARGECAP', 'MIDCAP', 'SMALLCAP', 'MULTICAP', 'FLEXICAP', 'FOCUSED']):
-        category = 'Equity'
-    elif any(keyword in name_upper for keyword in ['DEBT', 'BOND', 'GILT', 'LIQUID', 'ULTRA SHORT', 'SHORT TERM', 'MEDIUM TERM', 'LONG TERM', 'CORPORATE BOND']):
-        category = 'Debt'
-    else:
-        category = 'Other'
-    
-    # Determine sub-category for Equity funds
-    if category == 'Equity':
-        if any(keyword in name_upper for keyword in ['LARGE CAP', 'LARGECAP', 'BLUECHIP', 'TOP 100', 'NIFTY 50']):
-            sub_category = 'Large Cap'
-        elif any(keyword in name_upper for keyword in ['MID CAP', 'MIDCAP', 'MID-CAP']):
-            sub_category = 'Mid Cap'
-        elif any(keyword in name_upper for keyword in ['SMALL CAP', 'SMALLCAP', 'SMALL-CAP']):
-            sub_category = 'Small Cap'
-        elif any(keyword in name_upper for keyword in ['MULTI CAP', 'MULTICAP', 'MULTI-CAP']):
-            sub_category = 'Multi Cap'
-        elif any(keyword in name_upper for keyword in ['FLEXI CAP', 'FLEXICAP', 'FLEXI-CAP']):
-            sub_category = 'Flexi Cap'
-        else:
-            sub_category = 'Other Equity'
-    elif category == 'Debt':
-        if any(keyword in name_upper for keyword in ['LIQUID', 'OVERNIGHT']):
-            sub_category = 'Liquid'
-        elif any(keyword in name_upper for keyword in ['ULTRA SHORT', 'SHORT TERM']):
-            sub_category = 'Short Term'
-        elif any(keyword in name_upper for keyword in ['MEDIUM TERM', 'INTERMEDIATE']):
-            sub_category = 'Medium Term'
-        elif any(keyword in name_upper for keyword in ['LONG TERM', 'GILT']):
-            sub_category = 'Long Term'
-        else:
-            sub_category = 'Other Debt'
-    else:
-        sub_category = 'Other'
-    
-    return category, sub_category
+        with SessionLocal() as db:
+            await update_all_nav_data(db)

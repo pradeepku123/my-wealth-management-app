@@ -1,8 +1,11 @@
 """Database administration routes."""
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Dict, Any
-from app.database import get_db_connection
-from app.response_models import APIResponse, success_response, error_response
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from app.api import deps
+from app.schemas.response import APIResponse
+from app.utils.response import success_response, error_response
 import logging
 
 logger = logging.getLogger(__name__)
@@ -12,7 +15,7 @@ router = APIRouter()
 @router.get("/tables", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
-def get_tables():
+def get_tables(db: Session = Depends(deps.get_db)):
     """
     Get list of all database tables.
     
@@ -22,11 +25,8 @@ def get_tables():
     - Table size information
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
         # Get table information
-        cursor.execute("""
+        result = db.execute(text("""
             SELECT 
                 table_name,
                 (SELECT COUNT(*) FROM information_schema.columns 
@@ -35,24 +35,22 @@ def get_tables():
             WHERE table_schema = 'public' 
             AND table_type = 'BASE TABLE'
             ORDER BY table_name
-        """)
+        """))
         
         tables = []
-        for table in cursor.fetchall():
-            table_name = table['table_name']
+        for row in result:
+            table_name = row.table_name
             
             # Get row count for each table
-            cursor.execute(f'SELECT COUNT(*) as row_count FROM "{table_name}"')
-            row_count = cursor.fetchone()['row_count']
+            row_count_result = db.execute(text(f'SELECT COUNT(*) as row_count FROM "{table_name}"')).fetchone()
+            row_count = row_count_result.row_count
             
             tables.append({
                 "table_name": table_name,
-                "column_count": table['column_count'],
+                "column_count": row.column_count,
                 "row_count": row_count
             })
         
-        cursor.close()
-        conn.close()
         return success_response(data=tables, message="Database tables retrieved successfully")
         
     except Exception as e:
@@ -67,7 +65,7 @@ def get_tables():
     404: {"description": "Table not found"},
     500: {"description": "Internal server error"}
 })
-def get_table_schema(table_name: str):
+def get_table_schema(table_name: str, db: Session = Depends(deps.get_db)):
     """
     Get schema information for a specific table.
     
@@ -79,23 +77,20 @@ def get_table_schema(table_name: str):
     - Primary key information
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
         # Check if table exists
-        cursor.execute("""
+        result = db.execute(text("""
             SELECT COUNT(*) as count FROM information_schema.tables 
-            WHERE table_schema = 'public' AND table_name = %s
-        """, (table_name,))
+            WHERE table_schema = 'public' AND table_name = :table_name
+        """), {'table_name': table_name})
         
-        if cursor.fetchone()['count'] == 0:
+        if result.scalar() == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Table '{table_name}' not found"
             )
         
         # Get column information
-        cursor.execute("""
+        columns_result = db.execute(text("""
             SELECT 
                 column_name,
                 data_type,
@@ -105,14 +100,14 @@ def get_table_schema(table_name: str):
                 numeric_precision,
                 numeric_scale
             FROM information_schema.columns 
-            WHERE table_schema = 'public' AND table_name = %s
+            WHERE table_schema = 'public' AND table_name = :table_name
             ORDER BY ordinal_position
-        """, (table_name,))
+        """), {'table_name': table_name})
         
-        columns = cursor.fetchall()
+        columns = columns_result.fetchall()
         
         # Get primary key information
-        cursor.execute("""
+        pk_result = db.execute(text("""
             SELECT kcu.column_name
             FROM information_schema.table_constraints tc
             JOIN information_schema.key_column_usage kcu 
@@ -120,20 +115,18 @@ def get_table_schema(table_name: str):
                 AND tc.table_schema = kcu.table_schema
             WHERE tc.constraint_type = 'PRIMARY KEY'
                 AND tc.table_schema = 'public'
-                AND tc.table_name = %s
-        """, (table_name,))
+                AND tc.table_name = :table_name
+        """), {'table_name': table_name})
         
-        primary_keys = [row['column_name'] for row in cursor.fetchall()]
+        primary_keys = [row.column_name for row in pk_result]
         
         # Add primary key info to columns
         result = []
         for col in columns:
-            column_info = dict(col)
-            column_info['is_primary_key'] = col['column_name'] in primary_keys
+            column_info = dict(col._mapping)
+            column_info['is_primary_key'] = col.column_name in primary_keys
             result.append(column_info)
         
-        cursor.close()
-        conn.close()
         return success_response(data=result, message=f"Schema for table '{table_name}' retrieved successfully")
         
     except HTTPException:
@@ -150,7 +143,7 @@ def get_table_schema(table_name: str):
     404: {"description": "Table not found"},
     500: {"description": "Internal server error"}
 })
-def get_table_data(table_name: str, limit: int = 100, offset: int = 0):
+def get_table_data(table_name: str, limit: int = 100, offset: int = 0, db: Session = Depends(deps.get_db)):
     """
     Get data from a specific table with pagination.
     
@@ -168,36 +161,29 @@ def get_table_data(table_name: str, limit: int = 100, offset: int = 0):
         if limit < 1:
             limit = 10
             
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
         # Check if table exists
-        cursor.execute("""
+        result = db.execute(text("""
             SELECT COUNT(*) as count FROM information_schema.tables 
-            WHERE table_schema = 'public' AND table_name = %s
-        """, (table_name,))
+            WHERE table_schema = 'public' AND table_name = :table_name
+        """), {'table_name': table_name})
         
-        if cursor.fetchone()['count'] == 0:
+        if result.scalar() == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Table '{table_name}' not found"
             )
         
         # Get total count
-        cursor.execute(f'SELECT COUNT(*) as total FROM "{table_name}"')
-        total_count = cursor.fetchone()['total']
+        total_count_result = db.execute(text(f'SELECT COUNT(*) as total FROM "{table_name}"')).scalar()
         
         # Get paginated data
-        cursor.execute(f'SELECT * FROM "{table_name}" LIMIT %s OFFSET %s', (limit, offset))
-        data = cursor.fetchall()
-        
-        cursor.close()
-        conn.close()
+        data_result = db.execute(text(f'SELECT * FROM "{table_name}" LIMIT :limit OFFSET :offset'), {'limit': limit, 'offset': offset})
+        data = [dict(row._mapping) for row in data_result]
         
         return success_response(
             data={
                 "table_name": table_name,
-                "total_count": total_count,
+                "total_count": total_count_result,
                 "limit": limit,
                 "offset": offset,
                 "data": data
@@ -218,7 +204,7 @@ def get_table_data(table_name: str, limit: int = 100, offset: int = 0):
 @router.get("/database/stats", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
-def get_database_stats():
+def get_database_stats(db: Session = Depends(deps.get_db)):
     """
     Get overall database statistics.
     
@@ -229,54 +215,43 @@ def get_database_stats():
     - Database size information
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
         # Get PostgreSQL version
-        cursor.execute("SELECT version()")
-        version = cursor.fetchone()['version']
+        version_result = db.execute(text("SELECT version()")).scalar()
         
         # Get database name
-        cursor.execute("SELECT current_database()")
-        db_name = cursor.fetchone()['current_database']
+        db_name_result = db.execute(text("SELECT current_database()")).scalar()
         
         # Get table count
-        cursor.execute("""
+        table_count_result = db.execute(text("""
             SELECT COUNT(*) as table_count 
             FROM information_schema.tables 
             WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
-        """)
-        table_count = cursor.fetchone()['table_count']
+        """)).scalar()
         
         # Get total records across all tables
-        cursor.execute("""
+        tables_result = db.execute(text("""
             SELECT table_name FROM information_schema.tables 
             WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
-        """)
-        tables = cursor.fetchall()
+        """))
         
         total_records = 0
         table_details = []
         
-        for table in tables:
-            table_name = table['table_name']
-            cursor.execute(f'SELECT COUNT(*) as count FROM "{table_name}"')
-            count = cursor.fetchone()['count']
-            total_records += count
+        for row in tables_result:
+            table_name = row.table_name
+            count_result = db.execute(text(f'SELECT COUNT(*) as count FROM "{table_name}"')).scalar()
+            total_records += count_result
             
             table_details.append({
                 "table_name": table_name,
-                "record_count": count
+                "record_count": count_result
             })
-        
-        cursor.close()
-        conn.close()
         
         return success_response(
             data={
-                "database_name": db_name,
-                "postgresql_version": version.split()[1] if version else "Unknown",
-                "total_tables": table_count,
+                "database_name": db_name_result,
+                "postgresql_version": version_result.split()[1] if version_result else "Unknown",
+                "total_tables": table_count_result,
                 "total_records": total_records,
                 "tables": table_details
             },
@@ -295,55 +270,49 @@ def get_database_stats():
     404: {"description": "Record not found"},
     500: {"description": "Internal server error"}
 })
-def delete_record(table_name: str, record_id: int):
+def delete_record(table_name: str, record_id: str, db: Session = Depends(deps.get_db)):
     """
     Delete a record from the specified table.
     
     **Warning:** This permanently deletes data from the database.
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
         # Get primary key column name
-        cursor.execute("""
+        pk_result = db.execute(text("""
             SELECT kcu.column_name
             FROM information_schema.table_constraints tc
             JOIN information_schema.key_column_usage kcu 
                 ON tc.constraint_name = kcu.constraint_name
             WHERE tc.constraint_type = 'PRIMARY KEY'
                 AND tc.table_schema = 'public'
-                AND tc.table_name = %s
+                AND tc.table_name = :table_name
             LIMIT 1
-        """, (table_name,))
+        """), {'table_name': table_name}).scalar()
         
-        pk_result = cursor.fetchone()
         if not pk_result:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Table has no primary key"
             )
         
-        pk_column = pk_result['column_name']
+        pk_column = pk_result
         
         # Delete the record
-        cursor.execute(f'DELETE FROM "{table_name}" WHERE "{pk_column}" = %s', (record_id,))
-        
-        if cursor.rowcount == 0:
+        result = db.execute(text(f'DELETE FROM "{table_name}" WHERE "{pk_column}" = :record_id'), {'record_id': record_id})
+        db.commit()
+
+        if result.rowcount == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Record not found"
             )
-        
-        conn.commit()
-        cursor.close()
-        conn.close()
         
         return success_response(message=f"Record {record_id} deleted successfully")
         
     except HTTPException:
         raise
     except Exception as e:
+        db.rollback()
         logger.error(f"Delete record error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -355,36 +324,32 @@ def delete_record(table_name: str, record_id: int):
     404: {"description": "Record not found"},
     500: {"description": "Internal server error"}
 })
-def update_record(table_name: str, record_id: int, data: Dict[str, Any]):
+def update_record(table_name: str, record_id: str, data: Dict[str, Any], db: Session = Depends(deps.get_db)):
     """
     Update a record in the specified table.
     
     **Request Body:** JSON object with column names as keys and new values.
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
         # Get primary key column name
-        cursor.execute("""
+        pk_result = db.execute(text("""
             SELECT kcu.column_name
             FROM information_schema.table_constraints tc
             JOIN information_schema.key_column_usage kcu 
                 ON tc.constraint_name = kcu.constraint_name
             WHERE tc.constraint_type = 'PRIMARY KEY'
                 AND tc.table_schema = 'public'
-                AND tc.table_name = %s
+                AND tc.table_name = :table_name
             LIMIT 1
-        """, (table_name,))
+        """), {'table_name': table_name}).scalar()
         
-        pk_result = cursor.fetchone()
         if not pk_result:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Table has no primary key"
             )
         
-        pk_column = pk_result['column_name']
+        pk_column = pk_result
         
         # Build update query
         if not data:
@@ -402,29 +367,27 @@ def update_record(table_name: str, record_id: int, data: Dict[str, Any]):
                 detail="No updatable fields provided"
             )
         
-        set_clause = ', '.join([f'"{col}" = %s' for col in update_data.keys()])
-        values = list(update_data.values()) + [record_id]
+        set_clause = ', '.join([f'"{col}" = :{col}' for col in update_data.keys()])
+        values = {**update_data, 'record_id': record_id}
         
-        cursor.execute(
-            f'UPDATE "{table_name}" SET {set_clause} WHERE "{pk_column}" = %s',
+        result = db.execute(
+            text(f'UPDATE "{table_name}" SET {set_clause} WHERE "{pk_column}" = :record_id'),
             values
         )
+        db.commit()
         
-        if cursor.rowcount == 0:
+        if result.rowcount == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Record not found"
             )
-        
-        conn.commit()
-        cursor.close()
-        conn.close()
         
         return success_response(message=f"Record {record_id} updated successfully")
         
     except HTTPException:
         raise
     except Exception as e:
+        db.rollback()
         logger.error(f"Update record error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
