@@ -9,7 +9,7 @@ class UserLogin(BaseModel):
     password: str
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "user_id": "admin",
                 "password": "password123"
@@ -26,7 +26,7 @@ class ForgotPasswordRequest(BaseModel):
     user_id: str
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "user_id": "admin"
             }
@@ -38,7 +38,7 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "user_id": "admin",
                 "new_password": "newpassword123"
@@ -53,7 +53,7 @@ class InvestmentCreate(BaseModel):
     current_value: Decimal
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "investment_type": "mutual_fund",
                 "fund_name": "SBI Bluechip Fund - Direct Plan - Growth",
@@ -76,6 +76,7 @@ class Investment(BaseModel):
     fund_name: str
     invested_amount: Decimal
     current_value: Decimal
+    owner_id: int
 
     class Config:
         from_attributes = True
@@ -134,7 +135,7 @@ class UserRegistration(BaseModel):
     email: str
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "user_id": "john_doe",
                 "password": "securepassword123",

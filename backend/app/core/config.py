@@ -4,6 +4,8 @@ from typing import Optional
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Wealth Management API"
+    PROJECT_VERSION: str = "1.0.0"
+    PROJECT_DESCRIPTION: str = "API for the Wealth Management application, providing endpoints for managing user portfolios, investments, and more."
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = "your-secret-key-here"
     ALGORITHM: str = "HS256"

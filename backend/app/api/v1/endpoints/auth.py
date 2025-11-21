@@ -28,7 +28,7 @@ def login_access_token(
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     # Use the user's email as the token subject so frontend can call user-info by email
     return {
-        "access_token": create_access_token(subject=user.email),
+        "access_token": create_access_token(subject=user.id, role=user.role),
         "token_type": "bearer",
     }
 
@@ -104,9 +104,9 @@ def register_user(user_data: schemas.UserRegistration, db: Session = Depends(dep
     )
 
 @router.get("/user-info", response_model=APIResponse)
-def get_user_info(user_id: str, db: Session = Depends(deps.get_db)):
-    """Get user information by user ID (email)."""
-    user = crud.user.get_by_email(db, email=user_id)
+def get_user_info(user_id: int, db: Session = Depends(deps.get_db)):
+    """Get user information by user ID."""
+    user = crud.user.get(db, id=user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -116,9 +116,9 @@ def get_user_info(user_id: str, db: Session = Depends(deps.get_db)):
     # Assuming role is not part of the User model and can be hardcoded or omitted
     return success_response(
         data={
-            "user_id": user.email,
+            "user_id": user.id,
             "full_name": user.full_name,
-            "role": "user", 
+            "role": user.role, 
             "email": user.email
         },
         message="User information retrieved successfully"

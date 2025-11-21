@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import Optional
 
 class UserBase(BaseModel):
     email: str
@@ -38,3 +38,7 @@ class UserInDB(UserInDBBase):
 class OAuth2PasswordRequestForm(BaseModel):
     username: str
     password: str
+
+
+class TokenPayload(BaseModel):
+    sub: Optional[int] = None

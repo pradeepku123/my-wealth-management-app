@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from sqlalchemy.orm import Session
-from app import crud, schemas
+from app import crud, models, schemas
 from app.api import deps
 from app.schemas.response import APIResponse
 from app.utils.response import success_response, error_response
@@ -12,7 +12,7 @@ from sqlalchemy import func
 from app.models.investment import Investment
 from app.models.mutual_fund import MutualFund
 import requests
-from app.scheduler import classify_fund
+from app.utils.fund_classifier import classify_fund
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -21,13 +21,11 @@ router = APIRouter()
 @router.get("/funds", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
-def get_funds(db: Session = Depends(deps.get_db)):
+def get_funds(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Retrieve all investments in the portfolio.
+    Retrieve all investments in the portfolio for the current user.
     """
-    funds = crud.investment.get_multi(db)
-    # SQLAlchemy model instances are not directly serializable by Pydantic's JSON encoder
-    # Convert to JSON-able structures before returning
+    funds = crud.investment.get_multi_by_owner(db, owner_id=current_user.id)
     funds_serialized = jsonable_encoder(funds)
     return success_response(data=funds_serialized, message="Investments retrieved successfully")
 
@@ -35,22 +33,23 @@ def get_funds(db: Session = Depends(deps.get_db)):
 @router.post("/funds", response_model=APIResponse, responses={
     400: {"description": "Invalid input data"},
 })
-def add_fund(fund_data: schemas.InvestmentCreate, db: Session = Depends(deps.get_db)):
+def add_fund(fund_data: schemas.InvestmentCreate, db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Add a new investment to the portfolio.
+    Add a new investment to the portfolio for the current user.
     """
-    fund = crud.investment.create(db, obj_in=fund_data)
+    fund = crud.investment.create_with_owner(db, obj_in=fund_data, owner_id=current_user.id)
     if fund.investment_type == 'mutual_fund':
         update_mutual_fund_data(db, fund.fund_name)
     return success_response(data={"id": fund.id}, message="Investment added successfully")
 
 
 @router.put("/funds/{fund_id}", response_model=APIResponse, responses={
+    403: {"description": "Not enough permissions"},
     404: {"description": "Investment not found"},
 })
-def update_fund(fund_id: int, fund_data: schemas.InvestmentUpdate, db: Session = Depends(deps.get_db)):
+def update_fund(fund_id: int, fund_data: schemas.InvestmentUpdate, db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Update an existing investment.
+    Update an existing investment for the current user.
     """
     fund = crud.investment.get(db, id=fund_id)
     if not fund:
@@ -58,22 +57,33 @@ def update_fund(fund_id: int, fund_data: schemas.InvestmentUpdate, db: Session =
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Investment not found"
         )
+    if fund.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
     fund = crud.investment.update(db, db_obj=fund, obj_in=fund_data)
     return success_response(message="Investment updated successfully")
 
 
 @router.delete("/funds/{fund_id}", response_model=APIResponse, responses={
+    403: {"description": "Not enough permissions"},
     404: {"description": "Investment not found"},
 })
-def delete_fund(fund_id: int, db: Session = Depends(deps.get_db)):
+def delete_fund(fund_id: int, db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Delete an investment from the portfolio.
+    Delete an investment from the portfolio for the current user.
     """
     fund = crud.investment.get(db, id=fund_id)
     if not fund:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Investment not found"
+        )
+    if fund.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
         )
     crud.investment.remove(db, id=fund_id)
     return success_response(message="Investment deleted successfully")
@@ -82,14 +92,14 @@ def delete_fund(fund_id: int, db: Session = Depends(deps.get_db)):
 @router.get("/summary", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
-def get_portfolio_summary(db: Session = Depends(deps.get_db)):
+def get_portfolio_summary(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Get portfolio summary statistics.
+    Get portfolio summary statistics for the current user.
     """
     total_invested, total_current = db.query(
         func.sum(Investment.invested_amount),
         func.sum(Investment.current_value)
-    ).one()
+    ).filter(Investment.owner_id == current_user.id).one()
 
     total_invested = total_invested or 0
     total_current = total_current or 0
@@ -109,15 +119,15 @@ def get_portfolio_summary(db: Session = Depends(deps.get_db)):
 @router.get("/asset-breakdown", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
-def get_asset_breakdown(db: Session = Depends(deps.get_db)):
+def get_asset_breakdown(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Get portfolio breakdown by asset type.
+    Get portfolio breakdown by asset type for the current user.
     """
     breakdown = db.query(
         Investment.investment_type,
         func.sum(Investment.invested_amount).label("total_invested"),
         func.sum(Investment.current_value).label("total_current")
-    ).group_by(Investment.investment_type).order_by(Investment.investment_type).all()
+    ).filter(Investment.owner_id == current_user.id).group_by(Investment.investment_type).order_by(Investment.investment_type).all()
     
     result = []
     for asset in breakdown:
@@ -140,9 +150,9 @@ def get_asset_breakdown(db: Session = Depends(deps.get_db)):
 @router.get("/mutual-funds-nav", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
 })
-def get_user_mutual_funds_nav(db: Session = Depends(deps.get_db)):
+def get_user_mutual_funds_nav(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_user)):
     """
-    Get NAV data for user's invested mutual funds from database.
+    Get NAV data for user's invested mutual funds from database for the current user.
     """
     funds_data = db.query(
         MutualFund
@@ -151,12 +161,11 @@ def get_user_mutual_funds_nav(db: Session = Depends(deps.get_db)):
         Investment.fund_name.like('%(' + MutualFund.scheme_code + ')%')
     ).filter(
         Investment.investment_type == 'mutual_fund'
-    ).distinct().order_by(
+    ).filter(Investment.owner_id == current_user.id).distinct().order_by(
         MutualFund.category,
         MutualFund.sub_category,
         MutualFund.scheme_name
     ).all()
-    # Serialize ORM objects
     funds_serialized = jsonable_encoder(funds_data)
     return success_response(data=funds_serialized, message="Mutual funds NAV data retrieved successfully")
 

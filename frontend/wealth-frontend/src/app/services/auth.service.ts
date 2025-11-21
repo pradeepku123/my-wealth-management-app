@@ -11,11 +11,6 @@ export class AuthService {
     
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log('Token payload:', payload);
-      // For admin user, return admin role
-      if (payload.sub === 'admin') {
-        return 'admin';
-      }
       return payload.role || 'user';
     } catch {
       return 'user';

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Numeric
+from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
+from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 class Investment(Base):
@@ -8,3 +9,5 @@ class Investment(Base):
     fund_name = Column(String)
     invested_amount = Column(Numeric(10, 2))
     current_value = Column(Numeric(10, 2))
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="investments")

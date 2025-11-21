@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app import models
 from app.api import deps
 from app.schemas.response import APIResponse
 from app.utils.response import success_response, error_response
@@ -14,7 +15,7 @@ router = APIRouter()
 
 @router.get("/tables", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
-})
+}, dependencies=[Depends(deps.get_current_active_superuser)])
 def get_tables(db: Session = Depends(deps.get_db)):
     """
     Get list of all database tables.
@@ -64,7 +65,7 @@ def get_tables(db: Session = Depends(deps.get_db)):
 @router.get("/tables/{table_name}/schema", response_model=APIResponse, responses={
     404: {"description": "Table not found"},
     500: {"description": "Internal server error"}
-})
+}, dependencies=[Depends(deps.get_current_active_superuser)])
 def get_table_schema(table_name: str, db: Session = Depends(deps.get_db)):
     """
     Get schema information for a specific table.
@@ -142,7 +143,7 @@ def get_table_schema(table_name: str, db: Session = Depends(deps.get_db)):
 @router.get("/tables/{table_name}/data", response_model=APIResponse, responses={
     404: {"description": "Table not found"},
     500: {"description": "Internal server error"}
-})
+}, dependencies=[Depends(deps.get_current_active_superuser)])
 def get_table_data(table_name: str, limit: int = 100, offset: int = 0, db: Session = Depends(deps.get_db)):
     """
     Get data from a specific table with pagination.
@@ -203,7 +204,7 @@ def get_table_data(table_name: str, limit: int = 100, offset: int = 0, db: Sessi
 
 @router.get("/database/stats", response_model=APIResponse, responses={
     500: {"description": "Internal server error"}
-})
+}, dependencies=[Depends(deps.get_current_active_superuser)])
 def get_database_stats(db: Session = Depends(deps.get_db)):
     """
     Get overall database statistics.
@@ -269,7 +270,7 @@ def get_database_stats(db: Session = Depends(deps.get_db)):
 @router.delete("/tables/{table_name}/data/{record_id}", responses={
     404: {"description": "Record not found"},
     500: {"description": "Internal server error"}
-})
+}, dependencies=[Depends(deps.get_current_active_superuser)])
 def delete_record(table_name: str, record_id: str, db: Session = Depends(deps.get_db)):
     """
     Delete a record from the specified table.
@@ -323,7 +324,7 @@ def delete_record(table_name: str, record_id: str, db: Session = Depends(deps.ge
 @router.put("/tables/{table_name}/data/{record_id}", responses={
     404: {"description": "Record not found"},
     500: {"description": "Internal server error"}
-})
+}, dependencies=[Depends(deps.get_current_active_superuser)])
 def update_record(table_name: str, record_id: str, data: Dict[str, Any], db: Session = Depends(deps.get_db)):
     """
     Update a record in the specified table.

@@ -13,3 +13,4 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_superuser = Column(Boolean(), default=False)
     role = Column(String, default='user')
+    investments = relationship("Investment", back_populates="owner")
