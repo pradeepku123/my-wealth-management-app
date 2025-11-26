@@ -22,7 +22,14 @@ export class PortfolioComponent implements OnInit {
   totalCurrent = 0;
   totalReturns = 0;
   username = '';
-  editingFund: any = null;
+  dialogData: any = {
+    id: null,
+    investment_type: '',
+    fund_name: '',
+    invested_amount: 0,
+    current_value: 0
+  };
+  isEditMode = false;
   private apiUrl = '/api/v1';
 
   constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) { }
@@ -63,9 +70,8 @@ export class PortfolioComponent implements OnInit {
   }
 
   addFund() {
-    this.editingFund = null;
-    this.addFundDialog.isEditMode = false;
-    this.addFundDialog.fundData = {
+    this.isEditMode = false;
+    this.dialogData = {
       id: null,
       investment_type: '',
       fund_name: '',
@@ -76,9 +82,8 @@ export class PortfolioComponent implements OnInit {
   }
 
   editFund(fund: any) {
-    this.editingFund = fund;
-    this.addFundDialog.isEditMode = true;
-    this.addFundDialog.fundData = { ...fund };
+    this.isEditMode = true;
+    this.dialogData = { ...fund };
     this.addFundDialog.modal.show();
   }
 

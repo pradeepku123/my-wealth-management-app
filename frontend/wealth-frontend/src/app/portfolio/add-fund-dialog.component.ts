@@ -28,7 +28,9 @@ export class AddFundDialogComponent implements AfterViewInit, OnInit {
   @Output() close = new EventEmitter<boolean>();
   @ViewChild('addFundModal') modalElement!: ElementRef;
 
-  dialogTitle = 'Add Investment';
+  get dialogTitle(): string {
+    return this.isEditMode ? 'Edit Investment' : 'Add Investment';
+  }
   private apiUrl = '/api/v1';
   public modal: any;
 
@@ -50,9 +52,6 @@ export class AddFundDialogComponent implements AfterViewInit, OnInit {
   }
 
   ngOnInit() {
-    if (this.isEditMode) {
-      this.dialogTitle = 'Edit Investment';
-    }
   }
 
   ngAfterViewInit() {
@@ -61,9 +60,9 @@ export class AddFundDialogComponent implements AfterViewInit, OnInit {
 
   isValid(): boolean {
     return this.fundData.investment_type.trim() !== '' &&
-           this.fundData.fund_name.trim() !== '' &&
-           this.fundData.invested_amount > 0 &&
-           this.fundData.current_value > 0;
+      this.fundData.fund_name.trim() !== '' &&
+      this.fundData.invested_amount > 0 &&
+      this.fundData.current_value > 0;
   }
 
   getReturns(): number {
