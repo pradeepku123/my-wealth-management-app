@@ -14,3 +14,4 @@ class User(Base):
     is_superuser = Column(Boolean(), default=False)
     role = Column(String, default='user')
     investments = relationship("Investment", back_populates="owner")
+    sip_estimations = relationship("SIPEstimation", back_populates="owner")

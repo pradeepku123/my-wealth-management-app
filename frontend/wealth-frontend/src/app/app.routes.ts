@@ -13,6 +13,7 @@ import { DatabaseViewerComponent } from './admin/database-viewer.component';
 import { RegisterComponent } from './register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { SipCalculatorComponent } from './sip/sip-calculator.component';
 
 export const routes: Routes = [
   {
@@ -38,7 +39,8 @@ export const routes: Routes = [
       { path: 'goals', component: GoalsComponent },
       { path: 'database-admin', component: DatabaseViewerComponent, canActivate: [AdminGuard] },
       { path: 'investments', component: WealthDashboardComponent },
-      { path: 'reports', component: AnalyticsComponent }
+      { path: 'reports', component: AnalyticsComponent },
+      { path: 'sip', component: SipCalculatorComponent }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

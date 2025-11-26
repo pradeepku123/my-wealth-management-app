@@ -1,0 +1,201 @@
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center my-4">
+        <div>
+            <h1 class="fw-bold mb-1">SIP Calculator</h1>
+            <p class="text-muted">Plan your investments and visualize your wealth growth</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Input Form -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title fw-bold mb-0">SIP Details</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">SIP Name (Optional)</label>
+                            <input type="text" class="form-control" [(ngModel)]="sipName" name="sipName"
+                                placeholder="e.g. Retirement Goal">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Investment Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="sipType" id="monthly" value="Monthly"
+                                    [(ngModel)]="sipType" (change)="calculate()">
+                                <label class="btn btn-outline-primary" for="monthly">Monthly SIP</label>
+
+                                <input type="radio" class="btn-check" name="sipType" id="yearly" value="Yearly"
+                                    [(ngModel)]="sipType" (change)="calculate()">
+                                <label class="btn btn-outline-primary" for="yearly">Yearly Lumpsum</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Investment Amount (₹)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" [(ngModel)]="amount" name="amount"
+                                    (input)="calculate()">
+                            </div>
+                            <input type="range" class="form-range mt-2" min="500" max="100000" step="500"
+                                [(ngModel)]="amount" name="amountRange" (input)="calculate()">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Expected Return Rate (p.a) %</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" [(ngModel)]="expectedReturn"
+                                    name="expectedReturn" (input)="calculate()">
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <input type="range" class="form-range mt-2" min="1" max="30" step="0.5"
+                                [(ngModel)]="expectedReturn" name="returnRange" (input)="calculate()">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Time Period (Years)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" [(ngModel)]="timePeriod" name="timePeriod"
+                                    (input)="calculate()">
+                                <span class="input-group-text">Yr</span>
+                            </div>
+                            <input type="range" class="form-range mt-2" min="1" max="40" step="1"
+                                [(ngModel)]="timePeriod" name="timeRange" (input)="calculate()">
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button class="btn btn-primary" (click)="saveEstimation()">
+                                <i class="bi bi-save me-2"></i>Save Estimation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results & Graph -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Invested Amount</div>
+                            <div class="fs-3 fw-bold text-dark">₹{{ totalInvested | number:'1.0-0' }}</div>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Est. Returns</div>
+                            <div class="fs-3 fw-bold text-success">₹{{ estimatedReturns | number:'1.0-0' }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Total Value</div>
+                            <div class="fs-3 fw-bold text-primary">₹{{ totalValue | number:'1.0-0' }}</div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Graph -->
+                    <div class="graph-container bg-light rounded p-3 position-relative" style="height: 350px;">
+                        <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="totalValueGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3" />
+                                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+                                </linearGradient>
+                                <linearGradient id="investedGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.3" />
+                                    <stop offset="100%" stop-color="#94a3b8" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+
+                            <!-- Grid Lines -->
+                            <line x1="40" y1="260" x2="560" y2="260" stroke="#e5e7eb" stroke-width="1" />
+                            <line x1="40" y1="40" x2="40" y2="260" stroke="#e5e7eb" stroke-width="1" />
+
+                            <!-- Area Fills -->
+                            <path [attr.d]="getAreaPath()" fill="url(#totalValueGradient)" stroke="none" />
+                            <path [attr.d]="getInvestedAreaPath()" fill="url(#investedGradient)" stroke="none" />
+
+                            <!-- Invested Line -->
+                            <path [attr.d]="getInvestedPath()" fill="none" stroke="#94a3b8" stroke-width="2"
+                                stroke-dasharray="5,5" />
+
+                            <!-- Total Value Line -->
+                            <path [attr.d]="getGraphPath()" fill="none" stroke="#3b82f6" stroke-width="3" />
+
+                            <!-- End Points -->
+                            <!-- We can calculate the end point coordinates dynamically if needed, 
+                                  but for now relying on the paths is visually sufficient. 
+                                  Adding a circle at the end of the Total Value line would be a nice touch. -->
+                        </svg>
+
+                        <!-- Legend / Overlay Labels -->
+                        <div class="position-absolute top-0 end-0 p-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="d-inline-block bg-primary rounded-circle me-2"
+                                    style="width: 10px; height: 10px;"></span>
+                                <small class="text-muted">Total Value</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="d-inline-block bg-secondary rounded-circle me-2"
+                                    style="width: 10px; height: 10px; opacity: 0.5;"></span>
+                                <small class="text-muted">Invested</small>
+                            </div>
+                        </div>
+
+                        <!-- Axis Labels (Simplified) -->
+                        <div class="position-absolute bottom-0 start-0 w-100 d-flex justify-content-between px-5 pb-1">
+                            <small class="text-muted">Year 0</small>
+                            <small class="text-muted">Year {{ timePeriod }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary / Insight -->
+            <div class="alert alert-info border-0 bg-info-subtle text-info-emphasis">
+                <i class="bi bi-lightbulb-fill me-2"></i>
+                <strong>Insight:</strong> By investing <strong>₹{{ amount | number }}</strong> {{ sipType | lowercase }}
+                for <strong>{{ timePeriod }} years</strong> at <strong>{{ expectedReturn }}%</strong>, you will earn
+                <strong>₹{{ estimatedReturns | number:'1.0-0' }}</strong> as pure profit!
+            </div>
+        </div>
+    </div>
+
+    <!-- Saved Estimations List -->
+    <div class="row mt-4" *ngIf="savedSips.length > 0">
+        <div class="col-12">
+            <h4 class="fw-bold mb-3">Saved Estimations</h4>
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-4" *ngFor="let sip of savedSips">
+                    <div class="card h-100 border-0 shadow-sm sip-card cursor-pointer" (click)="loadEstimation(sip)">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold text-primary mb-0">{{ sip.name }}</h6>
+                                <button class="btn btn-sm btn-outline-danger border-0 p-1"
+                                    (click)="deleteEstimation(sip.id, $event)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mb-2">
+                                <span>{{ sip.type }}</span>
+                                <span>{{ sip.years }} Years @ {{ sip.returnRate }}%</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <div class="small text-muted">Invested</div>
+                                    <div class="fw-bold">₹{{ sip.invested | number:'1.0-0' }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Total Value</div>
+                                    <div class="fw-bold text-success">₹{{ sip.totalValue | number:'1.0-0' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

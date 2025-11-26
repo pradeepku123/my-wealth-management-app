@@ -11,7 +11,7 @@ export class SnackbarService {
     private componentFactoryResolver: ComponentFactoryResolver,
     private appRef: ApplicationRef,
     private injector: Injector
-  ) {}
+  ) { }
 
   show(message: string, type: 'success' | 'error' | 'info' = 'info') {
     if (this.componentRef) {
@@ -37,5 +37,12 @@ export class SnackbarService {
         this.componentRef = null;
       }
     }, 3000);
+  }
+  showSuccess(message: string) {
+    this.show(message, 'success');
+  }
+
+  showError(message: string) {
+    this.show(message, 'error');
   }
 }
