@@ -1,21 +1,16 @@
 import { Component } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { SnackbarService } from '../services/snackbar.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -36,30 +31,30 @@ export class RegisterComponent {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private snackBar: MatSnackBar,
+    private snackbarService: SnackbarService,
     private errorHandler: ErrorHandlerService
   ) {}
 
   onRegister() {
     this.errorMessage = '';
-    
+
     if (!this.isValid()) {
       return;
     }
-    
+
     if (this.userData.password !== this.userData.confirmPassword) {
       this.errorMessage = 'Passwords do not match';
       return;
     }
-    
+
     this.isLoading = true;
-    
+
     const { confirmPassword, ...registrationData } = this.userData;
-    
+
     this.http.post<APIResponse>(`${this.apiUrl}/auth/register`, registrationData).subscribe({
       next: (response: APIResponse) => {
         if (response.success) {
-          this.snackBar.open(response.message || 'Registration successful!', 'Close', { duration: 3000 });
+          this.snackbarService.show(response.message || 'Registration successful!', 'success');
           this.router.navigate(['/login']);
         } else {
           this.isLoading = false;

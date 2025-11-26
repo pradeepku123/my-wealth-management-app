@@ -2,7 +2,7 @@
 FROM node:20-alpine as development
 WORKDIR /app
 COPY wealth-frontend/package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 COPY wealth-frontend/ .
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh || true
@@ -13,7 +13,7 @@ CMD ["sh", "/usr/local/bin/entrypoint.sh"]
 FROM node:20-alpine as build
 WORKDIR /app
 COPY wealth-frontend/package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 COPY wealth-frontend/ .
 RUN npm run build
 

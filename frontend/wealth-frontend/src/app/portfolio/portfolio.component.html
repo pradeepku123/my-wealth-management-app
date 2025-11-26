@@ -1,95 +1,124 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-gray-900">{{ username }}'s Portfolio</h1>
-    <button mat-raised-button (click)="addFund()" class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300">
-      <div class="flex items-center space-x-2 px-2 py-1">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-        </svg>
-        <span>Add Investment</span>
-      </div>
+<div class="container-fluid">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center my-4">
+    <div>
+      <h1 class="fw-bold mb-1">{{ username }}'s Portfolio</h1>
+      <p class="text-muted">Overview of your investment performance</p>
+    </div>
+    <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal"
+      data-bs-target="#addFundModal" (click)="addFund()">
+      <i class="bi bi-plus-lg"></i>
+      <span>Add Investment</span>
     </button>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:scale-105 hover:border-blue-300 transition-all duration-300 cursor-pointer">
-      <h3 class="text-gray-600 text-sm font-medium mb-2">Total Invested</h3>
-      <h2 class="text-3xl font-bold text-gray-900">₹{{ totalInvested | number:'1.2-2' }}</h2>
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <app-stat-card title="Total Invested" [value]="'₹' + (totalInvested | number:'1.2-2')" icon="bi-wallet2"
+        iconBgClass="bg-primary-subtle" iconColorClass="text-primary">
+      </app-stat-card>
     </div>
-
-    <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:scale-105 hover:border-blue-300 transition-all duration-300 cursor-pointer">
-      <h3 class="text-gray-600 text-sm font-medium mb-2">Current Value</h3>
-      <h2 class="text-3xl font-bold text-gray-900">₹{{ totalCurrent | number:'1.2-2' }}</h2>
+    <div class="col-md-4">
+      <app-stat-card title="Current Value" [value]="'₹' + (totalCurrent | number:'1.2-2')" icon="bi-graph-up-arrow"
+        iconBgClass="bg-success-subtle" iconColorClass="text-success">
+      </app-stat-card>
     </div>
-
-    <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:scale-105 hover:border-blue-300 transition-all duration-300 cursor-pointer" [class.bg-green-50]="totalReturns >= 0" [class.bg-red-50]="totalReturns < 0">
-      <h3 class="text-gray-600 text-sm font-medium mb-2">Total Returns</h3>
-      <h2 class="text-3xl font-bold" [class.text-green-600]="totalReturns >= 0" [class.text-red-600]="totalReturns < 0">₹{{ totalReturns | number:'1.2-2' }}</h2>
-      <p class="text-sm" [class.text-green-600]="totalReturns >= 0" [class.text-red-600]="totalReturns < 0">{{ totalInvested > 0 ? ((totalReturns / totalInvested) * 100) : 0 | number:'1.2-2' }}%</p>
+    <div class="col-md-4">
+      <app-stat-card title="Total Returns" [value]="'₹' + (totalReturns | number:'1.2-2')"
+        [trend]="totalInvested > 0 ? ((totalReturns / totalInvested) * 100) : 0" icon="bi-piggy-bank"
+        iconBgClass="bg-warning-subtle" iconColorClass="text-warning">
+      </app-stat-card>
     </div>
   </div>
 
-  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-    <div class="p-6 border-b border-gray-200">
-      <h2 class="text-xl font-semibold text-gray-900">Fund Holdings</h2>
-    </div>
-    
-    <div class="p-6">
-      <div *ngIf="funds.length === 0" class="text-center py-12">
-        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-        </svg>
-        <p class="text-gray-900 text-lg mb-2">No investments found</p>
-        <p class="text-gray-600">Click "Add Investment" to get started</p>
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+      <h5 class="card-title fw-bold mb-0">Fund Holdings</h5>
+      <div class="d-flex gap-2">
+        <button class="btn btn-light btn-sm"><i class="bi bi-filter"></i> Filter</button>
+        <button class="btn btn-light btn-sm"><i class="bi bi-download"></i> Export</button>
       </div>
-      
-      <div *ngIf="funds.length > 0" class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr class="border-b border-gray-200">
-              <th class="text-left py-3 px-4 text-gray-600 font-medium">Type</th>
-              <th class="text-left py-3 px-4 text-gray-600 font-medium">Investment Name</th>
-              <th class="text-right py-3 px-4 text-gray-600 font-medium">Invested</th>
-              <th class="text-right py-3 px-4 text-gray-600 font-medium">Current Value</th>
-              <th class="text-right py-3 px-4 text-gray-600 font-medium">Returns</th>
-              <th class="text-right py-3 px-4 text-gray-600 font-medium">Returns %</th>
-              <th class="text-center py-3 px-4 text-gray-600 font-medium">Actions</th>
+    </div>
+    <div class="card-body p-0">
+      @if (funds.length === 0) {
+      <div class="text-center py-5">
+        <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+          <i class="bi bi-archive display-4 text-muted"></i>
+        </div>
+        <h5 class="fw-bold">No investments found</h5>
+        <p class="text-muted mb-4">Start building your portfolio by adding your first investment.</p>
+        <button class="btn btn-outline-primary" (click)="addFund()">
+          Add Investment
+        </button>
+      </div>
+      } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-light">
+            <tr>
+              <th scope="col" class="ps-4 py-3 text-muted small text-uppercase fw-bold">Type</th>
+              <th scope="col" class="py-3 text-muted small text-uppercase fw-bold">Investment Name</th>
+              <th scope="col" class="text-end py-3 text-muted small text-uppercase fw-bold">Invested</th>
+              <th scope="col" class="text-end py-3 text-muted small text-uppercase fw-bold">Current Value</th>
+              <th scope="col" class="text-end py-3 text-muted small text-uppercase fw-bold">Returns</th>
+              <th scope="col" class="text-end py-3 text-muted small text-uppercase fw-bold">Returns %</th>
+              <th scope="col" class="text-center py-3 text-muted small text-uppercase fw-bold">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let fund of funds" class="border-b border-gray-100 hover:bg-blue-50 hover:shadow-sm transition-all duration-300 cursor-pointer">
-              <td class="py-4 px-4">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            @for (fund of funds; track fund.id) {
+            <tr>
+              <td class="ps-4">
+                <span class="badge rounded-pill fw-normal px-3 py-2" [ngClass]="{
+                            'bg-primary-subtle text-primary': fund.investment_type === 'mutual_fund',
+                            'bg-success-subtle text-success': fund.investment_type === 'ppf' || fund.investment_type === 'epf',
+                            'bg-warning-subtle text-warning-emphasis': fund.investment_type === 'fd',
+                            'bg-info-subtle text-info-emphasis': fund.investment_type === 'nps',
+                            'bg-secondary-subtle text-secondary': !['mutual_fund','ppf','epf','fd','nps'].includes(fund.investment_type)
+                          }">
                   {{ getInvestmentTypeLabel(fund.investment_type) }}
                 </span>
               </td>
-              <td class="py-4 px-4 text-gray-900 font-medium">{{ fund.fund_name }}</td>
-              <td class="py-4 px-4 text-right text-gray-900">₹{{ fund.invested_amount | number:'1.2-2' }}</td>
-              <td class="py-4 px-4 text-right text-gray-900">₹{{ fund.current_value | number:'1.2-2' }}</td>
-              <td class="py-4 px-4 text-right font-medium" [class.text-green-600]="(fund.current_value - fund.invested_amount) >= 0" [class.text-red-600]="(fund.current_value - fund.invested_amount) < 0">
+              <td>
+                <div class="fw-bold text-dark">{{ fund.fund_name }}</div>
+                <div class="small text-muted">{{ fund.fund_house || 'Self Managed' }}</div>
+              </td>
+              <td class="text-end font-monospace">₹{{ fund.invested_amount | number:'1.2-2' }}</td>
+              <td class="text-end font-monospace fw-bold">₹{{ fund.current_value | number:'1.2-2' }}</td>
+              <td class="text-end font-monospace"
+                [ngClass]="(fund.current_value - fund.invested_amount) >= 0 ? 'text-success' : 'text-danger'">
                 ₹{{ (fund.current_value - fund.invested_amount) | number:'1.2-2' }}
               </td>
-              <td class="py-4 px-4 text-right font-medium" [class.text-green-600]="(fund.current_value - fund.invested_amount) >= 0" [class.text-red-600]="(fund.current_value - fund.invested_amount) < 0">
-                {{ (((fund.current_value - fund.invested_amount) / fund.invested_amount) * 100) | number:'1.2-2' }}%
+              <td class="text-end fw-bold"
+                [ngClass]="(fund.current_value - fund.invested_amount) >= 0 ? 'text-success' : 'text-danger'">
+                <span class="d-inline-flex align-items-center bg-opacity-10 px-2 py-1 rounded"
+                  [ngClass]="(fund.current_value - fund.invested_amount) >= 0 ? 'bg-success' : 'bg-danger'">
+                  @if ((fund.current_value - fund.invested_amount) >= 0) {
+                  <i class="bi bi-arrow-up-short me-1"></i>
+                  } @else {
+                  <i class="bi bi-arrow-down-short me-1"></i>
+                  }
+                  {{ (((fund.current_value - fund.invested_amount) / fund.invested_amount) * 100) | number:'1.2-2' }}%
+                </span>
               </td>
-              <td class="py-4 px-4 text-center">
-                <div class="flex items-center justify-center space-x-2">
-                  <button mat-icon-button (click)="editFund(fund)" class="text-blue-600 hover:text-blue-800 hover:bg-blue-100 hover:scale-110 rounded-lg transition-all duration-300">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
+              <td class="text-center">
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-light text-primary" (click)="editFund(fund)" title="Edit">
+                    <i class="bi bi-pencil"></i>
                   </button>
-                  <button mat-icon-button (click)="deleteFund(fund.id)" class="text-red-600 hover:text-red-800 hover:bg-red-100 hover:scale-110 rounded-lg transition-all duration-300">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
+                  <button class="btn btn-sm btn-light text-danger" (click)="deleteFund(fund.id)" title="Delete">
+                    <i class="bi bi-trash"></i>
                   </button>
                 </div>
               </td>
             </tr>
+            }
           </tbody>
         </table>
       </div>
+      }
     </div>
   </div>
 </div>
+
+<app-add-fund-dialog [fundData]="editingFund" [isEditMode]="!!editingFund"
+  (close)="handleAddFundDialogClose($event)"></app-add-fund-dialog>

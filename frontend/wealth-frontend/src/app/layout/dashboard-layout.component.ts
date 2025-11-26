@@ -1,14 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { AccessibilityBarComponent } from '../shared/accessibility-bar.component';
-import { SessionTimeoutDialogComponent } from '../shared/session-timeout-dialog.component';
 import { AuthService } from '../services/auth.service';
 import { SessionTimeoutService } from '../services/session-timeout.service';
 import { CommonModule } from '@angular/common';
@@ -16,31 +8,18 @@ import { HttpClient } from '@angular/common/http';
 import { APIResponse } from '../services/api-response.interface';
 import { Subscription } from 'rxjs';
 
+import { SidebarComponent } from '../shared/components/sidebar/sidebar.component';
+import { HeaderComponent } from '../shared/components/header/header.component';
+
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [MatToolbarModule, MatSidenavModule, MatListModule, MatIconModule, MatButtonModule, MatMenuModule, RouterModule, AccessibilityBarComponent, CommonModule],
+  imports: [RouterModule, AccessibilityBarComponent, CommonModule, SidebarComponent, HeaderComponent],
   templateUrl: './dashboard-layout.component.html',
-  styles: [`
-    mat-sidenav::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    mat-sidenav::-webkit-scrollbar-track {
-      background: #f3f4f6;
-    }
-    
-    mat-sidenav::-webkit-scrollbar-thumb {
-      background: #d1d5db;
-      border-radius: 3px;
-    }
-    
-    mat-sidenav::-webkit-scrollbar-thumb:hover {
-      background: #9ca3af;
-    }
-  `]
+  styleUrl: './dashboard-layout.component.scss'
 })
 export class DashboardLayoutComponent implements OnInit, OnDestroy {
+  isSidenavOpen = true;
   userName = '';
   userRole = '';
   sessionTimeRemaining = '';
@@ -49,12 +28,11 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
   private sessionSubscription: Subscription = new Subscription();
 
   constructor(
-    private router: Router, 
-    private authService: AuthService, 
+    private router: Router,
+    private authService: AuthService,
     private http: HttpClient,
-    private sessionTimeoutService: SessionTimeoutService,
-    private dialog: MatDialog
-  ) {}
+    private sessionTimeoutService: SessionTimeoutService
+  ) { }
 
   ngOnInit() {
     this.loadUserInfo();
@@ -66,21 +44,25 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     this.sessionTimeoutService.stopSession();
   }
 
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
+  }
+
   private initializeSession() {
     this.sessionTimeoutService.startSession();
-    
+
     this.sessionSubscription.add(
       this.sessionTimeoutService.sessionExpired$.subscribe(() => {
         this.showSessionExpiredDialog();
       })
     );
-    
+
     this.sessionSubscription.add(
       this.sessionTimeoutService.remainingTime$.subscribe(timeMs => {
         this.sessionTimeRemaining = this.formatTime(timeMs);
       })
     );
-    
+
     this.sessionSubscription.add(
       this.sessionTimeoutService.showTimer$.subscribe(show => {
         this.showSessionTimer = show;
@@ -96,15 +78,8 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
   }
 
   private showSessionExpiredDialog() {
-    const dialogRef = this.dialog.open(SessionTimeoutDialogComponent, {
-      width: '400px',
-      disableClose: true,
-      panelClass: 'session-timeout-dialog'
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.router.navigate(['/login']);
-    });
+    // Replace with bootstrap modal logic
+    this.logout();
   }
 
   loadUserInfo() {
@@ -113,7 +88,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const userId = payload.sub;
-        
+
         this.http.get<APIResponse>(`${this.apiUrl}/auth/user-info?user_id=${userId}`).subscribe({
           next: (response) => {
             if (response.success && response.data) {

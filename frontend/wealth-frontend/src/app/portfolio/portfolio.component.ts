@@ -1,34 +1,31 @@
-import { Component, OnInit } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AddFundDialogComponent } from './add-fund-dialog.component';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
 
+import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
+
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatTableModule, MatFormFieldModule, MatInputModule, MatDialogModule, CommonModule],
+  imports: [CommonModule, AddFundDialogComponent, StatCardComponent],
   templateUrl: './portfolio.component.html',
   styleUrl: './portfolio.component.scss'
 })
 export class PortfolioComponent implements OnInit {
+  @ViewChild(AddFundDialogComponent) addFundDialog!: AddFundDialogComponent;
+
   funds: any[] = [];
-  displayedColumns: string[] = ['type', 'name', 'invested', 'current', 'returns', 'percentage', 'actions'];
   totalInvested = 0;
   totalCurrent = 0;
   totalReturns = 0;
   username = '';
+  editingFund: any = null;
   private apiUrl = '/api/v1';
 
-  constructor(private http: HttpClient, private dialog: MatDialog, private errorHandler: ErrorHandlerService) {}
+  constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) { }
 
   ngOnInit() {
     this.loadFunds();
@@ -66,32 +63,30 @@ export class PortfolioComponent implements OnInit {
   }
 
   addFund() {
-    const dialogRef = this.dialog.open(AddFundDialogComponent, {
-      width: '500px',
-      disableClose: false,
-      autoFocus: true
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadFunds();
-      }
-    });
+    this.editingFund = null;
+    this.addFundDialog.isEditMode = false;
+    this.addFundDialog.fundData = {
+      id: null,
+      investment_type: '',
+      fund_name: '',
+      invested_amount: 0,
+      current_value: 0
+    };
+    this.addFundDialog.modal.show();
   }
 
   editFund(fund: any) {
-    const dialogRef = this.dialog.open(AddFundDialogComponent, {
-      width: '500px',
-      disableClose: false,
-      autoFocus: true,
-      data: { fund: fund }
-    });
+    this.editingFund = fund;
+    this.addFundDialog.isEditMode = true;
+    this.addFundDialog.fundData = { ...fund };
+    this.addFundDialog.modal.show();
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadFunds();
-      }
-    });
+  // Handler for the inline add-fund dialog (bootstrap modal) close event
+  handleAddFundDialogClose(result: boolean) {
+    if (result) {
+      this.loadFunds();
+    }
   }
 
   deleteFund(id: number) {

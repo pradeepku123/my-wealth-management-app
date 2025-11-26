@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+
 import { HttpClient } from '@angular/common/http';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
@@ -10,7 +8,7 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.scss']
 })
@@ -28,8 +26,8 @@ export class AnalyticsComponent implements OnInit {
   loading = false;
   private apiUrl = '/api/v1';
 
-  constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) {}
-  
+  constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) { }
+
   ngOnInit() {
     this.loadAnalyticsData();
   }
@@ -98,19 +96,19 @@ export class AnalyticsComponent implements OnInit {
         name: fund.fund_name,
         returns: ((fund.current_value - fund.invested_amount) / fund.invested_amount) * 100
       }));
-      
-      this.bestPerformer = performers.reduce((best, current) => 
+
+      this.bestPerformer = performers.reduce((best, current) =>
         current.returns > best.returns ? current : best
       );
-      
-      this.worstPerformer = performers.reduce((worst, current) => 
+
+      this.worstPerformer = performers.reduce((worst, current) =>
         current.returns < worst.returns ? current : worst
       );
     }
 
     // Calculate risk level based on returns volatility
     this.riskLevel = this.calculateRiskLevel();
-    
+
     // Calculate diversification score
     this.diversificationScore = this.calculateDiversification();
   }
@@ -130,7 +128,7 @@ export class AnalyticsComponent implements OnInit {
     const typeMap: { [key: string]: string } = {
       'mutual_fund': 'Mutual Funds',
       'epf': 'EPF',
-      'ppf': 'PPF', 
+      'ppf': 'PPF',
       'fd': 'Fixed Deposits',
       'mis': 'MIS',
       'nps': 'NPS'

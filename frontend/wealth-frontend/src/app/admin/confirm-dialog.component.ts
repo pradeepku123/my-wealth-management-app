@@ -1,50 +1,46 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule, CommonModule],
+  imports: [CommonModule],
   template: `
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    <mat-dialog-content>
-      <p>{{ data.message }}</p>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()" *ngIf="data.cancelText">
+    <div class="modal-header border-0 pb-0">
+      <h5 class="modal-title fw-bold" [class.text-danger]="data.title === 'Error'">{{ data.title }}</h5>
+    </div>
+    <div class="modal-body py-4">
+      <p class="mb-0 text-muted">{{ data.message }}</p>
+    </div>
+    <div class="modal-footer border-0 pt-0">
+      <button type="button" class="btn btn-light" (click)="onCancel()" *ngIf="data.cancelText">
         {{ data.cancelText }}
       </button>
-      <button mat-raised-button 
-              [color]="data.title === 'Error' ? 'primary' : 'warn'" 
+      <button type="button" class="btn" 
+              [class.btn-primary]="data.title !== 'Error'" 
+              [class.btn-danger]="data.title === 'Error'"
               (click)="onConfirm()">
         {{ data.confirmText }}
       </button>
-    </mat-dialog-actions>
+    </div>
   `,
   styles: [`
-    mat-dialog-content {
-      min-width: 300px;
-      padding: 20px 0;
-    }
-    mat-dialog-actions {
-      padding: 16px 0;
-      gap: 8px;
+    :host {
+      display: block;
     }
   `]
 })
 export class ConfirmDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<ConfirmDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
+  data: any;
+
+  constructor(public activeModal: NgbActiveModal) { }
 
   onConfirm(): void {
-    this.dialogRef.close(true);
+    this.activeModal.close(true);
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    this.activeModal.dismiss();
   }
 }

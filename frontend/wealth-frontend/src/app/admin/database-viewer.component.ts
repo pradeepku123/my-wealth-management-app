@@ -1,29 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ConfirmDialogComponent } from './confirm-dialog.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
   selector: 'app-database-viewer',
   standalone: true,
-  imports: [MatCardModule, MatTableModule, MatButtonModule, MatIconModule, MatTabsModule, MatPaginatorModule, MatDialogModule, MatCheckboxModule, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './database-viewer.component.html',
   styleUrl: './database-viewer.component.scss'
 })
 export class DatabaseViewerComponent implements OnInit {
   private apiUrl = '/api/v1';
-  
+
   tables: any[] = [];
   selectedTable: any = null;
   tableSchema: any[] = [];
@@ -32,11 +25,11 @@ export class DatabaseViewerComponent implements OnInit {
   loading = false;
   editingRecord: any = null;
   selectedRecords: Set<any> = new Set();
-  
+
   pageSize = 10;
   pageIndex = 0;
-  
-  constructor(private http: HttpClient, private dialog: MatDialog, private errorHandler: ErrorHandlerService) {}
+
+  constructor(private http: HttpClient, private modalService: NgbModal, private errorHandler: ErrorHandlerService) { }
 
   ngOnInit() {
     this.loadTables();
@@ -103,7 +96,7 @@ export class DatabaseViewerComponent implements OnInit {
     });
   }
 
-  onPageChange(event: PageEvent) {
+  onPageChange(event: any) {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
     const offset = event.pageIndex * event.pageSize;
@@ -141,7 +134,7 @@ export class DatabaseViewerComponent implements OnInit {
 
   saveRecord() {
     if (!this.editingRecord || !this.selectedTable) return;
-    
+
     const primaryKey = this.getPrimaryKeyValue(this.editingRecord);
     if (!primaryKey) {
       alert('No primary key found for this record');
@@ -167,7 +160,7 @@ export class DatabaseViewerComponent implements OnInit {
 
   deleteRecord(record: any) {
     if (!this.selectedTable) return;
-    
+
     const primaryKey = this.getPrimaryKeyValue(record);
     if (!primaryKey) {
       this.showErrorDialog('No primary key found for this record');
@@ -189,37 +182,33 @@ export class DatabaseViewerComponent implements OnInit {
   }
 
   showDeleteConfirmation(onConfirm: () => void, count: number = 1) {
-    const message = count === 1 
+    const message = count === 1
       ? 'Are you sure you want to delete this record? This action cannot be undone.'
       : `Are you sure you want to delete ${count} records? This action cannot be undone.`;
-    
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: count === 1 ? 'Delete Record' : 'Delete Records',
-        message: message,
-        confirmText: 'Delete',
-        cancelText: 'Cancel'
-      }
-    });
 
-    dialogRef.afterClosed().subscribe(result => {
+    const modalRef = this.modalService.open(ConfirmDialogComponent);
+    modalRef.componentInstance.data = {
+      title: count === 1 ? 'Delete Record' : 'Delete Records',
+      message: message,
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    };
+
+    modalRef.result.then((result: any) => {
       if (result) {
         onConfirm();
       }
-    });
+    }, () => { });
   }
 
   showErrorDialog(message: string) {
-    this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Error',
-        message: message,
-        confirmText: 'OK',
-        cancelText: null
-      }
-    });
+    const modalRef = this.modalService.open(ConfirmDialogComponent);
+    modalRef.componentInstance.data = {
+      title: 'Error',
+      message: message,
+      confirmText: 'OK',
+      cancelText: null
+    };
   }
 
   getPrimaryKeyValue(record: any): any {
@@ -260,8 +249,8 @@ export class DatabaseViewerComponent implements OnInit {
   }
 
   isAllSelected(): boolean {
-    return this.tableData?.data?.length > 0 && 
-           this.tableData.data.every((record: any) => this.isSelected(record));
+    return this.tableData?.data?.length > 0 &&
+      this.tableData.data.every((record: any) => this.isSelected(record));
   }
 
   hasSelection(): boolean {
@@ -272,7 +261,7 @@ export class DatabaseViewerComponent implements OnInit {
     if (!this.selectedRecords.size) return;
 
     this.showDeleteConfirmation(() => {
-      const deletePromises = Array.from(this.selectedRecords).map(pk => 
+      const deletePromises = Array.from(this.selectedRecords).map(pk =>
         this.http.delete(`${this.apiUrl}/admin/tables/${this.selectedTable.table_name}/data/${pk}`).toPromise()
       );
 

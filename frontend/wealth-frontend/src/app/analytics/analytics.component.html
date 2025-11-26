@@ -1,127 +1,120 @@
-<div class="p-6 space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-gray-900">Analytics & Reports</h1>
-    <button mat-raised-button (click)="refreshData()" [disabled]="loading" class="bg-blue-600 hover:bg-blue-700 text-white">
-      <div class="flex items-center space-x-2">
-        <svg class="w-4 h-4" [class.animate-spin]="loading" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-        </svg>
-        <span>Refresh</span>
-      </div>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Analytics & Reports</h1>
+    <button class="btn btn-primary" (click)="refreshData()" [disabled]="loading">
+      <i class="bi bi-arrow-clockwise" [class.spinner-border]="loading"></i>
+      {{ loading ? 'Refreshing...' : 'Refresh' }}
     </button>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="flex justify-center items-center py-20">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-  </div>
-
-  <!-- Portfolio Overview -->
-  <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-gray-600 text-sm font-medium">Total Invested</h3>
-        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-      </div>
-      <h2 class="text-3xl font-bold text-gray-900">₹{{ totalInvested | number:'1.2-2' }}</h2>
-    </div>
-
-    <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-gray-600 text-sm font-medium">Current Value</h3>
-        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-        </svg>
-      </div>
-      <h2 class="text-3xl font-bold text-gray-900">₹{{ totalCurrent | number:'1.2-2' }}</h2>
-    </div>
-
-    <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300" 
-         [class.bg-green-50]="totalReturns >= 0" [class.bg-red-50]="totalReturns < 0">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-gray-600 text-sm font-medium">Total Returns</h3>
-        <svg class="w-5 h-5" [class.text-green-600]="totalReturns >= 0" [class.text-red-600]="totalReturns < 0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" *ngIf="totalReturns >= 0"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" *ngIf="totalReturns < 0"/>
-        </svg>
-      </div>
-      <h2 class="text-3xl font-bold" [class.text-green-600]="totalReturns >= 0" [class.text-red-600]="totalReturns < 0">
-        ₹{{ totalReturns | number:'1.2-2' }}
-      </h2>
-      <p class="text-sm" [class.text-green-600]="totalReturns >= 0" [class.text-red-600]="totalReturns < 0">
-        {{ totalReturnsPercentage | number:'1.2-2' }}%
-      </p>
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 
-  <!-- Asset Allocation Chart -->
-  <div *ngIf="!loading" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded-xl border border-gray-200 p-6">
-      <h2 class="text-xl font-semibold mb-4 flex items-center">
-        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-        </svg>
-        Asset Allocation
-      </h2>
-      <div class="space-y-4">
-        <div *ngFor="let asset of assetBreakdown" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <div class="flex items-center space-x-3">
-            <div class="w-4 h-4 rounded-full" [style.background-color]="getAssetColor(asset.investment_type)"></div>
-            <span class="font-medium">{{ getAssetTypeLabel(asset.investment_type) }}</span>
+  <div *ngIf="!loading && portfolioData.length > 0">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title text-muted">Total Invested</h5>
+              <i class="bi bi-cash-coin text-primary fs-3"></i>
+            </div>
+            <h2 class="card-text fw-bold display-6">₹{{ totalInvested | number:'1.2-2' }}</h2>
           </div>
-          <div class="text-right">
-            <div class="font-semibold">₹{{ asset.total_current | number:'1.2-2' }}</div>
-            <div class="text-sm text-gray-600">{{ getAssetPercentage(asset.total_current) | number:'1.1-1' }}%</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title text-muted">Current Value</h5>
+              <i class="bi bi-graph-up-arrow text-success fs-3"></i>
+            </div>
+            <h2 class="card-text fw-bold display-6">₹{{ totalCurrent | number:'1.2-2' }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm h-100" [ngClass]="{'bg-success-light': totalReturns >= 0, 'bg-danger-light': totalReturns < 0}">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title text-muted">Total Returns</h5>
+              <i class="bi fs-3" [ngClass]="{'bi-arrow-up-circle-fill text-success': totalReturns >= 0, 'bi-arrow-down-circle-fill text-danger': totalReturns < 0}"></i>
+            </div>
+            <h2 class="card-text fw-bold display-6" [ngClass]="{'text-success': totalReturns >= 0, 'text-danger': totalReturns < 0}">
+              ₹{{ totalReturns | number:'1.2-2' }}
+            </h2>
+            <p class="card-text" [ngClass]="{'text-success': totalReturns >= 0, 'text-danger': totalReturns < 0}">
+              {{ totalReturnsPercentage | number:'1.2-2' }}%
+            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Performance Metrics -->
-    <div class="bg-white rounded-xl border border-gray-200 p-6">
-      <h2 class="text-xl font-semibold mb-4 flex items-center">
-        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-        Performance Metrics
-      </h2>
-      <div class="space-y-4">
-        <div class="p-4 bg-green-50 rounded-lg border border-green-200">
-          <h3 class="text-sm font-medium text-green-800">Best Performer</h3>
-          <p class="text-lg font-semibold text-green-900 truncate" [title]="bestPerformer.name">{{ bestPerformer.name || 'N/A' }}</p>
-          <p class="text-sm text-green-700">+{{ bestPerformer.returns | number:'1.2-2' }}%</p>
+    <div class="row g-4 mt-4">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header d-flex align-items-center">
+            <i class="bi bi-pie-chart-fill me-2 text-primary"></i>
+            <h5 class="card-title mb-0">Asset Allocation</h5>
+          </div>
+          <div class="card-body">
+            <div *ngFor="let asset of assetBreakdown" class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
+              <div class="d-flex align-items-center">
+                <div class="rounded-circle me-3" [style.background-color]="getAssetColor(asset.investment_type)" style="width: 20px; height: 20px;"></div>
+                <span class="fw-bold">{{ getAssetTypeLabel(asset.investment_type) }}</span>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold">₹{{ asset.total_current | number:'1.2-2' }}</div>
+                <div class="text-muted">{{ getAssetPercentage(asset.total_current) | number:'1.1-1' }}%</div>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div class="p-4 bg-red-50 rounded-lg border border-red-200">
-          <h3 class="text-sm font-medium text-red-800">Worst Performer</h3>
-          <p class="text-lg font-semibold text-red-900 truncate" [title]="worstPerformer.name">{{ worstPerformer.name || 'N/A' }}</p>
-          <p class="text-sm text-red-700">{{ worstPerformer.returns | number:'1.2-2' }}%</p>
-        </div>
-        
-        <div class="p-4 bg-orange-50 rounded-lg border border-orange-200">
-          <h3 class="text-sm font-medium text-orange-800">Risk Level</h3>
-          <p class="text-lg font-semibold text-orange-900">{{ riskLevel }}</p>
-        </div>
-        
-        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 class="text-sm font-medium text-blue-800">Diversification</h3>
-          <p class="text-lg font-semibold text-blue-900">{{ diversificationScore | number:'1.0-0' }}%</p>
-          <div class="w-full bg-blue-200 rounded-full h-2 mt-2">
-            <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" [style.width.%]="diversificationScore"></div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header d-flex align-items-center">
+            <i class="bi bi-speedometer2 me-2 text-primary"></i>
+            <h5 class="card-title mb-0">Performance Metrics</h5>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-success">
+              <h6 class="alert-heading">Best Performer</h6>
+              <p class="mb-0 text-truncate" [title]="bestPerformer.name">{{ bestPerformer.name || 'N/A' }}</p>
+              <hr>
+              <p class="mb-0">+{{ bestPerformer.returns | number:'1.2-2' }}%</p>
+            </div>
+            <div class="alert alert-danger">
+              <h6 class="alert-heading">Worst Performer</h6>
+              <p class="mb-0 text-truncate" [title]="worstPerformer.name">{{ worstPerformer.name || 'N/A' }}</p>
+              <hr>
+              <p class="mb-0">{{ worstPerformer.returns | number:'1.2-2' }}%</p>
+            </div>
+            <div class="alert alert-warning">
+              <h6 class="alert-heading">Risk Level</h6>
+              <p class="mb-0">{{ riskLevel }}</p>
+            </div>
+            <div class="alert alert-info">
+              <h6 class="alert-heading">Diversification</h6>
+              <p class="mb-0">{{ diversificationScore | number:'1.0-0' }}%</p>
+              <div class="progress mt-2" style="height: 10px;">
+                <div class="progress-bar" role="progressbar" [style.width.%]="diversificationScore" [attr.aria-valuenow]="diversificationScore" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- No Data State -->
-  <div *ngIf="!loading && portfolioData.length === 0" class="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
-    <svg class="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-    </svg>
-    <h3 class="text-2xl font-semibold text-gray-900 mb-2">No portfolio data available</h3>
-    <p class="text-gray-600">Add some investments to see analytics</p>
+  <div *ngIf="!loading && portfolioData.length === 0" class="text-center py-5">
+    <i class="bi bi-bar-chart-line-fill display-1 text-muted"></i>
+    <h3 class="my-3">No portfolio data available</h3>
+    <p class="text-muted">Add some investments to see analytics</p>
   </div>
 </div>

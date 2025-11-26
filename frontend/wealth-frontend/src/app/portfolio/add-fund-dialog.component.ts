@@ -1,37 +1,36 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { EventBusService } from '../services/event-bus.service';
+import { SnackbarService } from '../services/snackbar.service';
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-add-fund-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatIconModule, FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './add-fund-dialog.component.html',
   styleUrl: './add-fund-dialog.component.scss'
 })
-export class AddFundDialogComponent {
-  fundData = {
+export class AddFundDialogComponent implements AfterViewInit, OnInit {
+  @Input() fundData = {
     id: null,
     investment_type: '',
     fund_name: '',
     invested_amount: 0,
     current_value: 0
   };
-  
-  isEditMode = false;
+  @Input() isEditMode = false;
+  @Output() close = new EventEmitter<boolean>();
+  @ViewChild('addFundModal') modalElement!: ElementRef;
+
   dialogTitle = 'Add Investment';
   private apiUrl = '/api/v1';
+  public modal: any;
 
   investmentTypes = [
     { value: 'mutual_fund', label: 'Mutual Fund', icon: 'trending_up' },
@@ -43,24 +42,27 @@ export class AddFundDialogComponent {
   ];
 
   constructor(
-    private dialogRef: MatDialogRef<AddFundDialogComponent>,
     private http: HttpClient,
-    private snackBar: MatSnackBar,
+    private snackbarService: SnackbarService,
     private errorHandler: ErrorHandlerService,
     private eventBus: EventBusService,
-    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    if (data && data.fund) {
-      this.isEditMode = true;
+  }
+
+  ngOnInit() {
+    if (this.isEditMode) {
       this.dialogTitle = 'Edit Investment';
-      this.fundData = { ...data.fund };
     }
+  }
+
+  ngAfterViewInit() {
+    this.modal = new bootstrap.Modal(this.modalElement.nativeElement);
   }
 
   isValid(): boolean {
     return this.fundData.investment_type.trim() !== '' &&
-           this.fundData.fund_name.trim() !== '' && 
-           this.fundData.invested_amount > 0 && 
+           this.fundData.fund_name.trim() !== '' &&
+           this.fundData.invested_amount > 0 &&
            this.fundData.current_value > 0;
   }
 
@@ -74,10 +76,10 @@ export class AddFundDialogComponent {
   }
 
   onSave() {
-    const request = this.isEditMode 
+    const request = this.isEditMode
       ? this.http.put<APIResponse>(`${this.apiUrl}/portfolio/funds/${this.fundData.id}`, this.fundData)
       : this.http.post<APIResponse>(`${this.apiUrl}/portfolio/funds`, this.fundData);
-    
+
     request.subscribe({
       next: (response: APIResponse) => {
         if (response.success) {
@@ -91,19 +93,21 @@ export class AddFundDialogComponent {
             console.warn('EventBus emit failed', e);
           }
 
-          this.snackBar.open(response.message, 'Close', { duration: 3000 });
-          this.dialogRef.close(true);
+          this.snackbarService.show(response.message, 'success');
+          this.modal.hide();
+          this.close.emit(true);
         } else {
-          this.snackBar.open(response.message || 'Operation failed', 'Close', { duration: 3000 });
+          this.snackbarService.show(response.message || 'Operation failed', 'error');
         }
       },
       error: (error) => {
-        this.snackBar.open(this.errorHandler.extractErrorMessage(error), 'Close', { duration: 3000 });
+        this.snackbarService.show(this.errorHandler.extractErrorMessage(error), 'error');
       }
     });
   }
 
   onCancel() {
-    this.dialogRef.close(false);
+    this.modal.hide();
+    this.close.emit(false);
   }
 }

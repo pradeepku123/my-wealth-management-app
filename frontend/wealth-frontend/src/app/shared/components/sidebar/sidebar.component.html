@@ -1,0 +1,66 @@
+<div class="sidebar-brand">
+  <i class="bi bi-bank2"></i>
+  <span>WealthTracker</span>
+</div>
+
+<div class="d-flex flex-column py-2">
+  <div class="nav-category">Main Menu</div>
+  
+  <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-grid-fill me-3"></i>
+    <span>Dashboard</span>
+  </a>
+  
+  <a routerLink="/portfolio" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-briefcase-fill me-3"></i>
+    <span>Portfolio</span>
+  </a>
+  
+  <a routerLink="/mutual-funds" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-bar-chart-line-fill me-3"></i>
+    <span>Mutual Funds</span>
+  </a>
+  
+  <a routerLink="/investments" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-graph-up-arrow me-3"></i>
+    <span>Investments</span>
+  </a>
+
+  <div class="nav-category mt-2">Planning</div>
+
+  <a routerLink="/analytics" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-pie-chart-fill me-3"></i>
+    <span>Analytics</span>
+  </a>
+  
+  <a routerLink="/goals" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-bullseye me-3"></i>
+    <span>Goals</span>
+  </a>
+  
+  <a routerLink="/reports" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-file-earmark-bar-graph-fill me-3"></i>
+    <span>Reports</span>
+  </a>
+
+  <div class="nav-category mt-2">System</div>
+
+  <a routerLink="/notifications" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-bell-fill me-3"></i>
+    <span>Notifications</span>
+  </a>
+
+  @if (isAdmin()) {
+    <a routerLink="/database-admin" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
+      <i class="bi bi-database-fill-gear me-3"></i>
+      <span>Database Admin</span>
+    </a>
+  }
+
+  <div class="mt-4 px-3">
+    <button (click)="onLogout()" class="btn w-100 d-flex align-items-center justify-content-center text-danger bg-danger-subtle border-0 py-2 rounded-3">
+      <i class="bi bi-box-arrow-right me-2"></i>
+      <span class="fw-semibold">Logout</span>
+    </button>
+  </div>
+</div>

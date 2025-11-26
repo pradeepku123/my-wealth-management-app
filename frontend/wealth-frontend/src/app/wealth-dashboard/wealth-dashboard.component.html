@@ -1,28 +1,53 @@
-<h1>Asset Portfolio</h1>
-<div class="asset-cards">
-  <mat-card class="asset-card" *ngFor="let asset of assetBreakdown">
-    <mat-card-header>
-      <mat-card-title>{{ getAssetTypeLabel(asset.investment_type) }}</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="asset-details">
-        <div class="asset-row">
-          <span>Invested:</span>
-          <span>₹{{ asset.total_invested | number:'1.2-2' }}</span>
-        </div>
-        <div class="asset-row">
-          <span>Current:</span>
-          <span>₹{{ asset.total_current | number:'1.2-2' }}</span>
-        </div>
-        <div class="asset-row" [class.positive]="asset.total_returns >= 0" [class.negative]="asset.total_returns < 0">
-          <span>Returns:</span>
-          <span>₹{{ asset.total_returns | number:'1.2-2' }}</span>
-        </div>
-        <div class="asset-row" [class.positive]="asset.return_percentage >= 0" [class.negative]="asset.return_percentage < 0">
-          <span>Return %:</span>
-          <span>{{ asset.return_percentage | number:'1.2-2' }}%</span>
+<div class="container-fluid">
+  <div class="my-4">
+    <h1 class="fw-bold mb-1">Asset Portfolio</h1>
+    <p class="text-muted">Breakdown of your investments by category</p>
+  </div>
+
+  <div class="row g-4">
+    @for (asset of assetBreakdown; track asset.investment_type) {
+    <div class="col-md-6 col-lg-4 col-xl-3">
+      <div class="card h-100 border-0 shadow-sm hover-lift">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="icon-box rounded-3 d-flex align-items-center justify-content-center me-3" [ngClass]="{
+                     'bg-primary-subtle text-primary': asset.investment_type === 'mutual_fund',
+                     'bg-success-subtle text-success': asset.investment_type === 'ppf' || asset.investment_type === 'epf',
+                     'bg-warning-subtle text-warning-emphasis': asset.investment_type === 'fd',
+                     'bg-info-subtle text-info-emphasis': asset.investment_type === 'nps',
+                     'bg-secondary-subtle text-secondary': !['mutual_fund','ppf','epf','fd','nps'].includes(asset.investment_type)
+                   }" style="width: 48px; height: 48px;">
+              <i class="bi fs-4" [ngClass]="{
+                     'bi-graph-up': asset.investment_type === 'mutual_fund',
+                     'bi-piggy-bank': asset.investment_type === 'ppf' || asset.investment_type === 'epf',
+                     'bi-cash-stack': asset.investment_type === 'fd',
+                     'bi-umbrella': asset.investment_type === 'nps',
+                     'bi-wallet2': !['mutual_fund','ppf','epf','fd','nps'].includes(asset.investment_type)
+                   }"></i>
+            </div>
+            <h5 class="card-title fw-bold mb-0">{{ getAssetTypeLabel(asset.investment_type) }}</h5>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Current Value</small>
+            <h3 class="fw-bold mb-0">₹{{ asset.total_current | number:'1.2-2' }}</h3>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-end border-top pt-3">
+            <div>
+              <div class="small text-muted">Invested</div>
+              <div class="fw-semibold">₹{{ asset.total_invested | number:'1.2-2' }}</div>
+            </div>
+            <div class="text-end">
+              <div class="small text-muted">Returns</div>
+              <div class="fw-bold" [ngClass]="asset.total_returns >= 0 ? 'text-success' : 'text-danger'">
+                {{ asset.return_percentage | number:'1.2-2' }}%
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </div>
+    }
+  </div>
 </div>

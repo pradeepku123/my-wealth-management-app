@@ -1,36 +1,37 @@
-<div class="p-6 space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-gray-900">Financial Goals</h1>
-    <button mat-raised-button class="bg-blue-600 text-white">Add Goal</button>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Financial Goals</h1>
+    <button class="btn btn-primary">Add Goal</button>
   </div>
-  
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let goal of goals" class="bg-white rounded-xl border border-gray-200 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold">{{ goal.name }}</h3>
-        <span class="text-sm text-gray-500">{{ goal.targetDate }}</span>
-      </div>
-      
-      <div class="mb-4">
-        <div class="flex justify-between text-sm mb-2">
-          <span>Progress</span>
-          <span>{{ goal.progress }}%</span>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div *ngFor="let goal of goals" class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">{{ goal.name }}</h5>
+          <small class="text-muted">{{ goal.targetDate }}</small>
         </div>
-        <mat-progress-bar [value]="goal.progress" class="h-2"></mat-progress-bar>
-      </div>
-      
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-600">Current:</span>
-          <span class="font-medium">₹{{ goal.current | number:'1.0-0' }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-600">Target:</span>
-          <span class="font-medium">₹{{ goal.target | number:'1.0-0' }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-600">Monthly SIP:</span>
-          <span class="font-medium">₹{{ goal.monthlySip | number:'1.0-0' }}</span>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Progress</span>
+            <span>{{ goal.progress }}%</span>
+          </div>
+          <div class="progress" style="height: 10px;">
+            <div class="progress-bar" role="progressbar" [style.width.%]="goal.progress" [attr.aria-valuenow]="goal.progress" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <hr class="my-4">
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Current:</span>
+            <span class="fw-bold">₹{{ goal.current | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Target:</span>
+            <span class="fw-bold">₹{{ goal.target | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Monthly SIP:</span>
+            <span class="fw-bold">₹{{ goal.monthlySip | number:'1.0-0' }}</span>
+          </div>
         </div>
       </div>
     </div>

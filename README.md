@@ -9,23 +9,22 @@ A modern full-stack wealth management application built with Angular 20 frontend
 - **User Authentication**: JWT-based login with role-based access control
 - **Dashboard Analytics**: Investment performance tracking with returns calculation
 - **Database Administration**: Complete admin interface for data management
-- **Responsive Design**: Modern UI with Tailwind CSS and Material Design
+- **Responsive Design**: Modern UI with Bootstrap 5
 - **Dark/Light Themes**: Accessibility features with theme switching
 
 ## 🛠️ Tech Stack
 
 ### Frontend
 - **Angular 20** - Modern web framework
-- **Material Design** - UI components
-- **Tailwind CSS** - Utility-first styling
-- **Heroicons** - Modern SVG icons
+- **Bootstrap 5** - UI components & styling
+- **Bootstrap Icons** - Modern SVG icons
 - **TypeScript** - Type-safe development
 
 ### Backend
 - **FastAPI** - High-performance Python API framework
 - **PostgreSQL** - Robust relational database
 - **JWT Authentication** - Secure token-based auth
-- **APScheduler** - Background task scheduling
+- **Asyncio** - Background task scheduling
 - **Pydantic** - Data validation and serialization
 
 ### Infrastructure

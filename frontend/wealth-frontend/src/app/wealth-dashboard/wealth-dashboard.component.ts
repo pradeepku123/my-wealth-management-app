@@ -1,7 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { APIResponse } from '../services/api-response.interface';
@@ -10,7 +7,7 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 @Component({
   selector: 'app-wealth-dashboard',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, CommonModule],
+  imports: [CommonModule],
   templateUrl: './wealth-dashboard.component.html',
   styleUrl: './wealth-dashboard.component.scss'
 })
@@ -18,7 +15,7 @@ export class WealthDashboardComponent implements OnInit {
   assetBreakdown: any[] = [];
   private apiUrl = '/api/v1';
 
-  constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) {}
+  constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) { }
 
   ngOnInit() {
     this.loadAssetBreakdown();

@@ -1,7 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { APIResponse } from '../services/api-response.interface';
@@ -11,7 +9,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-mutual-funds',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, CommonModule],
+  imports: [CommonModule],
   templateUrl: './mutual-funds.component.html',
   styleUrl: './mutual-funds.component.scss'
 })
@@ -26,7 +24,7 @@ export class MutualFundsComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription = new Subscription();
 
-  constructor(private http: HttpClient, private eventBus: EventBusService) {}
+  constructor(private http: HttpClient, private eventBus: EventBusService) { }
 
   ngOnInit() {
     this.loadMutualFunds();
@@ -88,15 +86,15 @@ export class MutualFundsComponent implements OnInit, OnDestroy {
     this.mutualFunds.forEach(fund => {
       const category = fund.category || 'Other';
       const subCategory = fund.sub_category || 'Other';
-      
+
       if (!this.groupedFunds[category]) {
         this.groupedFunds[category] = {};
       }
-      
+
       if (!this.groupedFunds[category][subCategory]) {
         this.groupedFunds[category][subCategory] = [];
       }
-      
+
       this.groupedFunds[category][subCategory].push(fund);
     });
   }

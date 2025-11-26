@@ -2,10 +2,10 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { SnackbarService } from '../services/snackbar.service';
 
 @Component({
   selector: 'app-login',
@@ -25,9 +25,9 @@ export class LoginComponent {
   passwordTouched = false;
 
   constructor(
-    private router: Router, 
-    private http: HttpClient, 
-    private snackBar: MatSnackBar,
+    private router: Router,
+    private http: HttpClient,
+    private snackbarService: SnackbarService,
     private errorHandler: ErrorHandlerService
   ) {}
 
@@ -68,14 +68,14 @@ export class LoginComponent {
 
   onLogin() {
     this.clearError();
-    
+
     if (!this.isFormValid) {
       this.showErrorMessage('Please enter valid Username (min 3 chars) and Password (min 6 chars)');
       return;
     }
-    
+
     this.isLoading = true;
-    
+
     const body = new URLSearchParams();
     body.set('username', this.username.trim());
     body.set('password', this.password);
@@ -91,7 +91,7 @@ export class LoginComponent {
         this.isLoading = false;
         if (response.access_token) {
           localStorage.setItem('token', response.access_token);
-          this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
+          this.snackbarService.show('Login successful!', 'success');
           this.router.navigate(['/dashboard']);
         } else {
           this.showErrorMessage('Login failed: Invalid response from server');
@@ -107,12 +107,12 @@ export class LoginComponent {
   onForgotPassword(event: Event) {
     event.preventDefault();
     this.clearError();
-    
+
     if (!this.username.trim()) {
       this.showErrorMessage('Please enter your Username first to reset password');
       return;
     }
-    
+
     this.http.post<APIResponse>(`/api/v1/auth/forgot-password`, {
       user_id: this.username.trim()
     }).subscribe({

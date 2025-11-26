@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+
 
 @Component({
   selector: 'app-goals',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatProgressBarModule],
+  imports: [CommonModule],
   templateUrl: './goals.component.html',
   styleUrls: ['./goals.component.scss']
 })
@@ -38,6 +36,6 @@ export class GoalsComponent implements OnInit {
       monthlySip: 5000
     }
   ];
-  
-  ngOnInit() {}
+
+  ngOnInit() { }
 }
