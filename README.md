@@ -50,6 +50,7 @@ cd my-wealth-management-app
 2. **Production Mode (All services in Docker)**
 ```bash
 sudo docker compose up --build
+sudo docker volume prune -f
 ```
 
 3. **Development Mode (Database only in Docker)**
