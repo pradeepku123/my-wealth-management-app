@@ -1,120 +1,198 @@
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Analytics & Reports</h1>
-    <button class="btn btn-primary" (click)="refreshData()" [disabled]="loading">
-      <i class="bi bi-arrow-clockwise" [class.spinner-border]="loading"></i>
-      {{ loading ? 'Refreshing...' : 'Refresh' }}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center my-4">
+    <div>
+      <h1 class="fw-bold mb-1">Analytics Dashboard</h1>
+      <p class="text-muted">Deep dive into your portfolio performance</p>
+    </div>
+    <button class="btn btn-light shadow-sm d-flex align-items-center gap-2" (click)="refreshData()"
+      [disabled]="loading">
+      <i class="bi bi-arrow-clockwise" [class.spinner-border]="loading" [class.spinner-border-sm]="loading"></i>
+      <span>{{ loading ? 'Refreshing...' : 'Refresh Data' }}</span>
     </button>
   </div>
 
-  <div *ngIf="loading" class="text-center">
+  @if (loading && !analyticsData) {
+  <div class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
+    <p class="text-muted mt-3">Analyzing your portfolio...</p>
   </div>
-
-  <div *ngIf="!loading && portfolioData.length > 0">
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="card-title text-muted">Total Invested</h5>
-              <i class="bi bi-cash-coin text-primary fs-3"></i>
-            </div>
-            <h2 class="card-text fw-bold display-6">₹{{ totalInvested | number:'1.2-2' }}</h2>
+  } @else if (analyticsData) {
+  <!-- Summary Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 overflow-hidden">
+        <div class="card-body p-4 position-relative">
+          <div class="position-absolute top-0 end-0 p-3 opacity-10">
+            <i class="bi bi-wallet2 display-1 text-primary"></i>
           </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="card-title text-muted">Current Value</h5>
-              <i class="bi bi-graph-up-arrow text-success fs-3"></i>
-            </div>
-            <h2 class="card-text fw-bold display-6">₹{{ totalCurrent | number:'1.2-2' }}</h2>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100" [ngClass]="{'bg-success-light': totalReturns >= 0, 'bg-danger-light': totalReturns < 0}">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="card-title text-muted">Total Returns</h5>
-              <i class="bi fs-3" [ngClass]="{'bi-arrow-up-circle-fill text-success': totalReturns >= 0, 'bi-arrow-down-circle-fill text-danger': totalReturns < 0}"></i>
-            </div>
-            <h2 class="card-text fw-bold display-6" [ngClass]="{'text-success': totalReturns >= 0, 'text-danger': totalReturns < 0}">
-              ₹{{ totalReturns | number:'1.2-2' }}
-            </h2>
-            <p class="card-text" [ngClass]="{'text-success': totalReturns >= 0, 'text-danger': totalReturns < 0}">
-              {{ totalReturnsPercentage | number:'1.2-2' }}%
-            </p>
-          </div>
+          <h6 class="text-uppercase text-muted fw-bold small mb-2">Total Invested</h6>
+          <h2 class="fw-bold mb-0">₹{{ analyticsData.summary.total_invested | number:'1.0-0' }}</h2>
         </div>
       </div>
     </div>
-
-    <div class="row g-4 mt-4">
-      <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-header d-flex align-items-center">
-            <i class="bi bi-pie-chart-fill me-2 text-primary"></i>
-            <h5 class="card-title mb-0">Asset Allocation</h5>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 overflow-hidden">
+        <div class="card-body p-4 position-relative">
+          <div class="position-absolute top-0 end-0 p-3 opacity-10">
+            <i class="bi bi-graph-up-arrow display-1 text-success"></i>
           </div>
-          <div class="card-body">
-            <div *ngFor="let asset of assetBreakdown" class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-              <div class="d-flex align-items-center">
-                <div class="rounded-circle me-3" [style.background-color]="getAssetColor(asset.investment_type)" style="width: 20px; height: 20px;"></div>
-                <span class="fw-bold">{{ getAssetTypeLabel(asset.investment_type) }}</span>
-              </div>
-              <div class="text-end">
-                <div class="fw-bold">₹{{ asset.total_current | number:'1.2-2' }}</div>
-                <div class="text-muted">{{ getAssetPercentage(asset.total_current) | number:'1.1-1' }}%</div>
-              </div>
-            </div>
-          </div>
+          <h6 class="text-uppercase text-muted fw-bold small mb-2">Current Value</h6>
+          <h2 class="fw-bold mb-0">₹{{ analyticsData.summary.total_current | number:'1.0-0' }}</h2>
         </div>
       </div>
-      <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-header d-flex align-items-center">
-            <i class="bi bi-speedometer2 me-2 text-primary"></i>
-            <h5 class="card-title mb-0">Performance Metrics</h5>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 overflow-hidden text-white"
+        [style.background]="analyticsData.summary.total_returns >= 0 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'">
+        <div class="card-body p-4 position-relative">
+          <div class="position-absolute top-0 end-0 p-3 opacity-25">
+            <i class="bi" [class.bi-trophy-fill]="analyticsData.summary.total_returns >= 0"
+              [class.bi-exclamation-triangle-fill]="analyticsData.summary.total_returns < 0"
+              style="font-size: 4rem;"></i>
           </div>
-          <div class="card-body">
-            <div class="alert alert-success">
-              <h6 class="alert-heading">Best Performer</h6>
-              <p class="mb-0 text-truncate" [title]="bestPerformer.name">{{ bestPerformer.name || 'N/A' }}</p>
-              <hr>
-              <p class="mb-0">+{{ bestPerformer.returns | number:'1.2-2' }}%</p>
-            </div>
-            <div class="alert alert-danger">
-              <h6 class="alert-heading">Worst Performer</h6>
-              <p class="mb-0 text-truncate" [title]="worstPerformer.name">{{ worstPerformer.name || 'N/A' }}</p>
-              <hr>
-              <p class="mb-0">{{ worstPerformer.returns | number:'1.2-2' }}%</p>
-            </div>
-            <div class="alert alert-warning">
-              <h6 class="alert-heading">Risk Level</h6>
-              <p class="mb-0">{{ riskLevel }}</p>
-            </div>
-            <div class="alert alert-info">
-              <h6 class="alert-heading">Diversification</h6>
-              <p class="mb-0">{{ diversificationScore | number:'1.0-0' }}%</p>
-              <div class="progress mt-2" style="height: 10px;">
-                <div class="progress-bar" role="progressbar" [style.width.%]="diversificationScore" [attr.aria-valuenow]="diversificationScore" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-            </div>
+          <h6 class="text-uppercase text-white-50 fw-bold small mb-2">Total Returns</h6>
+          <h2 class="fw-bold mb-0">
+            {{ analyticsData.summary.total_returns >= 0 ? '+' : '' }}₹{{ analyticsData.summary.total_returns |
+            number:'1.0-0' }}
+          </h2>
+          <div class="mt-2 text-white-50 fw-bold">
+            {{ analyticsData.summary.return_percentage | number:'1.2-2' }}% All Time
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="!loading && portfolioData.length === 0" class="text-center py-5">
-    <i class="bi bi-bar-chart-line-fill display-1 text-muted"></i>
-    <h3 class="my-3">No portfolio data available</h3>
-    <p class="text-muted">Add some investments to see analytics</p>
+  <div class="row g-4">
+    <!-- Asset Allocation -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3 px-4">
+          <h5 class="card-title fw-bold mb-0">Asset Allocation</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex flex-column gap-4">
+            @for (asset of analyticsData.asset_allocation; track asset.type) {
+            <div>
+              <div class="d-flex justify-content-between align-items-end mb-1">
+                <div>
+                  <span class="fw-bold text-dark">{{ getAssetTypeLabel(asset.type) }}</span>
+                  <span class="text-muted small ms-2">({{ asset.percentage | number:'1.1-1' }}%)</span>
+                </div>
+                <div class="fw-bold">₹{{ asset.value | number:'1.0-0' }}</div>
+              </div>
+              <div class="progress" style="height: 8px; border-radius: 4px;">
+                <div class="progress-bar" role="progressbar" [style.width.%]="asset.percentage"
+                  [style.background-color]="getAssetColor(asset.type)" [attr.aria-valuenow]="asset.percentage"
+                  aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insights & Performance -->
+    <div class="col-lg-4">
+      <div class="d-flex flex-column gap-4 h-100">
+
+        <!-- Risk & Diversification -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h5 class="card-title fw-bold mb-4">Portfolio Health</h5>
+
+            <div class="mb-4">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted small text-uppercase fw-bold">Diversification Score</span>
+                <span class="fw-bold" [class.text-success]="analyticsData.insights.diversification_score >= 70"
+                  [class.text-warning]="analyticsData.insights.diversification_score >= 40 && analyticsData.insights.diversification_score < 70"
+                  [class.text-danger]="analyticsData.insights.diversification_score < 40">
+                  {{ analyticsData.insights.diversification_score | number:'1.0-0' }}/100
+                </span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-primary" role="progressbar"
+                  [style.width.%]="analyticsData.insights.diversification_score" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-muted small text-uppercase fw-bold mb-1">Risk Profile</div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge rounded-pill px-3 py-2" [ngClass]="{
+                          'bg-success-subtle text-success': analyticsData.insights.risk_level === 'Low',
+                          'bg-warning-subtle text-warning-emphasis': analyticsData.insights.risk_level === 'Moderate',
+                          'bg-danger-subtle text-danger': analyticsData.insights.risk_level === 'High'
+                        }">
+                  {{ analyticsData.insights.risk_level }} Risk
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Performer -->
+        @if (analyticsData.performance.best) {
+        <div class="card border-0 shadow-sm bg-success-subtle overflow-hidden">
+          <div class="card-body p-4 position-relative">
+            <div class="position-absolute top-0 end-0 p-3 opacity-10">
+              <i class="bi bi-award-fill display-1 text-success"></i>
+            </div>
+            <div class="text-success small text-uppercase fw-bold mb-2">Top Performer</div>
+            <h5 class="fw-bold text-dark mb-1">{{ analyticsData.performance.best.name }}</h5>
+            <div class="fw-bold text-success display-6">
+              +{{ analyticsData.performance.best.return_percentage | number:'1.1-1' }}%
+            </div>
+            <div class="small text-muted mt-1">
+              Absolute Return: ₹{{ analyticsData.performance.best.absolute_return | number:'1.0-0' }}
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- Worst Performer (Optional, maybe just show top gainers list instead) -->
+        @if (analyticsData.performance.top_gainers && analyticsData.performance.top_gainers.length > 0) {
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-0 py-3 px-4">
+            <h6 class="card-title fw-bold mb-0">Top Gainers</h6>
+          </div>
+          <div class="list-group list-group-flush">
+            @for (gainer of analyticsData.performance.top_gainers; track gainer.name) {
+            <div class="list-group-item px-4 py-3 border-0 d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center gap-3">
+                <div
+                  class="rounded-circle d-flex align-items-center justify-content-center bg-success-subtle text-success"
+                  style="width: 32px; height: 32px;">
+                  <i class="bi bi-graph-up-arrow small"></i>
+                </div>
+                <div class="text-truncate" style="max-width: 150px;" [title]="gainer.name">
+                  <div class="fw-bold text-dark small">{{ gainer.name }}</div>
+                  <div class="text-muted small" style="font-size: 0.7rem;">{{ getAssetTypeLabel(gainer.type) }}</div>
+                </div>
+              </div>
+              <span class="badge bg-success-subtle text-success rounded-pill">
+                +{{ gainer.return_percentage | number:'1.1-1' }}%
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+      </div>
+    </div>
   </div>
+  } @else {
+  <div class="text-center py-5">
+    <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+      <i class="bi bi-bar-chart-line display-4 text-muted"></i>
+    </div>
+    <h3 class="fw-bold">No analytics available</h3>
+    <p class="text-muted">Add investments to generate insights.</p>
+  </div>
+  }
 </div>
