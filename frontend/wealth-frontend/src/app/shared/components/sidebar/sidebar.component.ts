@@ -16,10 +16,11 @@ import { HttpClient } from '@angular/common/http';
       height: 100vh;
       overflow-y: auto;
       background-color: var(--bg-sidebar);
-      border-right: 1px solid rgba(0,0,0,0.05);
+      /* border-right: 1px solid rgba(0,0,0,0.05); Removed border for cleaner look */
       scrollbar-width: none; /* Firefox */
       -ms-overflow-style: none;  /* IE and Edge */
       position: relative;
+      box-shadow: 1px 0 10px rgba(0,0,0,0.02); /* Subtle shadow instead */
     }
     
     :host::-webkit-scrollbar {
@@ -27,17 +28,28 @@ import { HttpClient } from '@angular/common/http';
     }
     
     .sidebar-brand {
-      padding: 1.5rem;
-      font-size: 1.25rem;
-      font-weight: 700;
+      padding: 2rem 1.5rem 1rem;
+      font-size: 1.5rem;
+      font-weight: 800;
       color: var(--primary-color);
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      letter-spacing: -0.03em;
       
       i {
-        font-size: 1.5rem;
-        color: var(--accent-color);
+        font-size: 1.75rem;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      span {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
     }
     

@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { AddFundDialogComponent } from './add-fund-dialog.component';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
@@ -18,6 +19,7 @@ export class PortfolioComponent implements OnInit {
   @ViewChild(AddFundDialogComponent) addFundDialog!: AddFundDialogComponent;
 
   funds: any[] = [];
+  filteredFunds: any[] = [];
   totalInvested = 0;
   totalCurrent = 0;
   totalReturns = 0;
@@ -31,11 +33,35 @@ export class PortfolioComponent implements OnInit {
   };
   isEditMode = false;
   private apiUrl = '/api/v1';
+  currentFilterType: string | null = null;
 
-  constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) { }
+  investmentTypes = [
+    { value: 'mutual_fund', label: 'Mutual Fund' },
+    { value: 'stock', label: 'Stocks' },
+    { value: 'epf', label: 'EPF' },
+    { value: 'ppf', label: 'PPF' },
+    { value: 'fd', label: 'Fixed Deposit' },
+    { value: 'gold', label: 'Gold' },
+    { value: 'nps', label: 'NPS' },
+    { value: 'mis', label: 'MIS' }
+  ];
+
+  constructor(
+    private http: HttpClient,
+    private errorHandler: ErrorHandlerService,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit() {
-    this.loadFunds();
+    this.route.queryParams.subscribe(params => {
+      this.currentFilterType = params['type'] || null;
+      // If we already have funds loaded, just re-apply filter
+      if (this.funds.length > 0) {
+        this.applyFilter();
+      } else {
+        this.loadFunds();
+      }
+    });
     this.loadUsername();
   }
 
@@ -46,8 +72,7 @@ export class PortfolioComponent implements OnInit {
         console.log('Funds response:', response);
         if (response.success && response.data) {
           this.funds = response.data.filter((fund: any) => fund.fund_name && fund.fund_name.trim() !== '');
-          console.log('Filtered funds:', this.funds);
-          this.calculateTotals();
+          this.applyFilter();
         }
       },
       error: (error) => {
@@ -57,15 +82,30 @@ export class PortfolioComponent implements OnInit {
     });
   }
 
+  applyFilter() {
+    if (this.currentFilterType) {
+      this.filteredFunds = this.funds.filter(fund => fund.investment_type === this.currentFilterType);
+    } else {
+      this.filteredFunds = [...this.funds];
+    }
+    console.log('Filtered funds:', this.filteredFunds);
+    this.calculateTotals();
+  }
+
+  setFilter(type: string | null) {
+    this.currentFilterType = type;
+    this.applyFilter();
+  }
+
   calculateTotals() {
-    this.totalInvested = this.funds.reduce((sum, fund) => sum + parseFloat(fund.invested_amount || 0), 0);
-    this.totalCurrent = this.funds.reduce((sum, fund) => sum + parseFloat(fund.current_value || 0), 0);
+    this.totalInvested = this.filteredFunds.reduce((sum, fund) => sum + parseFloat(fund.invested_amount || 0), 0);
+    this.totalCurrent = this.filteredFunds.reduce((sum, fund) => sum + parseFloat(fund.current_value || 0), 0);
     this.totalReturns = this.totalCurrent - this.totalInvested;
     console.log('Calculated totals:', {
       totalInvested: this.totalInvested,
       totalCurrent: this.totalCurrent,
       totalReturns: this.totalReturns,
-      fundsCount: this.funds.length
+      fundsCount: this.filteredFunds.length
     });
   }
 

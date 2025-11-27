@@ -32,8 +32,35 @@
   <div class="card shadow-sm border-0">
     <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
       <h5 class="card-title fw-bold mb-0">Fund Holdings</h5>
-      <div class="d-flex gap-2">
-        <button class="btn btn-light btn-sm"><i class="bi bi-filter"></i> Filter</button>
+      <div class="d-flex gap-2 align-items-center">
+        @if (currentFilterType) {
+        <span class="badge bg-primary-subtle text-primary d-flex align-items-center gap-2 px-3 py-2">
+          Filtered by: {{ getInvestmentTypeLabel(currentFilterType) }}
+          <i class="bi bi-x-circle-fill cursor-pointer" role="button" (click)="setFilter(null)"></i>
+        </span>
+        }
+
+        <div class="dropdown">
+          <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            <i class="bi bi-filter"></i> Filter
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+            <li>
+              <h6 class="dropdown-header text-uppercase small fw-bold">Investment Type</h6>
+            </li>
+            <li><a class="dropdown-item" href="javascript:void(0)" (click)="setFilter(null)"
+                [class.active]="currentFilterType === null">All Investments</a></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            @for (type of investmentTypes; track type.value) {
+            <li><a class="dropdown-item" href="javascript:void(0)" (click)="setFilter(type.value)"
+                [class.active]="currentFilterType === type.value">{{ type.label }}</a></li>
+            }
+          </ul>
+        </div>
+
         <button class="btn btn-light btn-sm"><i class="bi bi-download"></i> Export</button>
       </div>
     </div>
@@ -64,7 +91,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (fund of funds; track fund.id) {
+            @for (fund of filteredFunds; track fund.id) {
             <tr>
               <td class="ps-4">
                 <span class="badge rounded-pill fw-normal px-3 py-2" [ngClass]="{
