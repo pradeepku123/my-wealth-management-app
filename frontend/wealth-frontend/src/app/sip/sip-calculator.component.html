@@ -179,17 +179,17 @@
                                 </button>
                             </div>
                             <div class="d-flex justify-content-between text-muted small mb-2">
-                                <span>{{ sip.type }}</span>
-                                <span>{{ sip.years }} Years @ {{ sip.returnRate }}%</span>
+                                <span>{{ sip.sip_type }}</span>
+                                <span>{{ sip.time_period }} Years @ {{ sip.return_rate }}%</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-end">
                                 <div>
                                     <div class="small text-muted">Invested</div>
-                                    <div class="fw-bold">₹{{ sip.invested | number:'1.0-0' }}</div>
+                                    <div class="fw-bold">₹{{ sip.total_invested | number:'1.0-0' }}</div>
                                 </div>
                                 <div class="text-end">
                                     <div class="small text-muted">Total Value</div>
-                                    <div class="fw-bold text-success">₹{{ sip.totalValue | number:'1.0-0' }}</div>
+                                    <div class="fw-bold text-success">₹{{ sip.total_value | number:'1.0-0' }}</div>
                                 </div>
                             </div>
                         </div>

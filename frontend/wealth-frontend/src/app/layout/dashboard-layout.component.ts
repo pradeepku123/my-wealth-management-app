@@ -89,18 +89,23 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const userId = payload.sub;
 
-        this.http.get<APIResponse>(`${this.apiUrl}/auth/user-info?user_id=${userId}`).subscribe({
-          next: (response) => {
-            if (response.success && response.data) {
-              this.userName = response.data.full_name || userId;
-              this.userRole = response.data.role || 'user';
+        if (payload.full_name || payload.email) {
+          this.userName = payload.full_name || payload.email;
+          this.userRole = payload.role || 'user';
+        } else {
+          this.http.get<APIResponse>(`${this.apiUrl}/auth/user-info?user_id=${userId}`).subscribe({
+            next: (response) => {
+              if (response.success && response.data) {
+                this.userName = response.data.full_name || userId;
+                this.userRole = response.data.role || 'user';
+              }
+            },
+            error: () => {
+              this.userName = userId;
+              this.userRole = 'user';
             }
-          },
-          error: () => {
-            this.userName = userId;
-            this.userRole = 'user';
-          }
-        });
+          });
+        }
       } catch {
         this.userName = 'User';
         this.userRole = 'user';

@@ -62,6 +62,13 @@
     <span>Notifications</span>
   </a>
 
+  <a href="javascript:void(0)" (click)="populateTestData()"
+    class="sidebar-link text-decoration-none d-flex align-items-center" [class.text-warning]="showConfirm">
+    <i class="bi" [class.bi-database-add]="!showConfirm" [class.bi-question-circle-fill]="showConfirm"
+      [class.me-3]="true"></i>
+    <span>{{ showConfirm ? 'Click to Confirm' : 'Populate Test Data' }}</span>
+  </a>
+
   @if (isAdmin()) {
   <a routerLink="/database-admin" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
@@ -77,4 +84,8 @@
       <span class="fw-semibold">Logout</span>
     </button>
   </div>
+</div>
+
+<div class="scroll-indicator" [class.visible]="canScrollDown" (click)="scrollDown()">
+  <i class="bi bi-chevron-down"></i>
 </div>

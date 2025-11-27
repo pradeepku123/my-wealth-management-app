@@ -13,7 +13,7 @@ ALGORITHM = "HS256"
 
 
 def create_access_token(
-    subject: str | Any, role: str, expires_delta: timedelta | None = None
+    subject: str | Any, role: str, full_name: str | None = None, email: str | None = None, expires_delta: timedelta | None = None
 ) -> str:
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -22,6 +22,10 @@ def create_access_token(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode = {"exp": expire, "sub": str(subject), "role": role}
+    if full_name:
+        to_encode["full_name"] = full_name
+    if email:
+        to_encode["email"] = email
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

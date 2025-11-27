@@ -123,7 +123,7 @@ export class PortfolioComponent implements OnInit {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const rawUsername = payload.sub || 'User';
+        const rawUsername = payload.full_name || payload.email || 'User';
         this.username = this.capitalizeFirstLetter(rawUsername);
       } catch (error) {
         this.username = 'User';
@@ -134,6 +134,9 @@ export class PortfolioComponent implements OnInit {
   }
 
   capitalizeFirstLetter(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    if (!str) return '';
+    return str.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }
