@@ -15,3 +15,4 @@ class User(Base):
     role = Column(String, default='user')
     investments = relationship("Investment", back_populates="owner")
     sip_estimations = relationship("SIPEstimation", back_populates="owner")
+    goals = relationship("Goal", back_populates="owner")

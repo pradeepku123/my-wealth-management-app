@@ -11,11 +11,11 @@ export class ApiService {
   // Use relative API base so dev-server proxy is used in development and docker setups
   private apiUrl = '/api/v1';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Generic GET request
   get<T>(endpoint: string): Observable<T> {
-    return this.http.get<APIResponse<T>>(`${this.apiUrl}${endpoint}`)
+    return this.http.get<APIResponse<T>>(`${this.apiUrl}/${endpoint}`)
       .pipe(
         map(response => this.handleSuccess(response)),
         catchError(this.handleError)
@@ -24,7 +24,23 @@ export class ApiService {
 
   // Generic POST request
   post<T>(endpoint: string, data: any): Observable<T> {
-    return this.http.post<APIResponse<T>>(`${this.apiUrl}${endpoint}`, data)
+    return this.http.post<APIResponse<T>>(`${this.apiUrl}/${endpoint}`, data)
+      .pipe(
+        map(response => this.handleSuccess(response)),
+        catchError(this.handleError)
+      );
+  }
+
+  put<T>(endpoint: string, data: any): Observable<T> {
+    return this.http.put<APIResponse<T>>(`${this.apiUrl}/${endpoint}`, data)
+      .pipe(
+        map(response => this.handleSuccess(response)),
+        catchError(this.handleError)
+      );
+  }
+
+  delete<T>(endpoint: string): Observable<T> {
+    return this.http.delete<APIResponse<T>>(`${this.apiUrl}/${endpoint}`)
       .pipe(
         map(response => this.handleSuccess(response)),
         catchError(this.handleError)

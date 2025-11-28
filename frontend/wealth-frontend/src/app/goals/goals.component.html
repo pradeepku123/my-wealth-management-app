@@ -1,39 +1,195 @@
 <div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Financial Goals</h1>
-    <button class="btn btn-primary">Add Goal</button>
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div>
+      <h1 class="display-5 fw-bold text-gradient mb-1">Financial Goals</h1>
+      <p class="text-muted mb-0">Track and manage your life's milestones</p>
+    </div>
+    <button class="btn btn-gradient d-flex align-items-center gap-2 shadow-lg" (click)="openAddGoalModal()">
+      <i class="bi bi-plus-lg"></i>
+      <span>New Goal</span>
+    </button>
   </div>
 
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  <!-- Goals Grid -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
     <div *ngFor="let goal of goals" class="col">
-      <div class="card h-100 shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0">{{ goal.name }}</h5>
-          <small class="text-muted">{{ goal.targetDate }}</small>
+      <div class="card h-100 border-0 shadow-sm hover-lift position-relative overflow-hidden"
+        (click)="openLinkInvestmentModal(goal)" style="cursor: pointer;">
+        <!-- Decorative Background Circle -->
+        <div class="position-absolute top-0 end-0 mt-n4 me-n4 opacity-10">
+          <div class="bg-primary rounded-circle" style="width: 150px; height: 150px; opacity: 0.1;"></div>
         </div>
-        <div class="card-body">
-          <div class="d-flex justify-content-between mb-2">
-            <span>Progress</span>
-            <span>{{ goal.progress }}%</span>
+
+        <div class="card-body p-4">
+          <!-- Card Header -->
+          <div class="d-flex justify-content-between align-items-start mb-4 position-relative">
+            <div class="d-flex align-items-center gap-3">
+              <div
+                class="icon-box bg-primary-subtle text-primary rounded-4 p-3 d-flex align-items-center justify-content-center"
+                style="width: 56px; height: 56px;">
+                <i class="bi bi-bullseye fs-3"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-1">{{ goal.name }}</h5>
+                <div class="badge bg-light text-secondary border border-light-subtle rounded-pill fw-normal">
+                  <i class="bi bi-calendar-event me-1"></i> {{ goal.target_date | date }}
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-icon btn-light rounded-circle text-muted border-0" type="button"
+              (click)="$event.stopPropagation(); openLinkInvestmentModal(goal)">
+              <i class="bi bi-link-45deg"></i>
+            </button>
           </div>
-          <div class="progress" style="height: 10px;">
-            <div class="progress-bar" role="progressbar" [style.width.%]="goal.progress" [attr.aria-valuenow]="goal.progress" aria-valuemin="0" aria-valuemax="100"></div>
+
+          <!-- Progress Section -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-end mb-2">
+              <span class="text-muted small fw-bold text-uppercase">
+                {{ (goal.progress || 0) >= 100 ? 'Status' : 'Progress' }}
+              </span>
+              <span class="fw-bold" [ngClass]="(goal.progress || 0) >= 100 ? 'text-success' : 'text-primary'">
+                <ng-container *ngIf="(goal.progress || 0) >= 100; else inProgress">
+                  <i class="bi bi-check-circle-fill me-1"></i> Achieved
+                </ng-container>
+                <ng-template #inProgress>
+                  {{ goal.progress | number:'1.0-0' }}%
+                </ng-template>
+              </span>
+            </div>
+            <div class="progress bg-light rounded-pill" style="height: 12px;">
+              <div class="progress-bar rounded-pill"
+                [ngClass]="(goal.progress || 0) >= 100 ? 'bg-success' : 'bg-gradient-primary'" role="progressbar"
+                [style.width.%]="(goal.progress || 0) > 100 ? 100 : goal.progress" [attr.aria-valuenow]="goal.progress"
+                aria-valuemin="0" aria-valuemax="100">
+              </div>
+            </div>
           </div>
-          <hr class="my-4">
-          <div class="d-flex justify-content-between">
-            <span class="text-muted">Current:</span>
-            <span class="fw-bold">₹{{ goal.current | number:'1.0-0' }}</span>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span class="text-muted">Target:</span>
-            <span class="fw-bold">₹{{ goal.target | number:'1.0-0' }}</span>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span class="text-muted">Monthly SIP:</span>
-            <span class="fw-bold">₹{{ goal.monthlySip | number:'1.0-0' }}</span>
+
+          <!-- Stats Grid -->
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="p-3 bg-light rounded-3 border border-light-subtle h-100">
+                <div class="text-muted small mb-1">Current Value</div>
+                <div class="fw-bold text-dark">₹{{ goal.current_amount | number:'1.0-0' }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded-3 border border-light-subtle h-100">
+                <div class="text-muted small mb-1">Target Amount</div>
+                <div class="fw-bold text-dark">₹{{ goal.target_amount | number:'1.0-0' }}</div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div
+                class="d-flex align-items-center justify-content-between p-3 bg-primary-subtle rounded-3 border border-primary-subtle">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-arrow-repeat text-primary"></i>
+                  <span class="text-primary-emphasis fw-medium">Monthly SIP</span>
+                </div>
+                <span class="fw-bold text-primary">₹{{ goal.monthly_sip_amount | number:'1.0-0' }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Add Goal Modal -->
+<ng-template #goalModal let-modal>
+  <div class="modal-header border-0 pb-0">
+    <h4 class="modal-title fw-bold">Add New Goal</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body pt-4">
+    <form [formGroup]="goalForm">
+      <div class="mb-3">
+        <label for="name" class="form-label">Goal Name</label>
+        <input type="text" class="form-control" id="name" formControlName="name" placeholder="e.g. Retirement, New Car">
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="target_amount" class="form-label">Target Amount (₹)</label>
+          <input type="number" class="form-control" id="target_amount" formControlName="target_amount">
+        </div>
+        <div class="col-md-6">
+          <label for="target_date" class="form-label">Target Date</label>
+          <input type="date" class="form-control" id="target_date" formControlName="target_date">
+        </div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="expected_return" class="form-label">Expected Return (%)</label>
+          <input type="number" class="form-control" id="expected_return" formControlName="expected_return">
+        </div>
+        <div class="col-md-6">
+          <label for="monthly_sip_amount" class="form-label">Planned Monthly SIP (₹)</label>
+          <input type="number" class="form-control bg-light" id="monthly_sip_amount"
+            formControlName="monthly_sip_amount" readonly>
+          <div class="form-text text-muted small">Auto-calculated based on target</div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer border-0 pt-0 pb-4">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss('Close click')">Cancel</button>
+    <button type="button" class="btn btn-primary px-4" (click)="saveGoal()" [disabled]="!goalForm.valid">Save
+      Goal</button>
+  </div>
+</ng-template>
+
+<!-- Link Investment Modal -->
+<ng-template #linkInvestmentModal let-modal>
+  <div class="modal-header border-0 pb-0">
+    <h4 class="modal-title fw-bold">Link Investments</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body pt-4">
+    <p class="text-muted mb-3">Select investments to link to <strong>{{ selectedGoal?.name }}</strong>. The current
+      value of these investments will contribute to your goal progress.</p>
+    <form [formGroup]="linkInvestmentForm">
+      <div class="list-group shadow-sm" style="max-height: 400px; overflow-y: auto;">
+        <ng-container *ngFor="let inv of availableInvestments">
+          <!-- Show if it has remaining amount OR if it is already selected for this goal -->
+          <div *ngIf="inv.remaining_amount > 0 || isInvestmentSelected(inv.id)"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            [class.active-light]="isInvestmentSelected(inv.id)"
+            [class.disabled-item]="inv.remaining_amount <= 0 && !isInvestmentSelected(inv.id)"
+            (click)="toggleInvestmentSelection(inv.id)" style="cursor: pointer;">
+            <div>
+              <div class="fw-bold">{{ inv.fund_name }}</div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="small text-muted">{{ inv.investment_type | titlecase }}</span>
+                <!-- Partially Available Tag -->
+                <span *ngIf="inv.remaining_amount > 0 && inv.remaining_amount < inv.current_value"
+                  class="badge bg-warning text-dark" style="font-size: 0.7em;">
+                  Partially Available
+                </span>
+              </div>
+            </div>
+            <div class="text-end">
+              <ng-container *ngIf="inv.remaining_amount > 0; else fullyAllocated">
+                <div class="fw-bold text-success">₹{{ inv.remaining_amount | number:'1.0-0' }}</div>
+                <div class="small text-muted">Available</div>
+              </ng-container>
+              <ng-template #fullyAllocated>
+                <div class="fw-bold text-danger">₹0</div>
+                <div class="small text-danger">Fully Allocated</div>
+              </ng-template>
+            </div>
+          </div>
+        </ng-container>
+        <div *ngIf="availableInvestments.length === 0" class="text-center p-4 text-muted">
+          No investments found.
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer border-0 pt-0 pb-4">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss('Close click')">Cancel</button>
+    <button type="button" class="btn btn-primary px-4" (click)="saveLinkedInvestments()">Save Changes</button>
+  </div>
+</ng-template>
