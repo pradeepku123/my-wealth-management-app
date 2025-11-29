@@ -14,6 +14,8 @@ import { RegisterComponent } from './register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { SipCalculatorComponent } from './sip/sip-calculator.component';
+import { RecommendationsComponent } from './recommendations/recommendations.component';
+import { FundDetailsComponent } from './recommendations/fund-details/fund-details.component';
 
 export const routes: Routes = [
   {
@@ -40,7 +42,10 @@ export const routes: Routes = [
       { path: 'database-admin', component: DatabaseViewerComponent, canActivate: [AdminGuard] },
       { path: 'investments', component: WealthDashboardComponent },
       { path: 'reports', component: AnalyticsComponent },
-      { path: 'sip', component: SipCalculatorComponent }
+      { path: 'reports', component: AnalyticsComponent },
+      { path: 'sip', component: SipCalculatorComponent },
+      { path: 'recommendations', component: RecommendationsComponent },
+      { path: 'recommendations/fund/:schemeCode', component: FundDetailsComponent }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

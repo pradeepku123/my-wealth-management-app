@@ -113,6 +113,7 @@ class MutualFund(BaseModel):
     fund_house: Optional[str] = None
     category: Optional[str] = None
     sub_category: Optional[str] = None
+    rolling_return: Optional[float] = None
 
     class Config:
         from_attributes = True

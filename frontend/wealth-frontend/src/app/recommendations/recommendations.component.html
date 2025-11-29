@@ -1,0 +1,49 @@
+<div class="recommendations-container">
+  <header class="page-header">
+    <h1>Mutual Fund Recommendations</h1>
+    <p class="subtitle">Curated list of top performing funds for your portfolio</p>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading recommendations...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <p>{{ error }}</p>
+    <button (click)="fetchRecommendations()" class="retry-btn">Retry</button>
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="recommendations-content">
+    <h2>Top Picks</h2>
+    <div class="funds-grid">
+      <div *ngFor="let fund of recommendedFunds" class="fund-card">
+        <div class="fund-header">
+          <span class="category-badge">{{ fund.category }}</span>
+          <span class="subcategory-badge">{{ fund.sub_category }}</span>
+        </div>
+        <h3>{{ fund.scheme_name }}</h3>
+        <div class="fund-details">
+          <div class="detail-item">
+            <span class="label">NAV</span>
+            <span class="value">₹{{ fund.nav }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">3Y Rolling Return</span>
+            <span class="value" [class.text-success]="(fund.rolling_return || 0) > 0">{{ fund.rolling_return ?
+              (fund.rolling_return | number:'1.2-2') + '%' : 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Date</span>
+            <span class="value">{{ fund.nav_date }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Fund House</span>
+            <span class="value">{{ fund.fund_house }}</span>
+          </div>
+        </div>
+        <a [routerLink]="['/recommendations/fund', fund.scheme_code]" class="invest-btn">Explore</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,68 +1,63 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { APIResponse } from '../services/api-response.interface';
 import { EventBusService } from '../services/event-bus.service';
+import { RecommendationsService } from '../services/recommendations.service';
 import { Subscription } from 'rxjs';
+import { FundDetailsComponent } from '../recommendations/fund-details/fund-details.component';
 
 @Component({
   selector: 'app-mutual-funds',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, RouterModule, FundDetailsComponent],
   templateUrl: './mutual-funds.component.html',
   styleUrl: './mutual-funds.component.scss'
 })
 export class MutualFundsComponent implements OnInit, OnDestroy {
   mutualFunds: any[] = [];
   groupedFunds: any = {};
-  // Table mode state & data
-  showTable = false;
-  tableData: any[] = [];
   loading = false;
   private apiUrl = '/api/v1';
 
+  // Search properties
+  searchQuery = '';
+  searchResults: any[] = [];
+  isSearching = false;
+  searchError: string | null = null;
+
+  // Pagination
+  limit = 20;
+  offset = 0;
+  hasMoreResults = false;
+  isLoadingMore = false;
+
+  // Selection properties
+  selectedFundCode: string | null = null;
+
   private subscriptions: Subscription = new Subscription();
 
-  constructor(private http: HttpClient, private eventBus: EventBusService) { }
+  constructor(
+    private http: HttpClient,
+    private eventBus: EventBusService,
+    private recommendationsService: RecommendationsService
+  ) { }
 
   ngOnInit() {
     this.loadMutualFunds();
 
-    // Refresh mutual funds view/table when a mutual fund is added/edited elsewhere
+    // Refresh mutual funds view when a mutual fund is added/edited elsewhere
     const sub = this.eventBus.mutualFundUpdated$.subscribe(() => {
-      // Always refresh market data and table (table will reload only if visible)
+      // Always refresh market data
       this.loadMutualFunds();
-      if (this.showTable) {
-        this.loadTableData();
-      }
     });
     this.subscriptions.add(sub);
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
-  }
-
-  toggleTableView() {
-    this.showTable = !this.showTable;
-    if (this.showTable) {
-      this.loadTableData();
-    }
-  }
-
-  loadTableData(limit: number = 100) {
-    this.loading = true;
-    this.http.get<APIResponse>(`${this.apiUrl}/admin/tables/mutual_funds/data?limit=${limit}`).subscribe({
-      next: (response) => {
-        this.tableData = response.data?.data || response.data || [];
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading mutual funds table data:', error);
-        this.loading = false;
-      }
-    });
   }
 
   loadMutualFunds() {
@@ -121,5 +116,78 @@ export class MutualFundsComponent implements OnInit, OnDestroy {
 
   refreshData() {
     this.loadMutualFunds();
+  }
+
+  onSearch(): void {
+    if (!this.searchQuery || this.searchQuery.length < 3) {
+      this.searchError = 'Please enter at least 3 characters';
+      return;
+    }
+
+    this.isSearching = true;
+    this.searchError = null;
+    this.searchResults = [];
+    this.selectedFundCode = null; // Clear selection on new search
+    this.offset = 0;
+    this.hasMoreResults = false;
+
+    this.performSearch();
+  }
+
+  performSearch(): void {
+    this.recommendationsService.searchFunds(this.searchQuery, this.limit, this.offset).subscribe({
+      next: (response) => {
+        const data = response.results || [];
+        this.hasMoreResults = response.has_more || false;
+
+        if (this.offset === 0) {
+          this.searchResults = data;
+        } else {
+          this.searchResults = [...this.searchResults, ...data];
+        }
+
+        this.isSearching = false;
+        this.isLoadingMore = false;
+
+        if (this.searchResults.length === 0) {
+          this.searchError = 'No funds found matching your query';
+        }
+      },
+      error: (err) => {
+        this.searchError = 'Search failed. Please try again.';
+        this.isSearching = false;
+        this.isLoadingMore = false;
+        console.error(err);
+      }
+    });
+  }
+
+  loadMoreResults(): void {
+    if (!this.hasMoreResults || this.isLoadingMore) return;
+
+    this.isLoadingMore = true;
+    this.offset += this.limit;
+    this.performSearch();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.searchError = null;
+    this.selectedFundCode = null;
+    this.offset = 0;
+    this.hasMoreResults = false;
+  }
+
+  onSelectFund(code: string): void {
+    this.selectedFundCode = code;
+  }
+
+  clearSelection(): void {
+    this.selectedFundCode = null;
+  }
+
+  isInitialState(): boolean {
+    return !this.searchQuery && this.searchResults.length === 0 && !this.selectedFundCode;
   }
 }

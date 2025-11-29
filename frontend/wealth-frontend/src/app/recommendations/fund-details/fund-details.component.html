@@ -1,0 +1,141 @@
+<div class="fund-details-container">
+    <div class="back-nav" *ngIf="showBackLink">
+        <a routerLink="/recommendations" class="back-link">
+            <i class="bi bi-arrow-left"></i> Back to Recommendations
+        </a>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading fund details...</p>
+    </div>
+
+    <div *ngIf="error" class="error-state">
+        <p>{{ error }}</p>
+        <button (click)="fetchFundDetails(schemeCode!)" class="retry-btn">Retry</button>
+    </div>
+
+    <div *ngIf="!isLoading && !error && fundData" class="content-wrapper">
+        <header class="fund-header-card">
+            <div class="header-content">
+                <div class="badges">
+                    <span class="badge category">{{ fundData.meta.scheme_category }}</span>
+                    <span class="badge type">{{ fundData.meta.scheme_type }}</span>
+                </div>
+                <h1>{{ fundData.meta.scheme_name }}</h1>
+                <p class="fund-house">{{ fundData.meta.fund_house }}</p>
+            </div>
+            <div class="current-nav">
+                <span class="label">Current NAV</span>
+                <div class="value">₹{{ fundData.data[0].nav }}</div>
+                <span class="date">as of {{ fundData.data[0].date }}</span>
+            </div>
+        </header>
+
+        <div class="grid-layout">
+            <div class="main-column">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>NAV Performance</h3>
+                        <div class="time-filters">
+                            <button *ngFor="let range of timeRanges" (click)="onRangeSelect(range)"
+                                [class.active]="selectedRange === range" class="filter-btn">
+                                {{ range }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas #navChart></canvas>
+                    </div>
+                </div>
+
+                <div class="returns-card" *ngIf="fundData.returns">
+                    <h3>Returns Overview</h3>
+                    <div class="returns-grid">
+                        <div class="return-item">
+                            <span class="period">1 Week</span>
+                            <span class="value" [class.positive]="(fundData.returns['1W'] || 0) > 0">
+                                {{ fundData.returns['1W'] !== null ? (fundData.returns['1W'] | number:'1.2-2') + '%' :
+                                'N/A' }}
+                            </span>
+                        </div>
+                        <div class="return-item">
+                            <span class="period">1 Month</span>
+                            <span class="value" [class.positive]="(fundData.returns['1M'] || 0) > 0">
+                                {{ fundData.returns['1M'] !== null ? (fundData.returns['1M'] | number:'1.2-2') + '%' :
+                                'N/A' }}
+                            </span>
+                        </div>
+                        <div class="return-item">
+                            <span class="period">3 Months</span>
+                            <span class="value" [class.positive]="(fundData.returns['3M'] || 0) > 0">
+                                {{ fundData.returns['3M'] !== null ? (fundData.returns['3M'] | number:'1.2-2') + '%' :
+                                'N/A' }}
+                            </span>
+                        </div>
+                        <div class="return-item">
+                            <span class="period">6 Months</span>
+                            <span class="value" [class.positive]="(fundData.returns['6M'] || 0) > 0">
+                                {{ fundData.returns['6M'] !== null ? (fundData.returns['6M'] | number:'1.2-2') + '%' :
+                                'N/A' }}
+                            </span>
+                        </div>
+                        <div class="return-item">
+                            <span class="period">1 Year</span>
+                            <span class="value" [class.positive]="(fundData.returns['1Y'] || 0) > 0">
+                                {{ fundData.returns['1Y'] !== null ? (fundData.returns['1Y'] | number:'1.2-2') + '%' :
+                                'N/A' }}
+                            </span>
+                        </div>
+                        <div class="return-item">
+                            <span class="period">3 Years</span>
+                            <span class="value" [class.positive]="(fundData.returns['3Y'] || 0) > 0">
+                                {{ fundData.returns['3Y'] !== null ? (fundData.returns['3Y'] | number:'1.2-2') + '%' :
+                                'N/A' }}
+                            </span>
+                        </div>
+                        <div class="return-item">
+                            <span class="period">5 Years</span>
+                            <span class="value" [class.positive]="(fundData.returns['5Y'] || 0) > 0">
+                                {{ fundData.returns['5Y'] !== null ? (fundData.returns['5Y'] | number:'1.2-2') + '%' :
+                                'N/A' }}
+                            </span>
+                        </div>
+                        <div class="return-item highlight">
+                            <span class="period">Since Inception</span>
+                            <span class="value" [class.positive]="(fundData.returns['Inception'] || 0) > 0">
+                                {{ fundData.returns['Inception'] !== null ? (fundData.returns['Inception'] |
+                                number:'1.2-2') + '%' : 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-column">
+                <div class="info-card">
+                    <h3>Fund Information</h3>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="label">Scheme Code</span>
+                            <span class="value">{{ fundData.meta.scheme_code }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Expense Ratio</span>
+                            <span class="value">{{ fundData.meta.expense_ratio || 'N/A' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">ISIN Growth</span>
+                            <span class="value">{{ fundData.meta.isin_growth || 'N/A' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Category</span>
+                            <span class="value">{{ fundData.meta.scheme_category }}</span>
+                        </div>
+                    </div>
+                    <button class="invest-btn-large">Invest Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

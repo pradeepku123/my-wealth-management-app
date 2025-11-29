@@ -1,0 +1,163 @@
+.recommendations-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .page-header {
+        margin-bottom: 3rem;
+        text-align: center;
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+    }
+
+    .search-results-section {
+        margin-bottom: 3rem;
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+    }
+
+    .recommendations-content {
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--success-color);
+        }
+    }
+
+    .loading-state,
+    .error-state {
+        text-align: center;
+        padding: 3rem;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .funds-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+
+        @media (max-width: 992px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .fund-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-base);
+        border: none;
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .fund-header {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+
+            .category-badge,
+            .subcategory-badge {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-weight: 600;
+            }
+
+            .category-badge {
+                background: var(--primary-light);
+                color: var(--primary-color);
+            }
+
+            .subcategory-badge {
+                background: #f3e5f5;
+                color: #7b1fa2;
+            }
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            line-height: 1.4;
+            height: 3em;
+            overflow: hidden;
+        }
+
+        .fund-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+
+            .detail-item {
+                display: flex;
+                flex-direction: column;
+
+                .label {
+                    font-size: 0.8rem;
+                    color: var(--text-muted);
+                    margin-bottom: 0.25rem;
+                }
+
+                .value {
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                }
+            }
+        }
+
+        .invest-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-base);
+            text-align: center;
+            text-decoration: none;
+
+            &:hover {
+                opacity: 0.9;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+                color: white;
+            }
+        }
+    }
+}
