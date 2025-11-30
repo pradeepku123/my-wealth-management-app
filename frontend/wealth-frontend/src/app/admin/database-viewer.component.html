@@ -160,10 +160,10 @@
           <nav>
             <ul class="pagination">
               <li class="page-item" [class.disabled]="pageIndex === 0">
-                <a class="page-link" href="#" (click)="onPageChange({ previousPageIndex: pageIndex - 1, pageIndex: pageIndex - 1, pageSize: pageSize, length: tableData.total_count })">Previous</a>
+                <a class="page-link" href="javascript:void(0)" (click)="onPageChange({ previousPageIndex: pageIndex - 1, pageIndex: pageIndex - 1, pageSize: pageSize, length: tableData.total_count })">Previous</a>
               </li>
               <li class="page-item" [class.disabled]="(pageIndex + 1) * pageSize >= tableData.total_count">
-                <a class="page-link" href="#" (click)="onPageChange({ previousPageIndex: pageIndex + 1, pageIndex: pageIndex + 1, pageSize: pageSize, length: tableData.total_count })">Next</a>
+                <a class="page-link" href="javascript:void(0)" (click)="onPageChange({ previousPageIndex: pageIndex + 1, pageIndex: pageIndex + 1, pageSize: pageSize, length: tableData.total_count })">Next</a>
               </li>
             </ul>
           </nav>

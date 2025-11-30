@@ -10,75 +10,41 @@
 
         <form (ngSubmit)="onRegister()">
           <div class="form-floating mb-3">
-            <input
-              type="text"
-              class="form-control"
-              id="userId"
-              placeholder="Enter your user ID"
-              [(ngModel)]="userData.user_id"
-              name="userId"
-              required>
+            <input type="text" class="form-control" id="userId" placeholder="Enter your user ID"
+              [(ngModel)]="userData.user_id" name="userId" required>
             <label for="userId">User ID</label>
           </div>
 
           <div class="form-floating mb-3">
-            <input
-              type="text"
-              class="form-control"
-              id="fullName"
-              placeholder="Enter your full name"
-              [(ngModel)]="userData.full_name"
-              name="fullName"
-              required>
+            <input type="text" class="form-control" id="fullName" placeholder="Enter your full name"
+              [(ngModel)]="userData.full_name" name="fullName" required>
             <label for="fullName">Full Name</label>
           </div>
 
           <div class="form-floating mb-3">
-            <input
-              type="email"
-              class="form-control"
-              id="email"
-              placeholder="Enter your email"
-              [(ngModel)]="userData.email"
-              name="email"
-              required>
+            <input type="email" class="form-control" id="email" placeholder="Enter your email"
+              [(ngModel)]="userData.email" name="email" required>
             <label for="email">Email</label>
           </div>
 
           <div class="form-floating mb-3">
-            <input
-              [type]="hidePassword ? 'password' : 'text'"
-              class="form-control"
-              id="password"
-              placeholder="Enter your password"
-              [(ngModel)]="userData.password"
-              name="password"
-              required>
+            <input [type]="hidePassword ? 'password' : 'text'" class="form-control" id="password"
+              placeholder="Enter your password" [(ngModel)]="userData.password" name="password" required>
             <label for="password">Password</label>
             <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
-              <button
-                type="button"
-                (click)="hidePassword = !hidePassword"
-                class="btn btn-link text-muted">
+              <button type="button" (click)="hidePassword = !hidePassword" class="btn btn-link text-muted">
                 <i class="bi" [class.bi-eye-slash]="hidePassword" [class.bi-eye]="!hidePassword"></i>
               </button>
             </div>
           </div>
 
           <div class="form-floating mb-3">
-            <input
-              [type]="hideConfirmPassword ? 'password' : 'text'"
-              class="form-control"
-              id="confirmPassword"
-              placeholder="Confirm your password"
-              [(ngModel)]="userData.confirmPassword"
-              name="confirmPassword"
+            <input [type]="hideConfirmPassword ? 'password' : 'text'" class="form-control" id="confirmPassword"
+              placeholder="Confirm your password" [(ngModel)]="userData.confirmPassword" name="confirmPassword"
               required>
             <label for="confirmPassword">Confirm Password</label>
             <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
-              <button
-                type="button"
-                (click)="hideConfirmPassword = !hideConfirmPassword"
+              <button type="button" (click)="hideConfirmPassword = !hideConfirmPassword"
                 class="btn btn-link text-muted">
                 <i class="bi" [class.bi-eye-slash]="hideConfirmPassword" [class.bi-eye]="!hideConfirmPassword"></i>
               </button>
@@ -91,10 +57,7 @@
           </div>
 
           <div class="d-grid mb-4">
-            <button
-              type="submit"
-              class="btn btn-primary btn-lg"
-              [disabled]="isLoading || !isValid()">
+            <button type="submit" class="btn btn-primary btn-lg" [disabled]="isLoading || !isValid()">
               <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               {{ isLoading ? 'Creating Account...' : 'Create Account' }}
             </button>
@@ -104,7 +67,7 @@
 
           <div class="text-center">
             <p class="text-muted">Already have an account?
-              <a href="#" (click)="goToLogin()" class="text-decoration-none fw-bold">Sign in here</a>
+              <a routerLink="/login" class="text-decoration-none fw-bold">Sign in here</a>
             </p>
           </div>
         </form>
