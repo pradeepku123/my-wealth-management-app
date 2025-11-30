@@ -61,7 +61,8 @@ export class AnalyticsComponent implements OnInit {
       'mis': 'MIS',
       'nps': 'NPS',
       'stock': 'Stocks',
-      'gold': 'Gold'
+      'gold': 'Gold',
+      'foreign_stock': 'Foreign Stock',
     };
     return typeMap[type] || type;
   }

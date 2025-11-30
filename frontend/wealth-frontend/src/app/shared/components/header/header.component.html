@@ -12,30 +12,14 @@
             </div>
             }
 
-            <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="navbarDropdown"
-                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="text-end me-3 d-none d-md-block">
-                        <div class="fw-bold text-dark small">{{ userName }}</div>
-                        <div class="text-muted small text-uppercase" style="font-size: 0.7rem;">{{ userRole }}</div>
-                    </div>
-                    <div class="user-avatar shadow-sm">
-                        {{ getInitials(userName) }}
-                    </div>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 mt-2"
-                    aria-labelledby="navbarDropdown">
-                    <li>
-                        <h6 class="dropdown-header">Account</h6>
-                    </li>
-                    <li><a class="dropdown-item py-2" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                    <li><a class="dropdown-item py-2" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item py-2 text-danger" (click)="onLogout()"><i
-                                class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                </ul>
+            <div class="d-flex align-items-center">
+                <div class="text-end me-3 d-none d-md-block">
+                    <div class="fw-bold text-dark small">{{ userName }}</div>
+                    <div class="text-muted small text-uppercase" style="font-size: 0.7rem;">{{ userRole }}</div>
+                </div>
+                <div class="user-avatar shadow-sm">
+                    {{ getInitials(userName) }}
+                </div>
             </div>
         </div>
     </div>

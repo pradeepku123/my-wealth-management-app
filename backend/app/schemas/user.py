@@ -42,3 +42,12 @@ class OAuth2PasswordRequestForm(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: Optional[int] = None
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+
+class UserPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str

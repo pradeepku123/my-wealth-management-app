@@ -1,0 +1,97 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0 fw-bold text-gray-800">Account Settings</h1>
+      <p class="text-muted mb-0">Manage your profile and security preferences</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Profile Information -->
+    <div class="col-lg-6">
+      <div class="settings-card h-100">
+        <div class="settings-header">
+          <h5 class="mb-0 fw-bold"><i class="bi bi-person-circle me-2 text-primary"></i>Profile Information</h5>
+        </div>
+        <div class="settings-body">
+          <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-control" formControlName="full_name" placeholder="Enter your full name">
+              <div *ngIf="profileForm.get('full_name')?.touched && profileForm.get('full_name')?.invalid" class="text-danger small mt-1">
+                Full name is required
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-control" formControlName="email" placeholder="name@example.com">
+              <div *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.invalid" class="text-danger small mt-1">
+                Valid email is required
+              </div>
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success py-2 mb-3">
+              <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
+            </div>
+            
+            <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3">
+              <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="profileForm.invalid || isLoading">
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Update Profile
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="col-lg-6">
+      <div class="settings-card h-100">
+        <div class="settings-header">
+          <h5 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill me-2 text-primary"></i>Security</h5>
+        </div>
+        <div class="settings-body">
+          <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+            <div class="mb-3">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-control" formControlName="current_password" placeholder="Enter current password">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-control" formControlName="new_password" placeholder="Enter new password">
+              <div *ngIf="passwordForm.get('new_password')?.touched && passwordForm.get('new_password')?.invalid" class="text-danger small mt-1">
+                Password must be at least 6 characters
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-control" formControlName="confirm_password" placeholder="Confirm new password">
+              <div *ngIf="passwordForm.hasError('mismatch') && passwordForm.get('confirm_password')?.touched" class="text-danger small mt-1">
+                Passwords do not match
+              </div>
+            </div>
+
+            <div *ngIf="passwordSuccessMessage" class="alert alert-success py-2 mb-3">
+              <i class="bi bi-check-circle me-2"></i>{{ passwordSuccessMessage }}
+            </div>
+            
+            <div *ngIf="passwordErrorMessage" class="alert alert-danger py-2 mb-3">
+              <i class="bi bi-exclamation-circle me-2"></i>{{ passwordErrorMessage }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="passwordForm.invalid || isLoading">
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Change Password
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
+from app import crud, schemas, models
 from app.api import deps
-from app.core.security import create_access_token, get_password_hash
+from app.core.security import create_access_token, get_password_hash, verify_password
 from app.schemas.response import APIResponse
 from app.utils.response import success_response
 from app.services.user_service import authenticate_user
@@ -123,3 +123,53 @@ def get_user_info(user_id: int, db: Session = Depends(deps.get_db)):
         },
         message="User information retrieved successfully"
     )
+
+@router.put("/profile", response_model=APIResponse)
+def update_user_profile(
+    profile_data: schemas.UserProfileUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user)
+):
+    """Update user profile."""
+    user = crud.user.get(db, id=current_user.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_data = profile_data.dict(exclude_unset=True)
+    if "email" in user_data:
+        # Check if email is already taken by another user
+        existing_user = crud.user.get_by_email(db, email=user_data["email"])
+        if existing_user and existing_user.id != user.id:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+    updated_user = crud.user.update(db, db_obj=user, obj_in=user_data)
+    
+    return success_response(
+        data={
+            "user_id": updated_user.id,
+            "full_name": updated_user.full_name,
+            "role": updated_user.role,
+            "email": updated_user.email
+        },
+        message="Profile updated successfully"
+    )
+
+@router.post("/change-password", response_model=APIResponse)
+def change_password(
+    password_data: schemas.UserPasswordUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user)
+):
+    """Change user password."""
+    if not verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    hashed_password = get_password_hash(password_data.new_password)
+    # We can't use crud.user.update directly easily for just password without a schema, 
+    # but we can update the object directly since we have the ORM object
+    current_user.hashed_password = hashed_password
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    
+    return success_response(message="Password updated successfully")

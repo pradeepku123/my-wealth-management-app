@@ -40,12 +40,12 @@ export const routes: Routes = [
       { path: 'notifications', component: NotificationsComponent },
       { path: 'goals', component: GoalsComponent },
       { path: 'database-admin', component: DatabaseViewerComponent, canActivate: [AdminGuard] },
-      { path: 'investments', component: WealthDashboardComponent },
-      { path: 'reports', component: AnalyticsComponent },
-      { path: 'reports', component: AnalyticsComponent },
+
+
       { path: 'sip', component: SipCalculatorComponent },
       { path: 'recommendations', component: RecommendationsComponent },
-      { path: 'recommendations/fund/:schemeCode', component: FundDetailsComponent }
+      { path: 'recommendations/fund/:schemeCode', component: FundDetailsComponent },
+      { path: 'profile', loadComponent: () => import('./pages/profile-settings/profile-settings.component').then(m => m.ProfileSettingsComponent) }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

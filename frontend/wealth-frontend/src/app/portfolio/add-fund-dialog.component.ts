@@ -36,11 +36,14 @@ export class AddFundDialogComponent implements AfterViewInit, OnInit {
 
   investmentTypes = [
     { value: 'mutual_fund', label: 'Mutual Fund', icon: 'trending_up' },
+    { value: 'stock', label: 'Stocks', icon: 'show_chart' },
+    { value: 'foreign_stock', label: 'Foreign Stock', icon: 'public' },
     { value: 'epf', label: 'EPF (Employee Provident Fund)', icon: 'work' },
     { value: 'ppf', label: 'PPF (Public Provident Fund)', icon: 'savings' },
     { value: 'fd', label: 'FD (Fixed Deposit)', icon: 'account_balance' },
     { value: 'mis', label: 'MIS (Monthly Income Scheme)', icon: 'paid' },
-    { value: 'nps', label: 'NPS (National Pension System)', icon: 'elderly' }
+    { value: 'nps', label: 'NPS (National Pension System)', icon: 'elderly' },
+    { value: 'gold', label: 'Gold', icon: 'monetization_on' }
   ];
 
   constructor(

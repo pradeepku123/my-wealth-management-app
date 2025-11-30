@@ -43,7 +43,8 @@ export class PortfolioComponent implements OnInit {
     { value: 'fd', label: 'Fixed Deposit' },
     { value: 'gold', label: 'Gold' },
     { value: 'nps', label: 'NPS' },
-    { value: 'mis', label: 'MIS' }
+    { value: 'mis', label: 'MIS' },
+    { value: 'foreign_stock', label: 'Foreign Stock' }
   ];
 
   constructor(
@@ -152,7 +153,10 @@ export class PortfolioComponent implements OnInit {
       'ppf': 'PPF',
       'fd': 'FD',
       'mis': 'MIS',
-      'nps': 'NPS'
+      'nps': 'NPS',
+      'foreign_stock': 'Foreign Stock',
+      'stock': 'Stocks',
+      'gold': 'Gold'
     };
     return typeMap[type] || type;
   }

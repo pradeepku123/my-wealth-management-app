@@ -27,6 +27,13 @@ def populate_test_data(
         {"investment_type": "stock", "fund_name": "TCS", "invested_amount": 40000, "current_value": 42000},
         {"investment_type": "fd", "fund_name": "SBI Fixed Deposit", "invested_amount": 100000, "current_value": 105000},
         {"investment_type": "gold", "fund_name": "Sovereign Gold Bond", "invested_amount": 20000, "current_value": 22000},
+        {"investment_type": "nps", "fund_name": "HDFC Pension Fund Scheme E", "invested_amount": 150000, "current_value": 185000},
+        {"investment_type": "epf", "fund_name": "Employees Provident Fund", "invested_amount": 500000, "current_value": 580000},
+        {"investment_type": "ppf", "fund_name": "SBI Public Provident Fund", "invested_amount": 150000, "current_value": 162000},
+        {"investment_type": "mis", "fund_name": "Post Office Monthly Income Scheme", "invested_amount": 450000, "current_value": 450000},
+        {"investment_type": "fd", "fund_name": "Post Office Time Deposit (5 Year)", "invested_amount": 200000, "current_value": 225000},
+        {"investment_type": "foreign_stock", "fund_name": "Apple Inc.", "invested_amount": 75000, "current_value": 92000},
+        {"investment_type": "foreign_stock", "fund_name": "Microsoft Corp", "invested_amount": 60000, "current_value": 78000},
     ]
 
     for inv in investments_data:

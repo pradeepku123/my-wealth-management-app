@@ -68,7 +68,7 @@ import { HttpClient } from '@angular/common/http';
       left: 1rem; /* Adjust based on sidebar width, usually 250px or so */
       width: 250px; /* Match sidebar width */
       text-align: center;
-      pointer-events: auto;
+      pointer-events: none;
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -77,6 +77,7 @@ import { HttpClient } from '@angular/common/http';
 
     .scroll-indicator.visible {
       opacity: 1;
+      pointer-events: auto;
     }
 
     .scroll-indicator i {
