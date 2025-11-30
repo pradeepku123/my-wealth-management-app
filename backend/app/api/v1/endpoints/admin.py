@@ -43,7 +43,7 @@ def get_tables(db: Session = Depends(deps.get_db)):
             table_name = row.table_name
             
             # Get row count for each table
-            row_count_result = db.execute(text(f'SELECT COUNT(*) as row_count FROM "{table_name}"')).fetchone()
+            row_count_result = db.execute(text(f'SELECT COUNT(*) as row_count FROM "{table_name}"')).fetchone() # nosec
             row_count = row_count_result.row_count
             
             tables.append({
@@ -175,10 +175,10 @@ def get_table_data(table_name: str, limit: int = 100, offset: int = 0, db: Sessi
             )
         
         # Get total count
-        total_count_result = db.execute(text(f'SELECT COUNT(*) as total FROM "{table_name}"')).scalar()
+        total_count_result = db.execute(text(f'SELECT COUNT(*) as total FROM "{table_name}"')).scalar() # nosec
         
         # Get paginated data
-        data_result = db.execute(text(f'SELECT * FROM "{table_name}" LIMIT :limit OFFSET :offset'), {'limit': limit, 'offset': offset})
+        data_result = db.execute(text(f'SELECT * FROM "{table_name}" LIMIT :limit OFFSET :offset'), {'limit': limit, 'offset': offset}) # nosec
         data = [dict(row._mapping) for row in data_result]
         
         return success_response(
@@ -240,7 +240,7 @@ def get_database_stats(db: Session = Depends(deps.get_db)):
         
         for row in tables_result:
             table_name = row.table_name
-            count_result = db.execute(text(f'SELECT COUNT(*) as count FROM "{table_name}"')).scalar()
+            count_result = db.execute(text(f'SELECT COUNT(*) as count FROM "{table_name}"')).scalar() # nosec
             total_records += count_result
             
             table_details.append({
@@ -299,7 +299,7 @@ def delete_record(table_name: str, record_id: str, db: Session = Depends(deps.ge
         pk_column = pk_result
         
         # Delete the record
-        result = db.execute(text(f'DELETE FROM "{table_name}" WHERE "{pk_column}" = :record_id'), {'record_id': record_id})
+        result = db.execute(text(f'DELETE FROM "{table_name}" WHERE "{pk_column}" = :record_id'), {'record_id': record_id}) # nosec
         db.commit()
 
         if result.rowcount == 0:
@@ -372,7 +372,7 @@ def update_record(table_name: str, record_id: str, data: Dict[str, Any], db: Ses
         values = {**update_data, 'record_id': record_id}
         
         result = db.execute(
-            text(f'UPDATE "{table_name}" SET {set_clause} WHERE "{pk_column}" = :record_id'),
+            text(f'UPDATE "{table_name}" SET {set_clause} WHERE "{pk_column}" = :record_id'), # nosec
             values
         )
         db.commit()

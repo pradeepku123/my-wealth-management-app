@@ -41,7 +41,7 @@ FUNDS_UNIVERSE = {
 
 def fetch_fund_data(scheme_code: str) -> Optional[Dict]:
     try:
-        response = requests.get(f"https://api.mfapi.in/mf/{scheme_code}")
+        response = requests.get(f"https://api.mfapi.in/mf/{scheme_code}", timeout=10)
         if response.status_code == 200:
             return response.json()
     except Exception as e:
@@ -118,7 +118,7 @@ def get_all_funds_list() -> List[Dict]:
     # Refresh cache if empty or older than 24 hours
     if not ALL_FUNDS_CACHE or (LAST_CACHE_UPDATE and datetime.now() - LAST_CACHE_UPDATE > timedelta(hours=24)):
         try:
-            response = requests.get("https://api.mfapi.in/mf")
+            response = requests.get("https://api.mfapi.in/mf", timeout=10)
             if response.status_code == 200:
                 ALL_FUNDS_CACHE = response.json()
                 LAST_CACHE_UPDATE = datetime.now()

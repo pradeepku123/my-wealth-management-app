@@ -7,7 +7,7 @@ results = {}
 
 for code in codes:
     try:
-        response = requests.get(f"https://api.mfapi.in/mf/{code}")
+        response = requests.get(f"https://api.mfapi.in/mf/{code}", timeout=10)
         if response.status_code == 200:
             data = response.json()
             results[code] = {
