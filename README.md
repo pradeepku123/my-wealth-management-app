@@ -1,81 +1,53 @@
 # WealthTracker - Personal Wealth Management Application
 
-A modern full-stack wealth management application built with Angular 20 frontend, FastAPI backend, and PostgreSQL database.
+A modern, full-stack wealth management application designed to help users track, analyze, and grow their wealth. Built with the latest web technologies including **Angular 20** and **FastAPI**, it offers a robust platform for managing diverse investment portfolios.
 
 ## 🚀 Features
 
-- **Portfolio Management**: Track multiple investment types (Mutual Funds, EPF, PPF, FD, MIS, NPS)
-- **Real-time NAV Data**: Automatic mutual fund NAV updates from AMFI API
-- **User Authentication**: JWT-based login with role-based access control
-- **Dashboard Analytics**: Investment performance tracking with returns calculation
-- **Database Administration**: Complete admin interface for data management
-- **Responsive Design**: Modern UI with Bootstrap 5
-- **Dark/Light Themes**: Accessibility features with theme switching
+### 💰 Portfolio Management
+- **Multi-Asset Tracking**: Manage Mutual Funds, EPF, PPF, FD, MIS, and NPS in one place.
+- **Real-time Updates**: Automatic NAV synchronization for mutual funds via AMFI API.
+- **SIP Management**: Track Systematic Investment Plans and their schedules.
+
+### 📊 Analytics & Insights
+- **Interactive Dashboard**: Visual overview of net worth, asset allocation, and recent activity.
+- **Performance Tracking**: Calculate absolute returns and growth over time.
+- **Asset Breakdown**: Detailed charts showing distribution across asset classes (Equity, Debt, Hybrid).
+
+### 🎯 Financial Goals
+- **Goal Planning**: Set and track financial goals (e.g., Retirement, Buying a House).
+- **Progress Monitoring**: Visual progress bars and projected completion dates.
+- **Investment Linking**: Link specific investments to goals to track funding.
+
+### 🤖 Smart Recommendations
+- **Personalized Suggestions**: Investment recommendations based on risk profile and goals.
+- **Fund Analysis**: Compare mutual funds to make informed decisions.
+
+### 🛡️ Security & Administration
+- **Secure Authentication**: JWT-based login with role-based access control (RBAC).
+- **Admin Panel**: Comprehensive interface for managing users, database records, and system settings.
+- **Data Privacy**: Secure handling of sensitive financial data.
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Angular 20** - Modern web framework
-- **Bootstrap 5** - UI components & styling
-- **Bootstrap Icons** - Modern SVG icons
-- **TypeScript** - Type-safe development
+- **Angular 20.3+**: Cutting-edge web framework for building dynamic SPAs.
+- **Bootstrap 5 & ng-bootstrap**: Responsive, mobile-first UI components.
+- **Chart.js**: Interactive data visualization.
+- **TypeScript**: Strictly typed codebase for reliability.
 
 ### Backend
-- **FastAPI** - High-performance Python API framework
-- **PostgreSQL** - Robust relational database
-- **JWT Authentication** - Secure token-based auth
-- **Asyncio** - Background task scheduling
-- **Pydantic** - Data validation and serialization
+- **FastAPI**: High-performance, easy-to-learn Python API framework.
+- **PostgreSQL**: robust, open-source relational database.
+- **SQLAlchemy**: Powerful ORM for Python.
+- **PyJWT**: Secure JSON Web Token authentication.
+- **Pydantic**: Data validation using Python type hints.
 
-### Infrastructure
-- **Docker** - Containerized deployment
-- **Docker Compose** - Multi-service orchestration
-- **GitHub Codespaces** - Cloud development environment
-
-## 📦 Installation & Setup
-
-### Prerequisites
-- Docker and Docker Compose
-- Node.js 18+ (for local development)
-- Python 3.9+ (for local development)
-
-### Quick Start with Docker
-
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd my-wealth-management-app
-```
-
-2. **Production Mode (All services in Docker)**
-```bash
-sudo docker compose up --build
-sudo docker volume prune -f
-```
-
-3. **Development Mode (Database only in Docker)**
-```bash
-# Start database
-sudo docker compose -f docker-compose.dev.yml up
-
-# Run backend locally
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-
-# Run frontend locally
-cd frontend/wealth-frontend
-npm install
-ng serve
-```
-
-### Access Points
-- **Frontend**: http://localhost:4200
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **Database**: PostgreSQL on port 5432
+### Infrastructure & Testing
+- **Docker & Docker Compose**: Containerized application lifecycle management.
+- **Pytest**: Backend testing framework.
+- **Playwright**: End-to-end (E2E) testing for the frontend.
+- **GitHub Codespaces**: Ready-to-code cloud development environment.
 
 ## 🏗️ Project Structure
 
@@ -83,127 +55,118 @@ ng serve
 my-wealth-management-app/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py              # FastAPI application
-│   │   ├── models.py            # Pydantic models
-│   │   ├── database.py          # Database configuration
-│   │   ├── auth.py              # Authentication logic
-│   │   ├── scheduler.py         # Background tasks
-│   │   └── routers/             # API route modules
+│   │   ├── api/                 # API route handlers (v1)
+│   │   ├── core/                # Core config & security
+│   │   ├── crud/                # Database CRUD operations
+│   │   ├── db/                  # Database connection & models
+│   │   ├── models/              # SQLAlchemy models
+│   │   ├── schemas/             # Pydantic schemas
+│   │   └── main.py              # Application entry point
 │   ├── requirements.txt         # Python dependencies
-│   └── Dockerfile              # Backend container
+│   └── Dockerfile               # Backend container definition
 ├── frontend/wealth-frontend/
 │   ├── src/app/
-│   │   ├── layout/             # Dashboard layout
-│   │   ├── portfolio/          # Portfolio management
-│   │   ├── market/             # Mutual funds data
-│   │   ├── login/              # Authentication
-│   │   ├── services/           # API services
-│   │   └── guards/             # Route protection
-│   ├── tailwind.config.js      # Tailwind configuration
-│   └── Dockerfile             # Frontend container
-├── docker-compose.yml          # Production setup
-├── docker-compose.dev.yml      # Development setup
-└── README.md                   # This file
+│   │   ├── analytics/           # Analytics dashboard
+│   │   ├── goals/               # Goal management
+│   │   ├── portfolio/           # Portfolio tracking
+│   │   ├── recommendations/     # Investment advice
+│   │   ├── services/            # API integration services
+│   │   └── shared/              # Shared components & pipes
+│   ├── package.json             # Frontend dependencies
+│   └── Dockerfile               # Frontend container definition
+├── tests/
+│   ├── api/                     # Backend integration tests
+│   └── ui/                      # Frontend E2E tests (Playwright)
+├── docker-compose.yml           # Development orchestration
+├── docker-compose.prod.yml      # Production orchestration
+├── API.md                       # Detailed API documentation
+├── DEPLOYMENT.md                # Deployment guide
+└── README.md                    # Project documentation
 ```
 
-## 🔐 Authentication
+## 📦 Installation & Setup
 
-### Default Users
-- **Admin**: `admin` / `admin123`
-- **User**: `user1` / `password123`
+### Prerequisites
+- **Docker** & **Docker Compose**
+- **Node.js 20+** (for local frontend dev)
+- **Python 3.12+** (for local backend dev)
 
-### User Registration
-New users can register through the registration page with automatic role assignment.
+### Quick Start (Docker)
 
-## 📊 API Endpoints
+The easiest way to run the application is using Docker.
 
-### Authentication
-- `POST /auth/login` - User login
-- `POST /auth/register` - User registration
-- `POST /auth/forgot-password` - Password reset
-- `GET /auth/user-info` - User profile
+1.  **Clone the repository**:
+    ```bash
+    git clone <repository-url>
+    cd my-wealth-management-app
+    ```
 
-### Portfolio Management
-- `GET /portfolio/investments` - Get user investments
-- `POST /portfolio/investments` - Add new investment
-- `PUT /portfolio/investments/{id}` - Update investment
-- `DELETE /portfolio/investments/{id}` - Delete investment
-- `GET /portfolio/mutual-funds-nav` - Get NAV data
+2.  **Run in Production Mode** (Recommended for demo):
+    ```bash
+    docker compose -f docker-compose.prod.yml up -d --build
+    ```
+    - Access Frontend: `http://localhost`
+    - Access API: `http://localhost/api`
 
-### Admin Operations
-- `GET /admin/tables` - List database tables
-- `GET /admin/table/{name}` - Get table data
-- `POST /admin/table/{name}` - Insert table record
-- `PUT /admin/table/{name}/{id}` - Update table record
-- `DELETE /admin/table/{name}/{id}` - Delete table record
+3.  **Run in Development Mode**:
+    ```bash
+    docker compose up --build
+    ```
+    - Access Frontend: `http://localhost:4200`
+    - Access API: `http://localhost:8000`
+    - Access DB: `localhost:5432`
 
-## 🎨 UI Features
+### Local Development Setup
 
-### Modern Design
-- Clean light theme with blue accents
-- Responsive grid layouts
-- Smooth hover animations
-- Interactive card components
-- Professional typography
+If you prefer running services locally without Docker containers for the app logic:
 
-### Navigation
-- Collapsible sidebar navigation
-- Dynamic page titles
-- Role-based menu visibility
-- Mobile-friendly hamburger menu
+**Backend:**
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
 
-### Accessibility
-- WCAG compliant design
-- Keyboard navigation support
-- Screen reader compatibility
-- High contrast options
+**Frontend:**
+```bash
+cd frontend/wealth-frontend
+npm install
+ng serve
+```
 
-## 🔄 Data Management
+## 🧪 Testing
 
-### Automatic NAV Updates
-- Daily NAV updates at midnight
-- Startup NAV synchronization
-- AMFI API integration
-- Fund categorization (Equity/Debt)
+We ensure code quality with a comprehensive testing suite.
 
-### Investment Types
-- **Mutual Funds**: Equity, Debt, Hybrid funds
-- **EPF**: Employee Provident Fund
-- **PPF**: Public Provident Fund
-- **FD**: Fixed Deposits
-- **MIS**: Monthly Income Scheme
-- **NPS**: National Pension System
+- **API Tests**: Located in `tests/api/`.
+- **UI Tests**: Located in `tests/ui/` using Playwright.
 
-## 🚀 Deployment
+**Run all tests:**
+```bash
+./tests/run_tests.sh
+```
+This script sets up a virtual environment, installs dependencies, and runs both API and UI tests, generating an HTML report.
 
-### GitHub Codespaces
-The application is configured for GitHub Codespaces with proper CORS settings and port forwarding.
+## 📚 Documentation
 
-### Production Deployment
-1. Set environment variables
-2. Configure database connection
-3. Run `docker compose up --build`
-4. Access via configured domain
+- **API Documentation**: See [API.md](API.md) for detailed endpoint descriptions.
+- **Interactive Docs**: Visit `/docs` (Swagger UI) or `/redoc` on the running backend instance.
+- **Deployment Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment instructions.
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Contributions are welcome! Please follow these steps:
+1.  Fork the repository.
+2.  Create a feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
 
 ## 📝 License
 
-This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For issues and questions:
-1. Check the API documentation at `/docs`
-2. Review the application logs
-3. Create an issue in the repository
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
-
-**WealthTracker** - Empowering your financial journey with modern technology.
+**WealthTracker** — Built with ❤️ for financial freedom.
