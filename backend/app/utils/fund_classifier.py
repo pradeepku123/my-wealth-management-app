@@ -3,9 +3,10 @@ def classify_fund(scheme_name):
     name_upper = scheme_name.upper()
     
     # Determine category (Equity or Debt)
-    if any(keyword in name_upper for keyword in ['EQUITY', 'BLUECHIP', 'LARGECAP', 'MIDCAP', 'SMALLCAP', 'MULTICAP', 'FLEXICAP', 'FOCUSED']):
+    # Determine category (Equity or Debt)
+    if any(keyword in name_upper for keyword in ['EQUITY', 'BLUECHIP', 'LARGECAP', 'MIDCAP', 'SMALLCAP', 'MULTICAP', 'FLEXICAP', 'FOCUSED', 'ELSS', 'TAX SAVER', 'INDEX', 'VALUE', 'CONTRA', 'DIVIDEND', 'SECTOR', 'THEMATIC', 'PHARMA', 'TECHNOLOGY', 'INFRASTRUCTURE']):
         category = 'Equity'
-    elif any(keyword in name_upper for keyword in ['DEBT', 'BOND', 'GILT', 'LIQUID', 'ULTRA SHORT', 'SHORT TERM', 'MEDIUM TERM', 'LONG TERM', 'CORPORATE BOND']):
+    elif any(keyword in name_upper for keyword in ['DEBT', 'BOND', 'GILT', 'LIQUID', 'ULTRA SHORT', 'SHORT TERM', 'MEDIUM TERM', 'LONG TERM', 'CORPORATE BOND', 'FIXED', 'INCOME', 'CREDIT RISK', 'FLOATING RATE', 'MONEY MARKET', 'TREASURY', 'PSU', 'BANKING & PSU']):
         category = 'Debt'
     else:
         category = 'Other'
