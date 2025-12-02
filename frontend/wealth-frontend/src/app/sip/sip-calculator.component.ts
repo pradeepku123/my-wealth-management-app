@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { HttpClient } from '@angular/common/http';
 import { APIResponse } from '../services/api-response.interface';
@@ -32,7 +33,8 @@ export class SipCalculatorComponent {
     constructor(
         private http: HttpClient, // Injected HttpClient
         private errorHandler: ErrorHandlerService, // Injected ErrorHandlerService
-        private snackbarService: SnackbarService // Injected SnackbarService
+        private snackbarService: SnackbarService, // Injected SnackbarService
+        private router: Router
     ) {
         this.loadSavedSips();
         this.calculate();
@@ -261,5 +263,9 @@ export class SipCalculatorComponent {
         d += `L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
 
         return d;
+    }
+
+    navigateToSwp() {
+        this.router.navigate(['/swp'], { queryParams: { investment: Math.round(this.totalValue) } });
     }
 }

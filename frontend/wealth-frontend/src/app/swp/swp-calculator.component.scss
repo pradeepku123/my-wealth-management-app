@@ -1,0 +1,23 @@
+.graph-container {
+    overflow: hidden;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.sip-card:hover {
+    transform: translateY(-5px);
+}
+
+.form-range {
+    height: 0.5rem;
+}
+
+.form-range::-webkit-slider-thumb {
+    background: #0d6efd;
+}
+
+.form-range::-moz-range-thumb {
+    background: #0d6efd;
+}
