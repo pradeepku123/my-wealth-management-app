@@ -15,6 +15,8 @@ import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { SipCalculatorComponent } from './sip/sip-calculator.component';
 import { SwpCalculatorComponent } from './swp/swp-calculator.component';
+import { InflationCalculatorComponent } from './inflation/inflation-calculator.component';
+import { BudgetPlannerComponent } from './budget/budget-planner.component';
 import { RecommendationsComponent } from './recommendations/recommendations.component';
 import { FundDetailsComponent } from './recommendations/fund-details/fund-details.component';
 
@@ -45,6 +47,8 @@ export const routes: Routes = [
 
       { path: 'sip', component: SipCalculatorComponent },
       { path: 'swp', component: SwpCalculatorComponent },
+      { path: 'inflation', component: InflationCalculatorComponent },
+      { path: 'budget', component: BudgetPlannerComponent },
       { path: 'recommendations', component: RecommendationsComponent },
       { path: 'recommendations/fund/:schemeCode', component: FundDetailsComponent },
       { path: 'profile', loadComponent: () => import('./pages/profile-settings/profile-settings.component').then(m => m.ProfileSettingsComponent) }

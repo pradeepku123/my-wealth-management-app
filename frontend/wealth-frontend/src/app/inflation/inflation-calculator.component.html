@@ -1,0 +1,149 @@
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center my-4">
+        <div>
+            <h1 class="fw-bold mb-1">Lifestyle Inflation Calculator</h1>
+            <p class="text-muted">Visualize how inflation impacts your expenses and plan for the future</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Input Form -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title fw-bold mb-0">Your Details</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Current Monthly Salary (₹)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" [(ngModel)]="currentMonthlySalary"
+                                    name="salary" (input)="calculate()">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Current Monthly Expense (₹)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" [(ngModel)]="currentMonthlyExpense"
+                                    name="expense" (input)="calculate()">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Current Age</label>
+                                <input type="number" class="form-control" [(ngModel)]="currentAge" name="age"
+                                    (input)="calculate()">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Retirement Age</label>
+                                <input type="number" class="form-control" [(ngModel)]="retirementAge" name="retireAge"
+                                    (input)="calculate()">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Expected Inflation Rate (%)</label>
+                            <input type="range" class="form-range" min="1" max="15" step="0.5"
+                                [(ngModel)]="inflationRate" name="inflation" (input)="calculate()">
+                            <div class="text-end text-muted small">{{ inflationRate }}%</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Expected Salary Growth (%)</label>
+                            <input type="range" class="form-range" min="0" max="20" step="0.5"
+                                [(ngModel)]="salaryGrowthRate" name="growth" (input)="calculate()">
+                            <div class="text-end text-muted small">{{ salaryGrowthRate }}%</div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results & Graph -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Monthly Expense @ {{ retirementAge
+                                }}</div>
+                            <div class="fs-3 fw-bold text-danger">₹{{ expenseAtRetirement | number:'1.0-0' }}</div>
+                            <div class="small text-muted">vs ₹{{ currentMonthlyExpense | number }} today</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Monthly Salary @ {{ retirementAge
+                                }}</div>
+                            <div class="fs-3 fw-bold text-success">₹{{ salaryAtRetirement | number:'1.0-0' }}</div>
+                            <div class="small text-muted">vs ₹{{ currentMonthlySalary | number }} today</div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Graph -->
+                    <div class="graph-container bg-light rounded p-3 position-relative" style="height: 350px;">
+                        <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="none">
+                            <!-- Grid Lines -->
+                            <line x1="40" y1="260" x2="560" y2="260" stroke="#e5e7eb" stroke-width="1" />
+                            <line x1="40" y1="40" x2="40" y2="260" stroke="#e5e7eb" stroke-width="1" />
+
+                            <!-- Salary Line -->
+                            <path [attr.d]="getGraphPath('salary')" fill="none" stroke="#198754" stroke-width="3" />
+
+                            <!-- Expense Line -->
+                            <path [attr.d]="getGraphPath('expense')" fill="none" stroke="#dc3545" stroke-width="3" />
+                        </svg>
+
+                        <!-- Legend -->
+                        <div class="position-absolute top-0 end-0 p-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="d-inline-block bg-success rounded-circle me-2"
+                                    style="width: 10px; height: 10px;"></span>
+                                <small class="text-muted">Salary</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="d-inline-block bg-danger rounded-circle me-2"
+                                    style="width: 10px; height: 10px;"></span>
+                                <small class="text-muted">Expense</small>
+                            </div>
+                        </div>
+
+                        <!-- Axis Labels -->
+                        <div class="position-absolute bottom-0 start-0 w-100 d-flex justify-content-between px-5 pb-1">
+                            <small class="text-muted">Age {{ currentAge }}</small>
+                            <small class="text-muted">Age {{ retirementAge }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Planning Insight -->
+            <div class="card border-0 shadow-sm bg-primary-subtle">
+                <div class="card-body">
+                    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-piggy-bank me-2"></i>Planning for Maintenance
+                    </h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <p class="mb-2">To maintain your lifestyle after retirement (Age {{ retirementAge }} to {{
+                                lifeExpectancy }}), you will need a corpus of:</p>
+                            <h3 class="fw-bold text-dark mb-3">₹{{ corpusNeeded | number:'1.0-0' }}</h3>
+                            <p class="mb-0 small text-muted">
+                                To achieve this, you need to save approximately
+                                <strong class="text-primary">₹{{ sipNeeded | number:'1.0-0' }}/month</strong>
+                                starting today (assuming {{ expectedInvestmentReturn }}% returns).
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-primary" routerLink="/sip">
+                                <i class="bi bi-calculator me-2"></i>Start SIP Plan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -16,4 +16,5 @@ class User(Base):
     investments = relationship("Investment", back_populates="owner")
     sip_estimations = relationship("SIPEstimation", back_populates="owner")
     swp_estimations = relationship("SWPEstimation", back_populates="owner")
+    budgets = relationship("Budget", back_populates="owner")
     goals = relationship("Goal", back_populates="owner")
