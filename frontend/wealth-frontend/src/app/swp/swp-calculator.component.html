@@ -95,41 +95,9 @@
                         </div>
                     </div>
 
-                    <!-- SVG Graph -->
+                    <!-- Chart.js Graph -->
                     <div class="graph-container bg-light rounded p-3 position-relative" style="height: 350px;">
-                        <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="balanceGradient" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3" />
-                                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
-                                </linearGradient>
-                            </defs>
-
-                            <!-- Grid Lines -->
-                            <line x1="40" y1="260" x2="560" y2="260" stroke="#e5e7eb" stroke-width="1" />
-                            <line x1="40" y1="40" x2="40" y2="260" stroke="#e5e7eb" stroke-width="1" />
-
-                            <!-- Area Fills -->
-                            <path [attr.d]="getAreaPath()" fill="url(#balanceGradient)" stroke="none" />
-
-                            <!-- Balance Line -->
-                            <path [attr.d]="getGraphPath()" fill="none" stroke="#3b82f6" stroke-width="3" />
-                        </svg>
-
-                        <!-- Legend / Overlay Labels -->
-                        <div class="position-absolute top-0 end-0 p-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <span class="d-inline-block bg-primary rounded-circle me-2"
-                                    style="width: 10px; height: 10px;"></span>
-                                <small class="text-muted">Balance</small>
-                            </div>
-                        </div>
-
-                        <!-- Axis Labels (Simplified) -->
-                        <div class="position-absolute bottom-0 start-0 w-100 d-flex justify-content-between px-5 pb-1">
-                            <small class="text-muted">Year 0</small>
-                            <small class="text-muted">Year {{ timePeriod }}</small>
-                        </div>
+                        <canvas #swpChart></canvas>
                     </div>
                 </div>
             </div>

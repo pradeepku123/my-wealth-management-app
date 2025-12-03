@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { SnackbarService } from '../services/snackbar.service';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 interface BudgetItem {
     category_name: string;
@@ -26,7 +29,10 @@ interface Budget {
     templateUrl: './budget-planner.component.html',
     styleUrls: ['./budget-planner.component.scss']
 })
-export class BudgetPlannerComponent implements OnInit {
+export class BudgetPlannerComponent implements OnInit, AfterViewInit, OnDestroy {
+    @ViewChild('budgetChart') budgetChartRef!: ElementRef;
+    chart: any;
+
     budgetName: string = '';
     monthlyIncome: number = 50000;
 
@@ -57,9 +63,20 @@ export class BudgetPlannerComponent implements OnInit {
         this.loadSavedBudgets();
     }
 
+    ngAfterViewInit() {
+        this.updateChart();
+    }
+
+    ngOnDestroy() {
+        if (this.chart) {
+            this.chart.destroy();
+        }
+    }
+
     calculate() {
         this.totalExpense = this.expenseItems.reduce((sum, item) => sum + (item.amount || 0), 0);
         this.netSavings = this.monthlyIncome - this.totalExpense;
+        this.updateChart();
     }
 
     addExpenseItem() {
@@ -172,59 +189,77 @@ export class BudgetPlannerComponent implements OnInit {
         this.calculate();
     }
 
-    // Pie Chart Logic
-    getPieChartPath(index: number, total: number): string {
-        // Simple pie chart implementation is complex in pure SVG without libraries.
-        // Let's use a simple bar chart or just a CSS conic-gradient for simplicity if possible, 
-        // OR implement a basic SVG pie chart.
-        // Given the constraints, let's do a simple horizontal stacked bar chart for "Income vs Expenses"
-        return '';
-    }
+    updateChart() {
+        if (!this.budgetChartRef) return;
 
-    // Helper for Pie Chart
-    getPieSlices() {
-        let cumulativePercent = 0;
-        const total = this.totalExpense > 0 ? this.totalExpense : 1;
+        const ctx = this.budgetChartRef.nativeElement.getContext('2d');
 
-        return this.expenseItems.map((item, index) => {
-            const percent = (item.amount / total);
-            const startPercent = cumulativePercent;
-            cumulativePercent += percent;
+        // Filter out empty items
+        const validItems = this.expenseItems.filter(item => item.amount > 0);
+        const labels = validItems.map(item => item.category_name || 'Uncategorized');
+        const data = validItems.map(item => item.amount);
 
-            const startX = Math.cos(2 * Math.PI * startPercent);
-            const startY = Math.sin(2 * Math.PI * startPercent);
-            const endX = Math.cos(2 * Math.PI * cumulativePercent);
-            const endY = Math.sin(2 * Math.PI * cumulativePercent);
+        // Add Savings if positive
+        if (this.netSavings > 0) {
+            labels.push('Savings');
+            data.push(this.netSavings);
+        }
 
-            // Large arc flag
-            const largeArcFlag = percent > 0.5 ? 1 : 0;
+        const colors = [
+            '#dc3545', '#fd7e14', '#ffc107', '#20c997', '#0dcaf0',
+            '#6610f2', '#d63384', '#6f42c1', '#0d6efd', '#198754'
+        ];
 
-            // Path data
-            // M 0 0 L startX startY A 1 1 0 largeArcFlag 1 endX endY Z
-            // We need to scale this to our SVG size (e.g. 100x100, center 50,50, radius 40)
-
-            return {
-                path: this.createPieSlicePath(50, 50, 40, startPercent, cumulativePercent),
-                color: this.getColor(index),
-                label: item.category_name,
-                percent: (percent * 100).toFixed(1)
-            };
+        // If savings is the last item, ensure it gets a green color (e.g. last in our list or specific)
+        // Let's just generate colors cyclically, but maybe override the last one if it is Savings?
+        const backgroundColors = labels.map((label, index) => {
+            if (label === 'Savings') return '#198754'; // Success Green
+            return colors[index % colors.length];
         });
-    }
 
-    createPieSlicePath(cx: number, cy: number, r: number, startPercent: number, endPercent: number): string {
-        const startX = cx + r * Math.cos(2 * Math.PI * startPercent - Math.PI / 2); // -PI/2 to start at top
-        const startY = cy + r * Math.sin(2 * Math.PI * startPercent - Math.PI / 2);
-        const endX = cx + r * Math.cos(2 * Math.PI * endPercent - Math.PI / 2);
-        const endY = cy + r * Math.sin(2 * Math.PI * endPercent - Math.PI / 2);
-
-        const largeArcFlag = (endPercent - startPercent) > 0.5 ? 1 : 0;
-
-        return `M ${cx} ${cy} L ${startX} ${startY} A ${r} ${r} 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
-    }
-
-    getColor(index: number): string {
-        const colors = ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'];
-        return colors[index % colors.length];
+        if (this.chart) {
+            this.chart.data.labels = labels;
+            this.chart.data.datasets[0].data = data;
+            this.chart.data.datasets[0].backgroundColor = backgroundColors;
+            this.chart.update();
+        } else {
+            this.chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,9 @@ import { HttpClient } from '@angular/common/http';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { SnackbarService } from '../services/snackbar.service';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
     selector: 'app-sip-calculator',
@@ -15,7 +18,10 @@ import { SnackbarService } from '../services/snackbar.service';
     templateUrl: './sip-calculator.component.html',
     styleUrls: ['./sip-calculator.component.scss']
 })
-export class SipCalculatorComponent {
+export class SipCalculatorComponent implements OnInit, AfterViewInit, OnDestroy {
+    @ViewChild('sipChart') sipChartRef!: ElementRef;
+    chart: any;
+
     sipName: string = '';
     sipType: 'Monthly' | 'Yearly' = 'Monthly';
     amount: number = 5000;
@@ -26,18 +32,30 @@ export class SipCalculatorComponent {
     estimatedReturns: number = 0;
     totalValue: number = 0;
 
-    yearlyData: any[] = []; // Restored yearlyData
+    yearlyData: any[] = [];
     savedSips: any[] = [];
-    private apiUrl = '/api/v1/sip'; // Added apiUrl
+    private apiUrl = '/api/v1/sip';
 
     constructor(
-        private http: HttpClient, // Injected HttpClient
-        private errorHandler: ErrorHandlerService, // Injected ErrorHandlerService
-        private snackbarService: SnackbarService, // Injected SnackbarService
+        private http: HttpClient,
+        private errorHandler: ErrorHandlerService,
+        private snackbarService: SnackbarService,
         private router: Router
-    ) {
+    ) { }
+
+    ngOnInit() {
         this.loadSavedSips();
         this.calculate();
+    }
+
+    ngAfterViewInit() {
+        this.updateChart();
+    }
+
+    ngOnDestroy() {
+        if (this.chart) {
+            this.chart.destroy();
+        }
     }
 
     loadSavedSips() {
@@ -134,7 +152,6 @@ export class SipCalculatorComponent {
             let currentCorpus = 0;
             for (let year = 1; year <= this.timePeriod; year++) {
                 // Calculate value at end of each year
-                // We can approximate or run a loop for months
                 for (let m = 0; m < 12; m++) {
                     currentCorpus = (currentCorpus + this.amount) * (1 + monthlyRate);
                 }
@@ -163,106 +180,81 @@ export class SipCalculatorComponent {
         }
 
         this.estimatedReturns = this.totalValue - this.totalInvested;
+        this.updateChart();
     }
 
-    getGraphPath(): string {
-        if (this.yearlyData.length === 0) return '';
+    updateChart() {
+        if (!this.sipChartRef) return;
 
-        const width = 600;
-        const height = 300;
-        const padding = 40;
+        const ctx = this.sipChartRef.nativeElement.getContext('2d');
+        const labels = this.yearlyData.map(d => `Year ${d.year}`);
+        const investedData = this.yearlyData.map(d => d.invested);
+        const valueData = this.yearlyData.map(d => d.value);
 
-        const maxVal = this.yearlyData[this.yearlyData.length - 1].value;
-        const minVal = 0;
-
-        const xScale = (width - 2 * padding) / (this.yearlyData.length - 1);
-        const yScale = (height - 2 * padding) / maxVal;
-
-        // Line for Total Value
-        let path = `M ${padding} ${height - padding} `; // Start at 0,0 (bottom-left)
-
-        // Actually, first point should be year 0? Or just start from year 1.
-        // Let's start from year 1 at x = padding + xScale
-        // Or better, include Year 0 (0,0)
-
-        const points = [{ year: 0, value: 0 }, ...this.yearlyData];
-        const xScaleAdj = (width - 2 * padding) / (points.length - 1);
-
-        let d = '';
-        points.forEach((point, index) => {
-            const x = padding + index * xScaleAdj;
-            const y = height - padding - (point.value * yScale);
-            d += `${index === 0 ? 'M' : 'L'} ${x} ${y} `;
-        });
-
-        return d;
-    }
-
-    getInvestedPath(): string {
-        if (this.yearlyData.length === 0) return '';
-
-        const width = 600;
-        const height = 300;
-        const padding = 40;
-
-        const maxVal = this.yearlyData[this.yearlyData.length - 1].value; // Scale based on max value to keep proportion
-
-        const points = [{ year: 0, invested: 0 }, ...this.yearlyData];
-        const xScaleAdj = (width - 2 * padding) / (points.length - 1);
-        const yScale = (height - 2 * padding) / maxVal;
-
-        let d = '';
-        points.forEach((point, index) => {
-            const x = padding + index * xScaleAdj;
-            const y = height - padding - (point.invested * yScale);
-            d += `${index === 0 ? 'M' : 'L'} ${x} ${y} `;
-        });
-
-        return d;
-    }
-    getAreaPath(): string {
-        if (this.yearlyData.length === 0) return '';
-
-        const width = 600;
-        const height = 300;
-        const padding = 40;
-
-        const maxVal = this.yearlyData[this.yearlyData.length - 1].value;
-        const yScale = (height - 2 * padding) / maxVal;
-
-        // Get the line path first
-        let d = this.getGraphPath();
-
-        // Close the path to create an area
-        // Start from the last point, go down to x-axis, then back to start x-axis
-        const lastX = width - padding; // Assuming the last point is at the right edge minus padding
-        const firstX = padding;
-        const bottomY = height - padding;
-
-        d += `L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-
-        return d;
-    }
-
-    getInvestedAreaPath(): string {
-        if (this.yearlyData.length === 0) return '';
-
-        const width = 600;
-        const height = 300;
-        const padding = 40;
-
-        const maxVal = this.yearlyData[this.yearlyData.length - 1].value;
-        const yScale = (height - 2 * padding) / maxVal;
-
-        let d = this.getInvestedPath();
-
-        const lastX = width - padding;
-        const firstX = padding;
-        const bottomY = height - padding;
-
-        d += `L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-
-        return d;
+        if (this.chart) {
+            this.chart.data.labels = labels;
+            this.chart.data.datasets[0].data = investedData;
+            this.chart.data.datasets[1].data = valueData;
+            this.chart.update();
+        } else {
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Invested Amount',
+                            data: investedData,
+                            borderColor: '#94a3b8',
+                            backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Total Value',
+                            data: valueData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', notation: 'compact', maximumFractionDigits: 1 }).format(Number(value));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     navigateToSwp() {

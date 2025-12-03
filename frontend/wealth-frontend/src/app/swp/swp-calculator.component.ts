@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -6,6 +6,9 @@ import { HttpClient } from '@angular/common/http';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { SnackbarService } from '../services/snackbar.service';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
     selector: 'app-swp-calculator',
@@ -14,7 +17,10 @@ import { SnackbarService } from '../services/snackbar.service';
     templateUrl: './swp-calculator.component.html',
     styleUrls: ['./swp-calculator.component.scss']
 })
-export class SwpCalculatorComponent implements OnInit {
+export class SwpCalculatorComponent implements OnInit, AfterViewInit, OnDestroy {
+    @ViewChild('swpChart') swpChartRef!: ElementRef;
+    chart: any;
+
     swpName: string = '';
     totalInvestment: number = 1000000;
     withdrawalPerMonth: number = 5000;
@@ -46,6 +52,16 @@ export class SwpCalculatorComponent implements OnInit {
             }
         });
         this.calculate();
+    }
+
+    ngAfterViewInit() {
+        this.updateChart();
+    }
+
+    ngOnDestroy() {
+        if (this.chart) {
+            this.chart.destroy();
+        }
     }
 
     loadSavedSwps() {
@@ -123,40 +139,18 @@ export class SwpCalculatorComponent implements OnInit {
     }
 
     calculate() {
-        this.yearlyData = [];
+        // Reset for actual calculation loop
         let balance = this.totalInvestment;
         let withdrawn = 0;
+        this.yearlyData = [];
         const monthlyRate = this.expectedReturn / 12 / 100;
 
-        // We simulate month by month
-        for (let year = 1; year <= this.timePeriod; year++) {
-            for (let m = 0; m < 12; m++) {
-                // Interest is earned on the balance at the start of the month (or end, usually start for simplicity here or average)
-                // Standard SWP: Withdraw first, then interest? Or Interest then withdraw?
-                // Usually: Balance grows by interest, then withdrawal happens.
-                // Or Withdrawal happens, then remaining balance grows.
-                // Let's assume withdrawal at end of month.
-                const interest = balance * monthlyRate;
-                balance = balance + interest - this.withdrawalPerMonth;
-                if (balance < 0) balance = 0;
-                // If balance is 0, we stop withdrawing? Or we just count it as 0?
-                // Usually SWP stops if no money.
-                if (balance === 0 && this.withdrawalPerMonth > 0) {
-                    // Partial withdrawal if we hit 0?
-                    // For simplicity, let's just say it hits 0.
-                }
-            }
-            // We accumulate total withdrawn simply as monthly * 12 * year, 
-            // BUT if balance hit 0, we shouldn't have withdrawn that much.
-            // Let's track actual withdrawn.
-
-            // Re-doing loop to be more precise
-        }
-
-        // Reset for actual calculation loop
-        balance = this.totalInvestment;
-        withdrawn = 0;
-        this.yearlyData = [];
+        // Add initial point (Year 0)
+        this.yearlyData.push({
+            year: 0,
+            balance: this.totalInvestment,
+            withdrawn: 0
+        });
 
         for (let year = 1; year <= this.timePeriod; year++) {
             let yearWithdrawn = 0;
@@ -183,59 +177,80 @@ export class SwpCalculatorComponent implements OnInit {
 
         this.finalValue = balance;
         this.totalWithdrawn = withdrawn;
+        this.updateChart();
     }
 
-    getGraphPath(): string {
-        if (this.yearlyData.length === 0) return '';
+    updateChart() {
+        if (!this.swpChartRef) return;
 
-        const width = 600;
-        const height = 300;
-        const padding = 40;
+        const ctx = this.swpChartRef.nativeElement.getContext('2d');
+        const labels = this.yearlyData.map(d => `Year ${d.year}`);
+        const balanceData = this.yearlyData.map(d => d.balance);
+        const withdrawnData = this.yearlyData.map(d => d.withdrawn);
 
-        // Max value could be initial investment or final value or max balance during the period (if return > withdrawal)
-        // Usually max balance is the start or end.
-        let maxVal = this.totalInvestment;
-        this.yearlyData.forEach(d => {
-            if (d.balance > maxVal) maxVal = d.balance;
-        });
-
-        // Also consider withdrawn amount? No, we usually plot Balance.
-        // Maybe we plot Balance vs Total Withdrawn?
-        // Let's plot Balance.
-
-        const yScale = (height - 2 * padding) / maxVal;
-        const xScaleAdj = (width - 2 * padding) / (this.yearlyData.length); // +1 for year 0
-
-        // Start at Year 0
-        const points = [{ year: 0, balance: this.totalInvestment }, ...this.yearlyData];
-
-        let d = '';
-        points.forEach((point, index) => {
-            const x = padding + index * xScaleAdj;
-            const y = height - padding - (point.balance * yScale);
-            d += `${index === 0 ? 'M' : 'L'} ${x} ${y} `;
-        });
-
-        return d;
-    }
-
-    getAreaPath(): string {
-        if (this.yearlyData.length === 0) return '';
-        const width = 600;
-        const height = 300;
-        const padding = 40;
-
-        let d = this.getGraphPath();
-
-        // We need the last X coordinate
-        const points = [{ year: 0, balance: this.totalInvestment }, ...this.yearlyData];
-        const xScaleAdj = (width - 2 * padding) / (this.yearlyData.length);
-        const lastX = padding + (points.length - 1) * xScaleAdj;
-
-        const firstX = padding;
-        const bottomY = height - padding;
-
-        d += `L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-        return d;
+        if (this.chart) {
+            this.chart.data.labels = labels;
+            this.chart.data.datasets[0].data = balanceData;
+            this.chart.data.datasets[1].data = withdrawnData;
+            this.chart.update();
+        } else {
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Balance',
+                            data: balanceData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Cumulative Withdrawn',
+                            data: withdrawnData,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', notation: 'compact', maximumFractionDigits: 1 }).format(Number(value));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 }

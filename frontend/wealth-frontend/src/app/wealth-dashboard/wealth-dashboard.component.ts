@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { APIResponse } from '../services/api-response.interface';
 import { ErrorHandlerService } from '../services/error-handler.service';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-wealth-dashboard',
@@ -12,7 +15,10 @@ import { ErrorHandlerService } from '../services/error-handler.service';
   templateUrl: './wealth-dashboard.component.html',
   styleUrl: './wealth-dashboard.component.scss'
 })
-export class WealthDashboardComponent implements OnInit {
+export class WealthDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('portfolioChart') portfolioChartRef!: ElementRef;
+  chart: any;
+
   assetBreakdown: any[] = [];
   totalInvested = 0;
   totalCurrentValue = 0;
@@ -29,6 +35,16 @@ export class WealthDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadAssetBreakdown();
+  }
+
+  ngAfterViewInit() {
+    // Chart will be updated when data is loaded
+  }
+
+  ngOnDestroy() {
+    if (this.chart) {
+      this.chart.destroy();
+    }
   }
 
   loadAssetBreakdown() {
@@ -52,11 +68,11 @@ export class WealthDashboardComponent implements OnInit {
     this.totalCurrentValue = this.assetBreakdown.reduce((sum, asset) => sum + parseFloat(asset.total_current || 0), 0);
     this.totalReturns = this.totalCurrentValue - this.totalInvested;
     this.totalReturnsPercentage = this.totalInvested > 0 ? (this.totalReturns / this.totalInvested) * 100 : 0;
+    this.updateChart();
   }
 
   navigateToPortfolio(type: string) {
     // Navigate to portfolio with query param to filter by type if needed
-    // Assuming portfolio component can handle 'type' query param or just navigating to main portfolio
     this.router.navigate(['/portfolio'], { queryParams: { type: type } });
   }
 
@@ -75,39 +91,6 @@ export class WealthDashboardComponent implements OnInit {
     return typeMap[type] || type;
   }
 
-  // Chart Logic
-  getPieChartPath(index: number): string {
-    if (this.totalCurrentValue === 0) return '';
-
-    let startAngle = 0;
-    for (let i = 0; i < index; i++) {
-      startAngle += (parseFloat(this.assetBreakdown[i].total_current) / this.totalCurrentValue) * 360;
-    }
-
-    const sliceAngle = (parseFloat(this.assetBreakdown[index].total_current) / this.totalCurrentValue) * 360;
-    const endAngle = startAngle + sliceAngle;
-
-    // Convert angles to radians
-    const startRad = (startAngle - 90) * Math.PI / 180;
-    const endRad = (endAngle - 90) * Math.PI / 180;
-
-    // Center and radius
-    const x = 100;
-    const y = 100;
-    const r = 80;
-
-    // Points
-    const x1 = x + r * Math.cos(startRad);
-    const y1 = y + r * Math.sin(startRad);
-    const x2 = x + r * Math.cos(endRad);
-    const y2 = y + r * Math.sin(endRad);
-
-    // SVG Path
-    const largeArcFlag = sliceAngle > 180 ? 1 : 0;
-
-    return `M ${x} ${y} L ${x1} ${y1} A ${r} ${r} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-  }
-
   getChartColor(type: string): string {
     const colors: { [key: string]: string } = {
       'mutual_fund': '#0d6efd', // Primary
@@ -120,5 +103,59 @@ export class WealthDashboardComponent implements OnInit {
       'mis': '#6c757d' // Secondary
     };
     return colors[type] || '#adb5bd';
+  }
+
+  updateChart() {
+    if (!this.portfolioChartRef || this.assetBreakdown.length === 0) return;
+
+    const ctx = this.portfolioChartRef.nativeElement.getContext('2d');
+
+    const labels = this.assetBreakdown.map(asset => this.getAssetTypeLabel(asset.investment_type));
+    const data = this.assetBreakdown.map(asset => parseFloat(asset.total_current));
+    const backgroundColors = this.assetBreakdown.map(asset => this.getChartColor(asset.investment_type));
+
+    if (this.chart) {
+      this.chart.data.labels = labels;
+      this.chart.data.datasets[0].data = data;
+      this.chart.data.datasets[0].backgroundColor = backgroundColors;
+      this.chart.update();
+    } else {
+      this.chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: backgroundColors,
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              display: false // We have a custom legend in HTML or we can enable it here
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  let label = context.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed !== null) {
+                    label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed);
+                  }
+                  return label;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
   }
 }

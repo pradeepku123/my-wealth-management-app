@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
     selector: 'app-inflation-calculator',
@@ -9,7 +12,10 @@ import { FormsModule } from '@angular/forms';
     templateUrl: './inflation-calculator.component.html',
     styleUrls: ['./inflation-calculator.component.scss']
 })
-export class InflationCalculatorComponent implements OnInit {
+export class InflationCalculatorComponent implements OnInit, AfterViewInit, OnDestroy {
+    @ViewChild('inflationChart') inflationChartRef!: ElementRef;
+    chart: any;
+
     currentMonthlySalary: number = 100000;
     currentMonthlyExpense: number = 50000;
     currentAge: number = 25;
@@ -29,6 +35,16 @@ export class InflationCalculatorComponent implements OnInit {
 
     ngOnInit() {
         this.calculate();
+    }
+
+    ngAfterViewInit() {
+        this.updateChart();
+    }
+
+    ngOnDestroy() {
+        if (this.chart) {
+            this.chart.destroy();
+        }
     }
 
     calculate() {
@@ -53,6 +69,7 @@ export class InflationCalculatorComponent implements OnInit {
         this.expenseAtRetirement = this.yearlyData[this.yearlyData.length - 1].expense;
 
         this.calculateRetirementNeeds();
+        this.updateChart();
     }
 
     calculateRetirementNeeds() {
@@ -104,31 +121,77 @@ export class InflationCalculatorComponent implements OnInit {
         }
     }
 
-    getGraphPath(type: 'salary' | 'expense'): string {
-        if (this.yearlyData.length === 0) return '';
+    updateChart() {
+        if (!this.inflationChartRef) return;
 
-        const width = 600;
-        const height = 300;
-        const padding = 40;
+        const ctx = this.inflationChartRef.nativeElement.getContext('2d');
+        const labels = this.yearlyData.map(d => `Age ${d.year}`);
+        const salaryData = this.yearlyData.map(d => d.salary);
+        const expenseData = this.yearlyData.map(d => d.expense);
 
-        // Find max value for scaling
-        let maxVal = 0;
-        this.yearlyData.forEach(d => {
-            if (d.salary > maxVal) maxVal = d.salary;
-            if (d.expense > maxVal) maxVal = d.expense;
-        });
-
-        const yScale = (height - 2 * padding) / maxVal;
-        const xScaleAdj = (width - 2 * padding) / (this.yearlyData.length - 1);
-
-        let d = '';
-        this.yearlyData.forEach((point, index) => {
-            const val = type === 'salary' ? point.salary : point.expense;
-            const x = padding + index * xScaleAdj;
-            const y = height - padding - (val * yScale);
-            d += `${index === 0 ? 'M' : 'L'} ${x} ${y} `;
-        });
-
-        return d;
+        if (this.chart) {
+            this.chart.data.labels = labels;
+            this.chart.data.datasets[0].data = salaryData;
+            this.chart.data.datasets[1].data = expenseData;
+            this.chart.update();
+        } else {
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Monthly Salary',
+                            data: salaryData,
+                            borderColor: '#198754', // Success color
+                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Monthly Expense',
+                            data: expenseData,
+                            borderColor: '#dc3545', // Danger color
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', notation: 'compact', maximumFractionDigits: 1 }).format(Number(value));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 }

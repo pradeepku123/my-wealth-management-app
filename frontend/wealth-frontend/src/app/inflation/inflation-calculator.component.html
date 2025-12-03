@@ -83,39 +83,9 @@
                         </div>
                     </div>
 
-                    <!-- SVG Graph -->
+                    <!-- Chart.js Graph -->
                     <div class="graph-container bg-light rounded p-3 position-relative" style="height: 350px;">
-                        <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="none">
-                            <!-- Grid Lines -->
-                            <line x1="40" y1="260" x2="560" y2="260" stroke="#e5e7eb" stroke-width="1" />
-                            <line x1="40" y1="40" x2="40" y2="260" stroke="#e5e7eb" stroke-width="1" />
-
-                            <!-- Salary Line -->
-                            <path [attr.d]="getGraphPath('salary')" fill="none" stroke="#198754" stroke-width="3" />
-
-                            <!-- Expense Line -->
-                            <path [attr.d]="getGraphPath('expense')" fill="none" stroke="#dc3545" stroke-width="3" />
-                        </svg>
-
-                        <!-- Legend -->
-                        <div class="position-absolute top-0 end-0 p-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <span class="d-inline-block bg-success rounded-circle me-2"
-                                    style="width: 10px; height: 10px;"></span>
-                                <small class="text-muted">Salary</small>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <span class="d-inline-block bg-danger rounded-circle me-2"
-                                    style="width: 10px; height: 10px;"></span>
-                                <small class="text-muted">Expense</small>
-                            </div>
-                        </div>
-
-                        <!-- Axis Labels -->
-                        <div class="position-absolute bottom-0 start-0 w-100 d-flex justify-content-between px-5 pb-1">
-                            <small class="text-muted">Age {{ currentAge }}</small>
-                            <small class="text-muted">Age {{ retirementAge }}</small>
-                        </div>
+                        <canvas #inflationChart></canvas>
                     </div>
                 </div>
             </div>
