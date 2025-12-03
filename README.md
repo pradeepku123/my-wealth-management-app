@@ -2,51 +2,41 @@
 
 A modern, full-stack wealth management application designed to help users track, analyze, and grow their wealth. Built with the latest web technologies including **Angular 20** and **FastAPI**, it offers a robust platform for managing diverse investment portfolios.
 
-Login:
+## 📸 Screenshots
 
-![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/13.png?raw=true)
+| Dashboard | Portfolio |
+|-----------|-----------|
+| ![Dashboard](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/11.png?raw=true) | ![Portfolio](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/12.png?raw=true) |
 
-Dashboard:
+| Mutual Fund | SIP Calculator |
+|-------------|----------------|
+| ![Mutual Fund](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/3.png?raw=true) | ![SIP](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/6.png?raw=true) |
 
-![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/11.png?raw=true)
-
-Portfolio:
-
-![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/12.png?raw=true)
-
-Mutual Fund:
-
-![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/3.png?raw=true)
-
-SIP:
-
-![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/6.png?raw=true)
-
-SWP:
-
-![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/5.png?raw=true)
-
-inflation:
-
-![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/7.png?raw=true)
-
+| SWP Calculator | Inflation Calculator |
+|----------------|----------------------|
+| ![SWP](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/5.png?raw=true) | ![Inflation](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/7.png?raw=true) |
 
 ## 🚀 Features
 
 ### 💰 Portfolio Management
 - **Multi-Asset Tracking**: Manage Mutual Funds, EPF, PPF, FD, MIS, and NPS in one place.
 - **Real-time Updates**: Automatic NAV synchronization for mutual funds via AMFI API.
-- **SIP Management**: Track Systematic Investment Plans and their schedules.
+- **Detailed Analytics**: View asset allocation with customizable targets for Equity, Debt, and Gold.
 
-### 📊 Analytics & Insights
-- **Interactive Dashboard**: Visual overview of net worth, asset allocation, and recent activity.
-- **Performance Tracking**: Calculate absolute returns and growth over time.
-- **Asset Breakdown**: Detailed charts showing distribution across asset classes (Equity, Debt, Hybrid).
+### 📝 Budget Planner
+- **Income & Expense Tracking**: Plan monthly budgets with custom categories.
+- **Visual Breakdown**: Interactive charts to visualize income vs. expenses.
+- **Plan Management**: Save, load, and update multiple budget plans.
 
 ### 🎯 Financial Goals
 - **Goal Planning**: Set and track financial goals (e.g., Retirement, Buying a House).
-- **Progress Monitoring**: Visual progress bars and projected completion dates.
-- **Investment Linking**: Link specific investments to goals to track funding.
+- **Smart Calculators**: Auto-calculate required monthly SIP based on target amount and date.
+- **Progress Monitoring**: Visual progress bars and dynamic status updates (e.g., "Achieved").
+
+### 🧮 Financial Tools
+- **SIP Calculator**: Estimate returns on Systematic Investment Plans.
+- **SWP Calculator**: Plan Systematic Withdrawal Plans for regular income.
+- **Inflation Calculator**: Understand the impact of inflation on future value.
 
 ### 🤖 Smart Recommendations
 - **Personalized Suggestions**: Investment recommendations based on risk profile and goals.
@@ -54,29 +44,26 @@ inflation:
 
 ### 🛡️ Security & Administration
 - **Secure Authentication**: JWT-based login with role-based access control (RBAC).
-- **Admin Panel**: Comprehensive interface for managing users, database records, and system settings.
-- **Data Privacy**: Secure handling of sensitive financial data.
+- **Admin Panel**: Comprehensive interface for managing users and system settings.
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Angular 20.3+**: Cutting-edge web framework for building dynamic SPAs.
+- **Angular 20**: Cutting-edge web framework for building dynamic SPAs.
 - **Bootstrap 5 & ng-bootstrap**: Responsive, mobile-first UI components.
-- **Chart.js**: Interactive data visualization.
+- **Chart.js**: Interactive data visualization for dashboards and analytics.
 - **TypeScript**: Strictly typed codebase for reliability.
 
 ### Backend
 - **FastAPI**: High-performance, easy-to-learn Python API framework.
-- **PostgreSQL**: robust, open-source relational database.
+- **PostgreSQL**: Robust, open-source relational database.
 - **SQLAlchemy**: Powerful ORM for Python.
-- **PyJWT**: Secure JSON Web Token authentication.
 - **Pydantic**: Data validation using Python type hints.
 
 ### Infrastructure & Testing
 - **Docker & Docker Compose**: Containerized application lifecycle management.
-- **Pytest**: Backend testing framework.
-- **Playwright**: End-to-end (E2E) testing for the frontend.
-- **GitHub Codespaces**: Ready-to-code cloud development environment.
+- **Playwright**: Comprehensive end-to-end (E2E) testing suite for the frontend.
+- **Pytest**: Robust backend testing framework.
 
 ## 🏗️ Project Structure
 
@@ -84,7 +71,7 @@ inflation:
 my-wealth-management-app/
 ├── backend/
 │   ├── app/
-│   │   ├── api/                 # API route handlers (v1)
+│   │   ├── api/v1/endpoints/    # API route handlers (Budget, Goals, Portfolio, etc.)
 │   │   ├── core/                # Core config & security
 │   │   ├── crud/                # Database CRUD operations
 │   │   ├── db/                  # Database connection & models
@@ -96,9 +83,11 @@ my-wealth-management-app/
 ├── frontend/wealth-frontend/
 │   ├── src/app/
 │   │   ├── analytics/           # Analytics dashboard
+│   │   ├── budget/              # Budget planner feature
 │   │   ├── goals/               # Goal management
 │   │   ├── portfolio/           # Portfolio tracking
-│   │   ├── recommendations/     # Investment advice
+│   │   ├── sip/                 # SIP calculator
+│   │   ├── swp/                 # SWP calculator
 │   │   ├── services/            # API integration services
 │   │   └── shared/              # Shared components & pipes
 │   ├── package.json             # Frontend dependencies
