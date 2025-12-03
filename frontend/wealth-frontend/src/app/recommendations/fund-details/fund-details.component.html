@@ -113,6 +113,43 @@
             </div>
 
             <div class="side-column">
+                <div class="stats-card" *ngIf="highLowStats">
+                    <h3>{{ statsTitle }}</h3>
+                    <div class="stats-content">
+                        <div class="stat-group high">
+                            <div class="stat-header">
+                                <span class="label">High</span>
+                                <span class="value">₹{{ highLowStats.high | number:'1.2-2' }}</span>
+                            </div>
+                            <div class="stat-diff negative">
+                                <i class="bi bi-arrow-down"></i>
+                                <span>{{ highLowStats.highDiff | number:'1.2-2' }} ({{ highLowStats.highDiffPercent |
+                                    number:'1.2-2' }}%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar" [style.width.%]="100 + highLowStats.highDiffPercent"></div>
+                            </div>
+                        </div>
+
+                        <div class="stat-group low">
+                            <div class="stat-header">
+                                <span class="label">Low</span>
+                                <span class="value">₹{{ highLowStats.low | number:'1.2-2' }}</span>
+                            </div>
+                            <div class="stat-diff positive">
+                                <i class="bi bi-arrow-up"></i>
+                                <span>+{{ highLowStats.lowDiff | number:'1.2-2' }} (+{{ highLowStats.lowDiffPercent |
+                                    number:'1.2-2' }}%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar"
+                                    [style.width.%]="(highLowStats.currentNav - highLowStats.low) / (highLowStats.high - highLowStats.low) * 100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="info-card">
                     <h3>Fund Information</h3>
                     <div class="info-list">

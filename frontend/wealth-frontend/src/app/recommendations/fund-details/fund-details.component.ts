@@ -24,6 +24,8 @@ export class FundDetailsComponent implements OnInit, AfterViewInit, OnDestroy, O
     isLoading = true;
     error: string | null = null;
     chart: Chart | null = null;
+    highLowStats: any = null;
+    statsTitle: string = 'All-Time High/Low';
 
     timeRanges = ['1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'All'];
     selectedRange = 'All';
@@ -78,6 +80,7 @@ export class FundDetailsComponent implements OnInit, AfterViewInit, OnDestroy, O
             next: (data) => {
                 this.fundData = data;
                 this.isLoading = false;
+                this.calculateHighLowStats();
                 setTimeout(() => this.initChart(), 0); // Init chart after view update
             },
             error: (err) => {
@@ -88,9 +91,52 @@ export class FundDetailsComponent implements OnInit, AfterViewInit, OnDestroy, O
         });
     }
 
+
+
+    calculateHighLowStats(): void {
+        const filteredData = this.getFilteredData();
+
+        if (!filteredData || filteredData.length === 0) return;
+
+        // Update title based on selection
+        switch (this.selectedRange) {
+            case 'All': this.statsTitle = 'All-Time High/Low'; break;
+            case '1W': this.statsTitle = '1-Week High/Low'; break;
+            case '1M': this.statsTitle = '1-Month High/Low'; break;
+            case '3M': this.statsTitle = '3-Month High/Low'; break;
+            case '6M': this.statsTitle = '6-Month High/Low'; break;
+            case '1Y': this.statsTitle = '1-Year High/Low'; break;
+            case '3Y': this.statsTitle = '3-Year High/Low'; break;
+            case '5Y': this.statsTitle = '5-Year High/Low'; break;
+            default: this.statsTitle = `${this.selectedRange} High/Low`;
+        }
+
+        const currentNav = parseFloat(filteredData[filteredData.length - 1].nav);
+
+        let highNav = -Infinity;
+        let lowNav = Infinity;
+
+        filteredData.forEach((d: any) => {
+            const nav = parseFloat(d.nav);
+            if (nav > highNav) highNav = nav;
+            if (nav < lowNav) lowNav = nav;
+        });
+
+        this.highLowStats = {
+            currentNav: currentNav,
+            high: highNav,
+            low: lowNav,
+            highDiff: currentNav - highNav,
+            highDiffPercent: highNav !== 0 ? ((currentNav - highNav) / highNav) * 100 : 0,
+            lowDiff: currentNav - lowNav,
+            lowDiffPercent: lowNav !== 0 ? ((currentNav - lowNav) / lowNav) * 100 : 0
+        };
+    }
+
     onRangeSelect(range: string): void {
         this.selectedRange = range;
         this.updateChartData();
+        this.calculateHighLowStats();
     }
 
     getFilteredData(): any[] {
