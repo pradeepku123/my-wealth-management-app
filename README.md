@@ -2,6 +2,35 @@
 
 A modern, full-stack wealth management application designed to help users track, analyze, and grow their wealth. Built with the latest web technologies including **Angular 20** and **FastAPI**, it offers a robust platform for managing diverse investment portfolios.
 
+Login:
+
+![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/13.png?raw=true)
+
+Dashboard:
+
+![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/11.png?raw=true)
+
+Portfolio:
+
+![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/12.png?raw=true)
+
+Mutual Fund:
+
+![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/3.png?raw=true)
+
+SIP:
+
+![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/6.png?raw=true)
+
+SWP:
+
+![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/5.png?raw=true)
+
+inflation:
+
+![alt text](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/7.png?raw=true)
+
+
 ## 🚀 Features
 
 ### 💰 Portfolio Management
