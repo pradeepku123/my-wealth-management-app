@@ -18,3 +18,4 @@ class User(Base):
     swp_estimations = relationship("SWPEstimation", back_populates="owner")
     budgets = relationship("Budget", back_populates="owner")
     goals = relationship("Goal", back_populates="owner")
+    risk_profile = relationship("RiskProfile", back_populates="owner", uselist=False)

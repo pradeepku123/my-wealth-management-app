@@ -1,0 +1,254 @@
+.risk-profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+
+    .header {
+        text-align: center;
+        margin-bottom: 3rem;
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 4rem;
+    }
+
+    .questionnaire-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #f1f5f9;
+
+            .progress {
+                height: 100%;
+                background: var(--primary-color);
+                transition: width 0.3s ease;
+            }
+        }
+
+        .question-content {
+            margin: 2rem 0;
+            text-align: center;
+
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 2rem;
+                color: var(--text-main);
+            }
+
+            .options-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+
+                .option-btn {
+                    padding: 1rem;
+                    border: 2px solid #e2e8f0;
+                    border-radius: var(--radius-md);
+                    background: white;
+                    color: var(--text-secondary);
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s;
+
+                    &:hover {
+                        border-color: var(--primary-light);
+                        background: #f8fafc;
+                    }
+
+                    &.selected {
+                        border-color: var(--primary-color);
+                        background: var(--primary-light);
+                        color: var(--primary-color);
+                    }
+                }
+            }
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+
+            button {
+                padding: 0.75rem 1.5rem;
+                border-radius: var(--radius-md);
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &.btn-secondary {
+                    background: transparent;
+                    border: 1px solid #e2e8f0;
+                    color: var(--text-secondary);
+
+                    &:hover {
+                        background: #f8fafc;
+                    }
+                }
+
+                &.btn-primary {
+                    background: var(--primary-color);
+                    border: none;
+                    color: white;
+                    margin-left: auto;
+
+                    &:hover {
+                        background: var(--primary-hover);
+                    }
+
+                    &:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+    }
+
+    .result-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        text-align: center;
+
+        .result-header {
+            padding: 2rem;
+            color: white;
+
+            i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                display: block;
+            }
+
+            h2 {
+                font-size: 2rem;
+                margin: 0;
+            }
+
+            &.conservative {
+                background: linear-gradient(135deg, #10b981, #059669);
+            }
+
+            &.moderate {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+            }
+
+            &.aggressive {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+            }
+        }
+
+        .result-body {
+            padding: 2rem;
+
+            .score-display {
+                margin-bottom: 1.5rem;
+
+                .score-label {
+                    display: block;
+                    font-size: 0.9rem;
+                    color: var(--text-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+
+                .score-value {
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    color: var(--text-main);
+                }
+            }
+
+            .description {
+                font-size: 1.1rem;
+                line-height: 1.6;
+                color: var(--text-secondary);
+                margin-bottom: 2rem;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .recommendations {
+                margin-bottom: 2rem;
+
+                h3 {
+                    font-size: 1.2rem;
+                    margin-bottom: 1rem;
+                    color: var(--text-main);
+                }
+
+                .allocation-bar {
+                    display: flex;
+                    height: 40px;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    max-width: 600px;
+                    margin: 0 auto;
+
+                    .segment {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-weight: 600;
+                        font-size: 0.9rem;
+
+                        &.debt {
+                            background: #3b82f6;
+                        }
+
+                        &.equity {
+                            background: #8b5cf6;
+                        }
+
+                        &.gold {
+                            background: #f59e0b;
+                        }
+                    }
+                }
+            }
+
+            .btn-outline {
+                padding: 0.75rem 1.5rem;
+                border: 2px solid var(--primary-color);
+                border-radius: var(--radius-md);
+                background: transparent;
+                color: var(--primary-color);
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: var(--primary-light);
+                }
+            }
+        }
+    }
+}

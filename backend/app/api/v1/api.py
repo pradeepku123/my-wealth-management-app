@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, portfolio, admin, sip, test_data, analytics, goals, recommendations, swp, budget
+from app.api.v1.endpoints import auth, portfolio, admin, sip, test_data, analytics, goals, recommendations, swp, budget, risk_profile
 from app.routers import market
 
 api_router = APIRouter()
@@ -14,4 +14,6 @@ api_router.include_router(goals.router, prefix="/goals", tags=["goals"])
 api_router.include_router(recommendations.router, prefix="/recommendations", tags=["recommendations"])
 api_router.include_router(swp.router, prefix="/swp", tags=["swp"])
 api_router.include_router(budget.router, prefix="/budget", tags=["budget"])
+api_router.include_router(risk_profile.router, prefix="/risk-profile", tags=["risk-profile"])
+
 

@@ -1,0 +1,89 @@
+<div class="risk-profile-container">
+    <div class="header">
+        <h1>Risk Profiling</h1>
+        <p>Understand your risk appetite to invest better.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <div *ngIf="!isLoading && !result" class="questionnaire-card">
+        <div class="progress-bar">
+            <div class="progress" [style.width.%]="((currentStep + 1) / questions.length) * 100"></div>
+        </div>
+
+        <div class="question-content">
+            <h2>{{ currentQuestion.text }}</h2>
+
+            <div class="options-grid">
+                <button *ngFor="let option of currentQuestion.options" class="option-btn"
+                    [class.selected]="isOptionSelected(option.value)"
+                    (click)="selectOption(currentQuestion.id, option.value)">
+                    {{ option.label }}
+                </button>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button *ngIf="currentStep > 0" (click)="prevStep()" class="btn-secondary">Previous</button>
+            <button (click)="nextStep()" [disabled]="!answers[currentQuestion.id]" class="btn-primary">
+                {{ currentStep === questions.length - 1 ? 'Submit' : 'Next' }}
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="!isLoading && result" class="result-card">
+        <div class="result-header" [ngClass]="(result?.risk_category || '').toLowerCase()">
+            <i class="bi bi-shield-check"></i>
+            <h2>{{ result?.risk_category }} Investor</h2>
+        </div>
+
+        <div class="result-body">
+            <div class="score-display">
+                <span class="score-label">Risk Score</span>
+                <span class="score-value">{{ result?.risk_score }}/20</span>
+            </div>
+
+            <p class="description">
+                Based on your answers, you have a <strong>{{ result?.risk_category }}</strong> risk profile.
+                <span *ngIf="result?.risk_category === 'Conservative'">You prioritize capital preservation over high
+                    returns. You prefer stable investments with lower volatility.</span>
+                <span *ngIf="result?.risk_category === 'Moderate'">You balance risk and reward. You are willing to
+                    accept
+                    some volatility for better returns over the medium to long term.</span>
+                <span *ngIf="result?.risk_category === 'Aggressive'">You are willing to take significant risks for
+                    potentially higher returns. You have a long-term horizon and can withstand market volatility.</span>
+            </p>
+
+            <div class="recommendations">
+                <h3>Recommended Allocation</h3>
+                <div class="allocation-bar">
+                    <div *ngIf="result?.risk_category === 'Conservative'" class="segment debt" style="width: 70%">Debt
+                        70%</div>
+                    <div *ngIf="result?.risk_category === 'Conservative'" class="segment equity" style="width: 20%">
+                        Equity 20%</div>
+                    <div *ngIf="result?.risk_category === 'Conservative'" class="segment gold" style="width: 10%">Gold
+                        10%</div>
+
+                    <div *ngIf="result?.risk_category === 'Moderate'" class="segment debt" style="width: 40%">Debt 40%
+                    </div>
+                    <div *ngIf="result?.risk_category === 'Moderate'" class="segment equity" style="width: 50%">Equity
+                        50%</div>
+                    <div *ngIf="result?.risk_category === 'Moderate'" class="segment gold" style="width: 10%">Gold 10%
+                    </div>
+
+                    <div *ngIf="result?.risk_category === 'Aggressive'" class="segment debt" style="width: 20%">Debt 20%
+                    </div>
+                    <div *ngIf="result?.risk_category === 'Aggressive'" class="segment equity" style="width: 70%">Equity
+                        70%</div>
+                    <div *ngIf="result?.risk_category === 'Aggressive'" class="segment gold" style="width: 10%">Gold 10%
+                    </div>
+                </div>
+            </div>
+
+            <button (click)="retake()" class="btn-outline">Retake Questionnaire</button>
+        </div>
+    </div>
+</div>
