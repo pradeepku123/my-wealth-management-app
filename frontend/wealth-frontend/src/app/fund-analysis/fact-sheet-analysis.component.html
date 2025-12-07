@@ -1,0 +1,180 @@
+<div class="analysis-container">
+    <div class="header">
+        <h1>Fact Sheet Analysis</h1>
+        <p>Comprehensive extraction of performance, risk, and portfolio details.</p>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section" *ngIf="!analysisResult && !isLoading">
+        <label for="file-upload" class="file-drop-zone" [class.selected]="selectedFile">
+            <div class="icon">📄</div>
+            <h3>{{ selectedFile ? selectedFile.name : 'Click or Drag to Upload Fact Sheet (PDF)' }}</h3>
+            <p *ngIf="!selectedFile">Supported format: PDF</p>
+        </label>
+        <input type="file" id="file-upload" (change)="onFileSelected($event)" accept=".pdf" hidden />
+
+        <button class="analyze-btn" [disabled]="!selectedFile" (click)="analyze()">
+            Analyze Document
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-section" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Analyzing document... This may take a moment.</p>
+        <p class="timer" *ngIf="elapsedTime > 0">Time Elapsed: {{ formattedTime }}</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-section" *ngIf="error">
+        <div class="error-icon">⚠️</div>
+        <p>{{ error }}</p>
+        <button class="retry-btn" (click)="reset()">Try Again</button>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section" *ngIf="analysisResult">
+        <div class="actions">
+            <button class="back-btn" (click)="reset()">← Analyze Another</button>
+        </div>
+
+        <div class="fund-card">
+            <!-- Header -->
+            <div class="fund-header">
+                <div class="titles">
+                    <h2>{{ analysisResult.fund_name || 'Fund Name Not Found' }}</h2>
+                    <div class="sub-title">
+                        <span class="category" *ngIf="analysisResult.scheme_type">{{ analysisResult.scheme_type
+                            }}</span>
+                        <span class="objective" *ngIf="analysisResult.investment_objective">{{
+                            analysisResult.investment_objective }}</span>
+                    </div>
+                </div>
+                <div class="status-badge">Analysis Result</div>
+            </div>
+
+            <div class="dashboard-grid">
+
+                <!-- 1. Basics -->
+                <div class="cardbasics">
+                    <h3 class="card-title">1. Fund Basics</h3>
+                    <div class="metrics-row">
+                        <div class="metric-group">
+                            <label>Inception Date</label>
+                            <span>{{ analysisResult.inception_date || 'N/A' }}</span>
+                        </div>
+                        <div class="metric-group">
+                            <label>Benchmark</label>
+                            <span class="small">{{ analysisResult.benchmark || 'N/A' }}</span>
+                        </div>
+                        <div class="metric-group">
+                            <label>AUM</label>
+                            <span>{{ analysisResult.net_assets || 'N/A' }}</span>
+                        </div>
+                        <div class="metric-group">
+                            <label>NAV</label>
+                            <span class="highlight">{{ analysisResult.nav || 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Performance -->
+                <div class="card performance full-width">
+                    <h3 class="card-title">2. Performance (CAGR)</h3>
+                    <div class="perf-row"
+                        *ngIf="analysisResult.cagr && getObjectKeys(analysisResult.cagr).length > 0; else noPerf">
+                        <div class="perf-block" *ngFor="let period of getObjectKeys(analysisResult.cagr)">
+                            <span class="period">{{ period }}</span>
+                            <span class="value">{{ analysisResult.cagr[period] }}</span>
+                        </div>
+                    </div>
+                    <ng-template #noPerf>
+                        <p class="no-data">Data not found</p>
+                    </ng-template>
+                </div>
+
+                <!-- 3. Risk -->
+                <div class="card risk">
+                    <h3 class="card-title">3. Risk Metrics</h3>
+                    <div class="simple-list" *ngIf="analysisResult.risk_metrics; else noRisk">
+                        <div class="list-item" *ngFor="let key of getObjectKeys(analysisResult.risk_metrics)">
+                            <span>{{ key }}</span>
+                            <span class="bold">{{ analysisResult.risk_metrics[key] }}</span>
+                        </div>
+                    </div>
+                    <ng-template #noRisk>
+                        <p class="no-data">Risk metrics not found</p>
+                    </ng-template>
+                    <div class="risk-meter" *ngIf="analysisResult.riskometer">
+                        <span>Riskometer:</span> <span class="danger">{{ analysisResult.riskometer }}</span>
+                    </div>
+                </div>
+
+                <!-- 4. Costs -->
+                <div class="card costs">
+                    <h3 class="card-title">4. Costs</h3>
+                    <div class="expense-row">
+                        <div class="exp-item" *ngIf="analysisResult.expense_ratio_direct">
+                            <label>Direct</label>
+                            <span class="good">{{ analysisResult.expense_ratio_direct }}</span>
+                        </div>
+                        <div class="exp-item" *ngIf="analysisResult.expense_ratio_regular">
+                            <label>Regular</label>
+                            <span class="warn">{{ analysisResult.expense_ratio_regular }}</span>
+                        </div>
+                        <div *ngIf="!analysisResult.expense_ratio_direct && !analysisResult.expense_ratio_regular"
+                            class="no-data">
+                            Expense ratio not found
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Holdings -->
+                <div class="card holdings full-width">
+                    <h3 class="card-title">5. Top Holdings</h3>
+                    <div class="holdings-grid"
+                        *ngIf="analysisResult.top_holdings && analysisResult.top_holdings.length; else noHoldings">
+                        <div class="holding-pill" *ngFor="let h of analysisResult.top_holdings">
+                            <span class="h-name">{{ h.name }}</span>
+                            <span class="h-val">{{ h.allocation }}</span>
+                        </div>
+                    </div>
+                    <ng-template #noHoldings>
+                        <p class="no-data">Holdings not extracted</p>
+                    </ng-template>
+                </div>
+
+                <!-- 6. Info -->
+                <div class="card info full-width">
+                    <h3 class="card-title">6. Other Info</h3>
+                    <div class="metrics-row">
+                        <div class="metric-group">
+                            <label>Exit Load</label>
+                            <span class="small">{{ analysisResult.exit_load || 'N/A' }}</span>
+                        </div>
+                        <div class="metric-group">
+                            <label>Min Inv</label>
+                            <span>{{ analysisResult.min_investment_lumpsum || 'N/A' }}</span>
+                        </div>
+                        <div class="metric-group">
+                            <label>Manager</label>
+                            <span>{{ analysisResult.fund_manager || 'N/A' }}</span>
+                        </div>
+                        <div class="metric-group">
+                            <label>Insider Holdings</label>
+                            <span class="highlight text-gold">{{ analysisResult.insider_holdings || 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="raw-data-section">
+            <details>
+                <summary>Debug Text</summary>
+                <pre>{{ analysisResult.raw_text }}</pre>
+            </details>
+        </div>
+    </div>
+</div>

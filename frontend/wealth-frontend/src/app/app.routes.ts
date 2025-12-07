@@ -51,6 +51,7 @@ export const routes: Routes = [
       { path: 'budget', component: BudgetPlannerComponent },
       { path: 'recommendations', component: RecommendationsComponent },
       { path: 'recommendations/fund/:schemeCode', component: FundDetailsComponent },
+      { path: 'fact-sheet-analysis', loadComponent: () => import('./fund-analysis/fact-sheet-analysis.component').then(m => m.FactSheetAnalysisComponent) },
       { path: 'risk-profiling', loadComponent: () => import('./pages/risk-profiling/risk-profiling.component').then(m => m.RiskProfilingComponent) },
       { path: 'profile', loadComponent: () => import('./pages/profile-settings/profile-settings.component').then(m => m.ProfileSettingsComponent) }
     ]
