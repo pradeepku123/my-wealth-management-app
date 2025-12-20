@@ -12,18 +12,10 @@
 
         <form (ngSubmit)="onLogin()">
           <div class="form-floating mb-3">
-            <input
-              type="text"
-              class="form-control"
-              id="username"
-              placeholder="Enter your username"
-              [(ngModel)]="username"
-              name="username"
-              (blur)="onUsernameBlur()"
-              (input)="clearError()"
+            <input type="text" class="form-control" id="username" placeholder="Enter your username"
+              [(ngModel)]="username" name="username" (blur)="onUsernameBlur()" (input)="clearError()"
               [class.is-invalid]="usernameTouched && !isUsernameValid"
-              [class.is-valid]="usernameTouched && isUsernameValid"
-              required>
+              [class.is-valid]="usernameTouched && isUsernameValid" required>
             <label for="username">Username</label>
             <div *ngIf="usernameTouched && !isUsernameValid" class="invalid-feedback">
               Username must be at least 3 characters
@@ -31,24 +23,13 @@
           </div>
 
           <div class="form-floating mb-3">
-            <input
-              [type]="hidePassword ? 'password' : 'text'"
-              class="form-control"
-              id="password"
-              placeholder="Enter your password"
-              [(ngModel)]="password"
-              name="password"
-              (blur)="onPasswordBlur()"
-              (input)="clearError()"
-              [class.is-invalid]="passwordTouched && !isPasswordValid"
-              [class.is-valid]="passwordTouched && isPasswordValid"
-              required>
+            <input [type]="hidePassword ? 'password' : 'text'" class="form-control" id="password"
+              placeholder="Enter your password" [(ngModel)]="password" name="password" autocomplete="current-password"
+              (blur)="onPasswordBlur()" (input)="clearError()" [class.is-invalid]="passwordTouched && !isPasswordValid"
+              [class.is-valid]="passwordTouched && isPasswordValid" required>
             <label for="password">Password</label>
             <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
-              <button
-                type="button"
-                (click)="hidePassword = !hidePassword"
-                class="btn btn-link text-muted">
+              <button type="button" (click)="hidePassword = !hidePassword" class="btn btn-link text-muted">
                 <i class="bi" [class.bi-eye-slash]="hidePassword" [class.bi-eye]="!hidePassword"></i>
               </button>
             </div>
@@ -63,10 +44,7 @@
           </div>
 
           <div class="d-grid mb-4">
-            <button
-              type="submit"
-              class="btn btn-primary btn-lg"
-              [disabled]="isLoading || !isFormValid">
+            <button type="submit" class="btn btn-primary btn-lg" [disabled]="isLoading || !isFormValid">
               <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               {{ isLoading ? 'Signing in...' : 'Sign In' }}
             </button>

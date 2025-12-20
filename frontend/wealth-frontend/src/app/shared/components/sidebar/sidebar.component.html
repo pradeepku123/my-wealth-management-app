@@ -59,21 +59,32 @@
 
 
 
-  <a routerLink="/sip" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-calculator-fill me-3"></i>
-    <span>SIP Calculator</span>
+  <a href="javascript:void(0)" (click)="toggleCalculators()" 
+     class="sidebar-link text-decoration-none d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-calculator me-3"></i>
+      <span>Calculators</span>
+    </div>
+    <i class="bi small" [class.bi-chevron-down]="!showCalculators" [class.bi-chevron-up]="showCalculators"></i>
   </a>
 
-  <a routerLink="/swp" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-cash-coin me-3"></i>
-    <span>SWP Calculator</span>
-  </a>
+  <div *ngIf="showCalculators" class="bg-light-subtle rounded-3 mx-2 mb-2">
+    <a routerLink="/sip" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
+      <i class="bi bi-calculator-fill me-3 small"></i>
+      <span class="small">SIP Calculator</span>
+    </a>
 
-  <a routerLink="/inflation" routerLinkActive="active"
-    class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-graph-up-arrow me-3"></i>
-    <span>Inflation Calculator</span>
-  </a>
+    <a routerLink="/swp" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
+      <i class="bi bi-cash-coin me-3 small"></i>
+      <span class="small">SWP Calculator</span>
+    </a>
+
+    <a routerLink="/inflation" routerLinkActive="active"
+      class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
+      <i class="bi bi-graph-up-arrow me-3 small"></i>
+      <span class="small">Inflation Calculator</span>
+    </a>
+  </div>
 
   <a routerLink="/budget" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
     <i class="bi bi-wallet2 me-3"></i>

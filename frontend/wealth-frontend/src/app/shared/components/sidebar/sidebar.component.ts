@@ -107,8 +107,18 @@ export class SidebarComponent implements AfterViewInit {
     private elementRef: ElementRef
   ) { }
 
+  showCalculators = false;
+
   ngAfterViewInit() {
-    this.checkScroll();
+    // Wrap in setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    // because checkScroll updates a property bound in the template
+    setTimeout(() => {
+      this.checkScroll();
+    });
+  }
+
+  toggleCalculators() {
+    this.showCalculators = !this.showCalculators;
   }
 
   @HostListener('scroll', ['$event'])
