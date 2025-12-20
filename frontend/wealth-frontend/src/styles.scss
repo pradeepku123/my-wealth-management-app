@@ -59,6 +59,222 @@
 
     /* Transitions */
     --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Form defaults */
+    --input-bg: #f8fafc;
+    --input-border: #e2e8f0;
+    --input-text: var(--text-main);
+    --input-focus-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+    --bg-body: #0f172a;
+    /* Slate 900 */
+    --bg-card: #1e293b;
+    /* Slate 800 */
+    --bg-sidebar: #1e293b;
+    --bg-glass: rgba(30, 41, 59, 0.95);
+
+    --text-main: #f8fafc;
+    /* Slate 50 */
+    --text-secondary: #cbd5e1;
+    /* Slate 300 */
+    --text-muted: #94a3b8;
+    /* Slate 400 */
+
+    --border-color: #334155;
+    /* Slate 700 */
+
+    --primary-light: rgba(79, 70, 229, 0.2);
+
+    /* Dark Form Overrides */
+    --input-bg: #334155;
+    /* Slate 700 */
+    --input-border: #475569;
+    /* Slate 600 */
+    --input-text: #f1f5f9;
+    --input-focus-bg: #1e293b;
+
+    /* Shadow adjustments for dark mode */
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+
+    /* Bootstrap Overrides for Dark Mode */
+    .card {
+        border: 1px solid var(--border-color);
+    }
+
+    .card-header {
+        border-bottom-color: var(--border-color);
+    }
+
+    .table {
+        color: var(--text-secondary);
+        --bs-table-color: var(--text-secondary);
+        --bs-table-bg: transparent;
+        --bs-table-border-color: var(--border-color);
+        --bs-table-striped-bg: rgba(255, 255, 255, 0.05);
+        --bs-table-active-bg: rgba(255, 255, 255, 0.1);
+        --bs-table-hover-bg: rgba(255, 255, 255, 0.075);
+
+        th {
+            color: var(--text-main);
+            border-bottom-color: var(--border-color);
+        }
+    }
+
+    .dropdown-menu {
+        background-color: var(--bg-card);
+        border-color: var(--border-color);
+
+        .dropdown-item {
+            color: var(--text-secondary);
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: var(--text-main);
+            }
+        }
+    }
+
+    /* Utility class overrides */
+    .bg-white {
+        background-color: var(--bg-card) !important;
+    }
+
+    .bg-light {
+        background-color: #334155 !important;
+        /* Slate 700 */
+    }
+
+    .bg-light-subtle {
+        background-color: rgba(51, 65, 85, 0.5) !important;
+    }
+
+    .text-dark {
+        color: var(--text-main) !important;
+    }
+
+    .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .sidebar-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Modal Fixes */
+    .modal-content {
+        background-color: var(--bg-card);
+        border-color: var(--border-color);
+    }
+
+    .modal-header,
+    .modal-footer {
+        border-color: var(--border-color);
+    }
+
+    .close,
+    .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    /* text-gray-800 override */
+    .text-gray-800 {
+        color: var(--text-main) !important;
+    }
+
+    /* Component Specific Overrides needed because of high specificity or hardcoded values in components */
+
+    /* Fund Details Page Overrides */
+    .fund-header-card,
+    .chart-card,
+    .returns-card,
+    .info-card,
+    .stats-card {
+        background: var(--bg-card) !important;
+    }
+
+    .current-nav,
+    .return-item {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border-color: var(--border-color) !important;
+
+        .label {
+            color: var(--text-muted) !important;
+        }
+
+        .value {
+            color: var(--text-main) !important;
+        }
+    }
+
+    .time-filters .filter-btn {
+        background-color: transparent !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-secondary) !important;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        &.active {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
+        }
+    }
+
+    .info-item,
+    .chart-header,
+    .stat-header {
+        border-bottom-color: var(--border-color) !important;
+    }
+
+    /* Risk Profiling Page Overrides */
+    .questionnaire-card,
+    .result-card {
+        background: var(--bg-card) !important;
+    }
+
+    .option-btn {
+        background-color: transparent !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-main) !important;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-color: var(--primary-light) !important;
+        }
+
+        &.selected {
+            background-color: var(--primary-light) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--primary-color) !important;
+        }
+    }
+
+    .btn-secondary {
+        border-color: var(--border-color) !important;
+        color: var(--text-secondary) !important;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+    }
+
+    /* Profile Settings Overrides */
+    .settings-card {
+        background-color: var(--bg-card) !important;
+    }
+
+    .settings-header {
+        border-bottom-color: var(--border-color) !important;
+
+        h5 {
+            color: var(--text-main) !important;
+        }
+    }
 }
 
 body {
@@ -67,6 +283,7 @@ body {
     color: var(--text-main);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1,
@@ -141,17 +358,19 @@ h6 {
 /* Form Controls */
 .form-control,
 .form-select {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--input-border);
     border-radius: var(--radius-md);
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
     transition: var(--transition-base);
-    background-color: #f8fafc;
+    background-color: var(--input-bg);
+    color: var(--input-text);
 
     &:focus {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        background-color: #fff;
+        background-color: var(--input-focus-bg);
+        color: var(--input-text);
     }
 }
 

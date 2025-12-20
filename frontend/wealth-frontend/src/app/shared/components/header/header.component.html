@@ -5,6 +5,12 @@
         </button>
 
         <div class="d-flex align-items-center ms-auto gap-3">
+            <!-- Theme Toggle -->
+            <button class="theme-toggle me-2" (click)="onToggleTheme()" title="Toggle Dark Mode">
+                <i class="bi" [class.bi-moon-fill]="!themeService.isDark()"
+                    [class.bi-sun-fill]="themeService.isDark()"></i>
+            </button>
+
             @if (showSessionTimer) {
             <div class="session-badge bg-warning-subtle text-warning-emphasis fw-medium d-flex align-items-center">
                 <i class="bi bi-clock-history me-1"></i>

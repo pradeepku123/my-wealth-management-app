@@ -1,20 +1,21 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { ThemeService } from '../../../services/theme.service';
 
 @Component({
-    selector: 'app-header',
-    standalone: true,
-    imports: [CommonModule, RouterModule],
-    templateUrl: './header.component.html',
-    styles: [`
+  selector: 'app-header',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './header.component.html',
+  styles: [`
     :host {
       display: block;
     }
     .navbar {
-      background-color: rgba(255, 255, 255, 0.8);
+      background-color: var(--bg-glass); /* Use variable instead of hardcoded rgba */
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0,0,0,0.05);
+      border-bottom: 1px solid rgba(0,0,0,0.05); /* This might need a var too, but low priority */
       padding: 0.75rem 1.5rem;
     }
     .user-avatar {
@@ -34,26 +35,49 @@ import { RouterModule } from '@angular/router';
       padding: 0.35em 0.8em;
       border-radius: 20px;
     }
+    .theme-toggle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+        cursor: pointer;
+        color: var(--text-secondary);
+        border: none;
+        background: transparent;
+    }
+    .theme-toggle:hover {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+    }
   `]
 })
 export class HeaderComponent {
-    @Input() userName: string = '';
-    @Input() userRole: string = '';
-    @Input() sessionTimeRemaining: string = '';
-    @Input() showSessionTimer: boolean = false;
+  @Input() userName: string = '';
+  @Input() userRole: string = '';
+  @Input() sessionTimeRemaining: string = '';
+  @Input() showSessionTimer: boolean = false;
 
-    @Output() toggleSidebar = new EventEmitter<void>();
-    @Output() logout = new EventEmitter<void>();
+  @Output() toggleSidebar = new EventEmitter<void>();
+  @Output() logout = new EventEmitter<void>();
 
-    onToggleSidebar() {
-        this.toggleSidebar.emit();
-    }
+  constructor(public themeService: ThemeService) { }
 
-    onLogout() {
-        this.logout.emit();
-    }
+  onToggleSidebar() {
+    this.toggleSidebar.emit();
+  }
 
-    getInitials(name: string): string {
-        return name ? name.charAt(0).toUpperCase() : 'U';
-    }
+  onLogout() {
+    this.logout.emit();
+  }
+
+  onToggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  getInitials(name: string): string {
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  }
 }
