@@ -1,0 +1,339 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-primary">Retirement Planning</h2>
+            <p class="text-muted small">Simulate your retirement corpus depletion with multi-fund allocation strategy.
+            </p>
+        </div>
+    </div>
+
+    <!-- STEP 1: INPUTS -->
+    <div *ngIf="step === 1" class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-lg-5">
+                    <h4 class="card-title fw-bold mb-4">Investment Strategy & Withdrawals</h4>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Retirement Age</label>
+                            <input type="number" class="form-control form-control-lg" [(ngModel)]="startAge" min="50"
+                                max="90">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">End Age</label>
+                            <input type="number" class="form-control form-control-lg" [(ngModel)]="endAge"
+                                min="startAge" max="110">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Inflation Rate</label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" class="form-control" [(ngModel)]="inflationRate" step="0.1" min="0"
+                                    max="20">
+                                <span class="input-group-text bg-light">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bucket Strategy Rules -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Bucket Strategy (Rebalancing Rules)</h5>
+                            <button class="btn btn-sm btn-outline-primary" (click)="addRebalancingRule()">
+                                <i class="bi bi-plus-lg"></i> Add Rule
+                            </button>
+                        </div>
+                        <div class="table-responsive bg-light-subtle rounded-3 border p-3"
+                            *ngIf="rebalancingRules.length > 0">
+                            <table class="table table-borderless table-sm align-middle mb-0">
+                                <thead>
+                                    <tr class="text-secondary small text-uppercase">
+                                        <th>Frequency (Yrs)</th>
+                                        <th>Source Fund</th>
+                                        <th>Target Fund</th>
+                                        <th>Amount</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let rule of rebalancingRules; let i = index">
+                                        <td style="width: 15%;">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white">Every</span>
+                                                <input type="number" class="form-control form-control-sm"
+                                                    [(ngModel)]="rule.frequency" min="1">
+                                            </div>
+                                        </td>
+                                        <td style="width: 25%;">
+                                            <select class="form-select form-select-sm"
+                                                [(ngModel)]="rule.sourceFundIndex">
+                                                <option *ngFor="let f of funds; let fi = index" [ngValue]="fi">
+                                                    {{f.name}}</option>
+                                            </select>
+                                        </td>
+                                        <td style="width: 5%;">
+                                            <i class="bi bi-arrow-right text-muted"></i>
+                                        </td>
+                                        <td style="width: 25%;">
+                                            <select class="form-select form-select-sm"
+                                                [(ngModel)]="rule.destinationFundIndex">
+                                                <option *ngFor="let f of funds; let fi = index" [ngValue]="fi">
+                                                    {{f.name}}</option>
+                                            </select>
+                                        </td>
+                                        <td style="width: 20%;">
+                                            <div class="input-group input-group-sm">
+                                                <select class="form-select bg-light text-muted" style="max-width: 60px;"
+                                                    [(ngModel)]="rule.percentageAmount"
+                                                    (change)="rule.amount = 0; rule.percentageAmount = rule.percentageAmount ? rule.percentageAmount : 0">
+                                                    <option [ngValue]="undefined">Fixed</option>
+                                                    <option [ngValue]="0">%</option>
+                                                </select>
+
+                                                <!-- Fixed Amount Input -->
+                                                <ng-container
+                                                    *ngIf="rule.percentageAmount === undefined; else percentageInput">
+                                                    <span class="input-group-text border-0 bg-white">₹</span>
+                                                    <input type="number" class="form-control" [(ngModel)]="rule.amount">
+                                                </ng-container>
+
+                                                <!-- Percentage Input -->
+                                                <ng-template #percentageInput>
+                                                    <input type="number" class="form-control"
+                                                        [(ngModel)]="rule.percentageAmount">
+                                                    <span class="input-group-text border-0 bg-white">%</span>
+                                                </ng-template>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-link text-danger p-0"
+                                                (click)="removeRebalancingRule(i)">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-muted small fst-italic mt-2" *ngIf="rebalancingRules.length === 0">
+                            No rebalancing rules configured. Funds will grow and deplete independently.
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-borderless align-middle">
+                            <thead class="bg-light rounded-3">
+                                <tr>
+                                    <th class="ps-3">Fund Name</th>
+                                    <th>Allocation Amount</th>
+                                    <th>Exp. Growth (%)</th>
+                                    <th>Withdrawal Rate (% / yr)</th>
+                                    <th>Tax Type</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let fund of funds; let i = index">
+                                    <td>
+                                        <input type="text" class="form-control" [(ngModel)]="fund.name"
+                                            placeholder="Fund Name">
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <span class="input-group-text border-0 bg-light">₹</span>
+                                            <input type="number" class="form-control"
+                                                [(ngModel)]="fund.allocationAmount">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control"
+                                                [(ngModel)]="fund.expectedGrowthRate" step="0.1">
+                                            <span class="input-group-text border-0 bg-light">%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" [(ngModel)]="fund.withdrawalRate"
+                                                step="0.1">
+                                            <span class="input-group-text border-0 bg-light">%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <select class="form-select" [(ngModel)]="fund.taxCategory">
+                                            <option value="Equity">Equity</option>
+                                            <option value="Debt">Debt (Slab)</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-outline-danger btn-sm rounded-circle"
+                                            (click)="removeFund(i)" *ngIf="funds.length > 1">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold bg-light-subtle">
+                                    <td class="ps-3 text-end">Total Allocation:</td>
+                                    <td>{{ getTotalAllocation() | currency:'INR':'symbol':'1.0-0' }}</td>
+                                    <td class="small text-muted" colspan="3">
+                                        <div class="d-flex flex-column align-items-end">
+                                            <span>Est. 1st Year: <span class="fw-bold text-dark">{{
+                                                    getInitialAnnualWithdrawal() | currency:'INR':'symbol':'1.0-0'
+                                                    }}</span>/yr</span>
+                                            <span class="text-secondary" style="font-size: 0.85em;">({{
+                                                getInitialMonthlyWithdrawal() | currency:'INR':'symbol':'1.0-0'
+                                                }}/mo)</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" (click)="addFund()">
+                                            <i class="bi bi-plus-lg"></i> Add Fund
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm" (click)="calculate()">
+                            Run Simulation <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2: RESULTS -->
+    <div *ngIf="step === 2">
+        <button class="btn btn-link text-decoration-none mb-3 ps-0" (click)="backToInput()">
+            <i class="bi bi-arrow-left"></i> Modify Inputs
+        </button>
+
+        <div class="row g-4">
+            <!-- YEARLY SUMMARY TABLE -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-0 ps-4">
+                        <h5 class="fw-bold mb-0">Year-wise Projection</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0 text-center align-middle sticky-header">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="py-3">Year</th>
+                                        <th class="py-3">Age</th>
+                                        <th class="py-3">Opening</th>
+                                        <th class="py-3 text-success">Growth</th>
+                                        <th class="py-3 text-danger">Withdrawal</th>
+                                        <th class="py-3 text-secondary">Tax</th>
+                                        <th class="py-3 text-primary">Net Income</th>
+                                        <th class="py-3">Closing</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let row of simulationResults" (click)="selectYear(row)"
+                                        [class.table-primary]="selectedYearResult === row" style="cursor: pointer;">
+                                        <td>{{ row.year }}</td>
+                                        <td>{{ row.age }}</td>
+                                        <td>{{ row.totalOpeningBalance | currency:'INR':'symbol':'1.0-0' }}</td>
+                                        <td class="text-success">+{{ row.totalGrowth | number:'1.0-0' }}</td>
+                                        <td class="text-danger">-{{ row.totalWithdrawal | number:'1.0-0' }}</td>
+                                        <td class="text-secondary">-{{ row.totalTax | number:'1.0-0' }}</td>
+                                        <td class="fw-bold text-primary">{{ row.netIncome | number:'1.0-0' }}</td>
+                                        <td class="fw-bold">{{ row.totalClosingBalance | currency:'INR':'symbol':'1.0-0'
+                                            }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETAILED VIEW SIDEBAR -->
+            <div class="col-lg-4 sticky-top h-100" style="top: 1rem; z-index: 1;">
+                <div class="card shadow-sm border-0 rounded-4 bg-primary-subtle mb-4">
+                    <div class="card-body">
+                        <h6 class="text-primary-emphasis text-uppercase small fw-bold mb-2">Summary</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Input Corpus:</span>
+                            <span class="fw-bold">{{ getTotalAllocation() | currency:'INR':'symbol':'1.0-0' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Projected End Corpus (Age {{endAge}}):</span>
+                            <span class="fw-bold"
+                                [class.text-danger]="simulationResults[simulationResults.length-1].totalClosingBalance === 0"
+                                [class.text-success]="simulationResults[simulationResults.length-1].totalClosingBalance > 0">
+                                {{ simulationResults[simulationResults.length-1].totalClosingBalance |
+                                currency:'INR':'symbol':'1.0-0' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="selectedYearResult" class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white border-0 pt-4 pb-2">
+                        <h5 class="fw-bold mb-0">Details for {{ selectedYearResult.year }} (Age {{
+                            selectedYearResult.age }})</h5>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Fund Breakdown -->
+                        <h6 class="fw-bold text-muted small text-uppercase mb-3">Fund Performance</h6>
+                        <div *ngFor="let fRes of selectedYearResult.fundResults" class="mb-3 p-3 rounded-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">{{ fRes.fundName }}</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Growth:
+                                    {{ fRes.growth | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar" role="progressbar"
+                                    [style.width.%]="(fRes.closingBalance / (fRes.openingBalance || 1)) * 100"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Open: {{ fRes.openingBalance | number:'1.0-0' }}</span>
+                                <span>Close: {{ fRes.closingBalance | number:'1.0-0' }}</span>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-muted small text-uppercase mt-4 mb-3">Monthly Payout Schedule</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered small text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Payout</th>
+                                        <th>Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]; let i = index">
+                                        <td>{{ m }}</td>
+                                        <td>
+                                            {{ getMonthlyAggregate(i, 'withdrawal') | currency:'INR':'symbol':'1.0-0' }}
+                                        </td>
+                                        <td>
+                                            {{ getMonthlyAggregate(i, 'closingBalance') | number:'1.0-0' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div *ngIf="selectedYearResult.fundResults.length > 0"
+                                class="text-muted small fst-italic text-center">
+                                * Aggregated across all {{ selectedYearResult.fundResults.length }} funds.
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

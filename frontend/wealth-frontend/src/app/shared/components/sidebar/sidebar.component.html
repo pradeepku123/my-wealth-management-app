@@ -57,10 +57,16 @@
     <span>Risk Profiling</span>
   </a>
 
+  <a routerLink="/retirement" routerLinkActive="active"
+    class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-umbrella-fill me-3"></i>
+    <span>Retirement Planning</span>
+  </a>
 
 
-  <a href="javascript:void(0)" (click)="toggleCalculators()" 
-     class="sidebar-link text-decoration-none d-flex align-items-center justify-content-between">
+
+  <a href="javascript:void(0)" (click)="toggleCalculators()"
+    class="sidebar-link text-decoration-none d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center">
       <i class="bi bi-calculator me-3"></i>
       <span>Calculators</span>
@@ -69,12 +75,14 @@
   </a>
 
   <div *ngIf="showCalculators" class="bg-light-subtle rounded-3 mx-2 mb-2">
-    <a routerLink="/sip" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
+    <a routerLink="/sip" routerLinkActive="active"
+      class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
       <i class="bi bi-calculator-fill me-3 small"></i>
       <span class="small">SIP Calculator</span>
     </a>
 
-    <a routerLink="/swp" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
+    <a routerLink="/swp" routerLinkActive="active"
+      class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
       <i class="bi bi-cash-coin me-3 small"></i>
       <span class="small">SWP Calculator</span>
     </a>
