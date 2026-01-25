@@ -19,3 +19,4 @@ class User(Base):
     budgets = relationship("Budget", back_populates="owner")
     goals = relationship("Goal", back_populates="owner")
     risk_profile = relationship("RiskProfile", back_populates="owner", uselist=False)
+    retirement_plans = relationship("RetirementPlan", back_populates="owner")

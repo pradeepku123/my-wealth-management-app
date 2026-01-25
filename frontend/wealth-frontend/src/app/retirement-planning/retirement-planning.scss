@@ -1,10 +1,10 @@
-
 .sticky-header th {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: #f8f9fa; /* table-light color */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background-color: #f8f9fa;
+  /* table-light color */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .card {
@@ -18,4 +18,17 @@
 
 .input-group-text {
   color: var(--text-muted);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.sip-card {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
 }

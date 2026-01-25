@@ -14,6 +14,12 @@
                 <div class="card-body p-4 p-lg-5">
                     <h4 class="card-title fw-bold mb-4">Investment Strategy & Withdrawals</h4>
 
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Plan Name (Optional)</label>
+                        <input type="text" class="form-control form-control-lg" [(ngModel)]="planName"
+                            placeholder="e.g. My Retirement Plan">
+                    </div>
+
                     <div class="row g-4 mb-4">
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Retirement Age</label>
@@ -52,6 +58,7 @@
                                         <th>Source Fund</th>
                                         <th>Target Fund</th>
                                         <th>Amount</th>
+                                        <th>Condition</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -82,7 +89,7 @@
                                             </select>
                                         </td>
                                         <td style="width: 20%;">
-                                            <div class="input-group input-group-sm">
+                                            <div class="input-group input-group-sm" *ngIf="!rule.isShortfallBased">
                                                 <select class="form-select bg-light text-muted" style="max-width: 60px;"
                                                     [(ngModel)]="rule.percentageAmount"
                                                     (change)="rule.amount = 0; rule.percentageAmount = rule.percentageAmount ? rule.percentageAmount : 0">
@@ -103,6 +110,27 @@
                                                         [(ngModel)]="rule.percentageAmount">
                                                     <span class="input-group-text border-0 bg-white">%</span>
                                                 </ng-template>
+                                            </div>
+                                            <div *ngIf="rule.isShortfallBased"
+                                                class="text-muted small fst-italic pt-1 text-center border rounded bg-light">
+                                                <i class="bi bi-magic me-1"></i> Auto (Top-Up)
+                                            </div>
+                                            <!-- Shortfall Years Input -->
+                                            <div *ngIf="rule.isShortfallBased" class="input-group input-group-sm mt-1">
+                                                <span class="input-group-text bg-white border-end-0">
+                                                    <i class="bi bi-clock-history text-muted"></i>
+                                                </span>
+                                                <input type="number" class="form-control border-start-0"
+                                                    [(ngModel)]="rule.shortfallYears" placeholder="Yrs" min="1" max="20"
+                                                    title="Target Years of Coverage">
+                                            </div>
+                                        </td>
+                                        <td style="width: 15%;">
+                                            <div class="form-check form-switch pt-1"
+                                                title="Only rebalance if destination fund has less than 3 years of withdrawals">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="rule.isShortfallBased">
+                                                <label class="form-check-label small text-muted">Shortfall Only</label>
                                             </div>
                                         </td>
                                         <td class="text-end">
@@ -199,6 +227,10 @@
                     </div>
 
                     <div class="d-flex justify-content-end mt-4">
+                        <button class="btn btn-outline-primary btn-lg px-5 rounded-pill shadow-sm me-3"
+                            (click)="savePlan()">
+                            <i class="bi bi-save me-2"></i> Save Plan
+                        </button>
                         <button class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm" (click)="calculate()">
                             Run Simulation <i class="bi bi-arrow-right ms-2"></i>
                         </button>
@@ -290,16 +322,75 @@
                         <div *ngFor="let fRes of selectedYearResult.fundResults" class="mb-3 p-3 rounded-3 bg-light">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="fw-bold">{{ fRes.fundName }}</span>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle">Growth:
-                                    {{ fRes.growth | number:'1.0-0' }}</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-graph-up-arrow me-1"></i> {{ fRes.rateOfReturn | number:'1.1-1' }}%
+                                </span>
                             </div>
-                            <div class="progress mb-2" style="height: 6px;">
+
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>Open: <span class="text-dark">{{ fRes.openingBalance | number:'1.0-0'
+                                        }}</span></span>
+                                <span>Close: <span class="text-dark">{{ fRes.closingBalance | number:'1.0-0'
+                                        }}</span></span>
+                            </div>
+
+                            <div class="progress mb-3" style="height: 6px;">
                                 <div class="progress-bar" role="progressbar"
                                     [style.width.%]="(fRes.closingBalance / (fRes.openingBalance || 1)) * 100"></div>
                             </div>
-                            <div class="d-flex justify-content-between small text-muted">
-                                <span>Open: {{ fRes.openingBalance | number:'1.0-0' }}</span>
-                                <span>Close: {{ fRes.closingBalance | number:'1.0-0' }}</span>
+
+                            <div class="row g-2 small">
+                                <div class="col-6">
+                                    <div class="p-2 border rounded bg-white h-100">
+                                        <div class="text-muted" style="font-size: 0.75rem;">Regular Withdrawal</div>
+                                        <div class="text-danger fw-bold">-{{ fRes.totalWithdrawal | number:'1.0-0' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 border rounded bg-white h-100">
+                                        <div class="text-muted" style="font-size: 0.75rem;">Growth (Money)</div>
+                                        <div class="text-success fw-bold">+{{ fRes.growth | number:'1.0-0' }}</div>
+                                    </div>
+                                </div>
+                                <!-- Rebalancing Logs -->
+                                <div class="col-12" *ngIf="fRes.logs && fRes.logs.length > 0">
+                                    <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.7rem;">
+                                        Rebalancing Activity</h6>
+                                    <div class="d-flex flex-column gap-2">
+                                        <div *ngFor="let log of fRes.logs" class="p-2 border rounded" [ngClass]="{
+                                                'bg-success-subtle border-success-subtle': log.type === 'in',
+                                                'bg-danger-subtle border-danger-subtle': log.type === 'out',
+                                                'bg-secondary-subtle border-secondary-subtle': log.type === 'skip'
+                                             }">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold" style="font-size: 0.8rem;" [ngClass]="{
+                                                        'text-success-emphasis': log.type === 'in',
+                                                        'text-danger-emphasis': log.type === 'out',
+                                                        'text-secondary-emphasis': log.type === 'skip'
+                                                    }">
+                                                    <i class="bi" [class.bi-box-arrow-in-left]="log.type === 'in'"
+                                                        [class.bi-box-arrow-right]="log.type === 'out'"
+                                                        [class.bi-slash-circle]="log.type === 'skip'"></i>
+                                                    {{ log.type === 'in' ? 'Added' : (log.type === 'out' ? 'Transferred'
+                                                    : 'Skipped') }}
+                                                </span>
+                                                <span class="fw-bold small" *ngIf="log.amount">
+                                                    {{ log.type === 'out' ? '-' : '+' }}{{ log.amount | number:'1.0-0'
+                                                    }}
+                                                </span>
+                                            </div>
+                                            <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                                <span *ngIf="log.type !== 'skip'">From/To: </span>
+                                                <span *ngIf="log.type === 'skip'">Source: </span>
+                                                <span class="fw-semibold">{{ log.relatedFundName }}</span>
+                                            </div>
+                                            <div class="text-muted fst-italic mt-1" style="font-size: 0.7rem;">
+                                                NOTE: {{ log.reason }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -331,6 +422,39 @@
                             </div>
                         </div>
 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Saved Plans List -->
+<div class="row mt-5" *ngIf="savedPlans.length > 0 && step === 1">
+    <div class="col-12">
+        <h4 class="fw-bold mb-3">Saved Plans</h4>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4" *ngFor="let plan of savedPlans">
+                <div class="card h-100 border-0 shadow-sm sip-card cursor-pointer" (click)="loadPlan(plan)">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold text-primary mb-0">{{ plan.name }}</h6>
+                            <button class="btn btn-sm btn-outline-danger border-0 p-1"
+                                (click)="deletePlan(plan.id, $event)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mb-2">
+                            <span>{{ plan.funds.length }} Funds</span>
+                            <span>Age {{ plan.start_age }} - {{ plan.end_age }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <div>
+                                <div class="small text-muted">Initial Corpus</div>
+                                <div class="fw-bold text-dark">{{ plan.total_corpus | currency:'INR':'symbol':'1.0-0' }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

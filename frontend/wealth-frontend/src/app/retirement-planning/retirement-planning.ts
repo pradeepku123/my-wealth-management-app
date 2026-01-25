@@ -1,15 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
+import { RetirementService, RetirementPlan, FundInput, RebalancingRule } from '../services/retirement.service';
+import { SnackbarService } from '../services/snackbar.service';
 
-interface FundInput {
-  name: string;
-  allocationAmount: number;
-  expectedGrowthRate: number;
-  withdrawalRate: number; // Percentage
-  taxCategory: 'Equity' | 'Debt' | 'Other';
-}
+
+
 
 interface MonthlyDetail {
   month: number;
@@ -26,6 +23,17 @@ interface FundYearResult {
   growth: number;
   closingBalance: number;
   monthlyDetails: MonthlyDetail[];
+  rebalancingIn: number;
+  rebalancingOut: number;
+  rateOfReturn: number;
+  logs: RebalancingLog[];
+}
+
+export interface RebalancingLog {
+  type: 'in' | 'out' | 'skip';
+  relatedFundName: string;
+  amount?: number;
+  reason: string;
 }
 
 interface YearResult {
@@ -40,13 +48,7 @@ interface YearResult {
   fundResults: FundYearResult[];
 }
 
-interface RebalancingRule {
-  sourceFundIndex: number;
-  destinationFundIndex: number;
-  amount: number;
-  percentageAmount?: number;
-  frequency: number;
-}
+
 
 @Component({
   selector: 'app-retirement-planning',
@@ -55,7 +57,7 @@ interface RebalancingRule {
   templateUrl: './retirement-planning.html',
   styleUrls: ['./retirement-planning.scss']
 })
-export class RetirementPlanningComponent {
+export class RetirementPlanningComponent implements OnInit {
   step = 1;
 
   // Inputs
@@ -66,15 +68,109 @@ export class RetirementPlanningComponent {
   expensesRatio: number = 80; // Placeholder if needed
 
   funds: FundInput[] = [
-    { name: 'Equity Fund', allocationAmount: 6000000, expectedGrowthRate: 12, withdrawalRate: 4, taxCategory: 'Equity' },
-    { name: 'Debt Fund', allocationAmount: 4000000, expectedGrowthRate: 7, withdrawalRate: 5, taxCategory: 'Debt' }
+    { name: 'Bucket 1 (Cash Flow)', allocationAmount: 5500000, expectedGrowthRate: 6.5, withdrawalRate: 33, taxCategory: 'Debt' },
+    { name: 'Bucket 2 (Stability)', allocationAmount: 9000000, expectedGrowthRate: 9.0, withdrawalRate: 0, taxCategory: 'Other' },
+    { name: 'Bucket 3 (Growth)', allocationAmount: 13000000, expectedGrowthRate: 11.0, withdrawalRate: 0, taxCategory: 'Equity' },
+    { name: 'Bucket 4 (Wealth)', allocationAmount: 18500000, expectedGrowthRate: 12.0, withdrawalRate: 0, taxCategory: 'Equity' }
   ];
 
-  rebalancingRules: RebalancingRule[] = [];
+  rebalancingRules: RebalancingRule[] = [
+    // Maintain 3 Years in Bucket 1 (Refill from Bucket 2)
+    { sourceFundIndex: 1, destinationFundIndex: 0, amount: 0, percentageAmount: 0, frequency: 1, isShortfallBased: true, shortfallYears: 3 },
+    // Maintain 6 Years in Bucket 2 (Refill from Bucket 3) (Assuming Bucket 2 covers 6 years: 4-9)
+    { sourceFundIndex: 2, destinationFundIndex: 1, amount: 0, percentageAmount: 0, frequency: 1, isShortfallBased: true, shortfallYears: 6 },
+    // Maintain 10 Years in Bucket 3 (Refill from Bucket 4) (Bucket 3 covers 10 years: 10-19)
+    { sourceFundIndex: 3, destinationFundIndex: 2, amount: 0, percentageAmount: 0, frequency: 1, isShortfallBased: true, shortfallYears: 10 }
+  ];
+
 
   // Results
   simulationResults: YearResult[] = [];
   selectedYearResult: YearResult | null = null;
+  savedPlans: RetirementPlan[] = [];
+  planName: string = '';
+
+  constructor(
+    private retirementService: RetirementService,
+    private snackbarService: SnackbarService
+  ) { }
+
+  ngOnInit() {
+    this.loadSavedPlans();
+  }
+
+  loadSavedPlans() {
+    this.retirementService.getPlans().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.savedPlans = response.data;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading plans', error);
+        this.snackbarService.showError('Failed to load saved plans');
+      }
+    });
+  }
+
+  savePlan() {
+    const plan: RetirementPlan = {
+      name: this.planName || `Plan ${this.savedPlans.length + 1}`,
+      start_age: this.startAge,
+      end_age: this.endAge,
+      inflation_rate: this.inflationRate,
+      total_corpus: this.totalCorpus,
+      funds: this.funds,
+      rebalancing_rules: this.rebalancingRules
+    };
+
+    this.retirementService.savePlan(plan).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.snackbarService.showSuccess('Plan saved successfully');
+          this.loadSavedPlans();
+        }
+      },
+      error: (error) => {
+        console.error('Error saving plan', error);
+        this.snackbarService.showError('Failed to save plan');
+      }
+    });
+  }
+
+  loadPlan(plan: RetirementPlan) {
+    this.planName = plan.name;
+    this.startAge = plan.start_age;
+    this.endAge = plan.end_age;
+    this.inflationRate = plan.inflation_rate;
+    // this.totalCorpus = plan.total_corpus; // Recalculated anyway
+    // Deep copy to avoid reference issues
+    this.funds = JSON.parse(JSON.stringify(plan.funds));
+    this.rebalancingRules = JSON.parse(JSON.stringify(plan.rebalancing_rules));
+
+    this.step = 1;
+    this.calculate();
+    this.snackbarService.showSuccess(`Loaded plan: ${plan.name}`);
+  }
+
+  deletePlan(id: number | undefined, event: Event) {
+    event.stopPropagation();
+    if (!id) return;
+    if (confirm('Are you sure you want to delete this plan?')) {
+      this.retirementService.deletePlan(id).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.snackbarService.showSuccess('Plan deleted successfully');
+            this.loadSavedPlans();
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting plan', error);
+          this.snackbarService.showError('Failed to delete plan');
+        }
+      });
+    }
+  }
 
   addFund() {
     this.funds.push({ name: 'New Fund', allocationAmount: 0, expectedGrowthRate: 8, withdrawalRate: 0, taxCategory: 'Other' });
@@ -90,7 +186,9 @@ export class RetirementPlanningComponent {
       destinationFundIndex: 1,
       amount: 0,
       percentageAmount: 10,
-      frequency: 1
+      frequency: 1,
+      isShortfallBased: false, // New flag
+      shortfallYears: 3
     });
   }
 
@@ -108,6 +206,10 @@ export class RetirementPlanningComponent {
     let currentBalances = this.funds.map(f => f.allocationAmount);
     let currentCostBasis = this.funds.map(f => f.allocationAmount);
     let currentAnnualWithdrawals = this.funds.map(f => f.allocationAmount * (f.withdrawalRate / 100));
+
+    // Track next due year for each rule. Initially relative to year index 1.
+    // If Rule Frequency is 1, next due is Year 1. If 5, Year 5.
+    let ruleNextDueYears = this.rebalancingRules.map(r => r.frequency);
 
     for (let age = this.startAge; age <= this.endAge; age++) {
       const year = new Date().getFullYear() + (age - this.startAge);
@@ -148,7 +250,11 @@ export class RetirementPlanningComponent {
             totalWithdrawal: 0,
             growth: 0,
             closingBalance: 0,
-            monthlyDetails: []
+            monthlyDetails: [],
+            rebalancingIn: 0,
+            rebalancingOut: 0,
+            rateOfReturn: 0,
+            logs: []
           });
           return;
         }
@@ -221,7 +327,11 @@ export class RetirementPlanningComponent {
           totalWithdrawal: annualWithdrawal,
           growth: annualGrowth,
           closingBalance: currentFundBalance,
-          monthlyDetails: monthlyDetails
+          monthlyDetails: monthlyDetails,
+          rebalancingIn: 0,
+          rebalancingOut: 0,
+          rateOfReturn: (openingBalance > 0) ? (annualGrowth / openingBalance) * 100 : 0,
+          logs: []
         });
 
         yearTotalOpening += openingBalance;
@@ -233,56 +343,113 @@ export class RetirementPlanningComponent {
       // Rebalancing Rules Logic (Source to Destination)
       const yearIndex = age - this.startAge + 1;
 
-      this.rebalancingRules.forEach(rule => {
-        if (rule.frequency > 0 && yearIndex % rule.frequency === 0) {
+      this.rebalancingRules.forEach((rule, rIdx) => {
+        // Check if rule is due in this year
+        if (ruleNextDueYears[rIdx] <= yearIndex) {
           const sourceIdx = rule.sourceFundIndex;
           const destIdx = rule.destinationFundIndex;
 
           if (sourceIdx >= 0 && sourceIdx < currentBalances.length && destIdx >= 0 && destIdx < currentBalances.length && sourceIdx !== destIdx) {
             let amountToTransfer = 0;
+            let performTransfer = true;
 
-            if (rule.percentageAmount && rule.percentageAmount > 0) {
-              // Calculate based on current balance of source fund
-              amountToTransfer = currentBalances[sourceIdx] * (rule.percentageAmount / 100);
-            } else {
-              amountToTransfer = rule.amount;
-            }
+            if (rule.isShortfallBased) {
+              // Buffer Logic ("Top-Up Model")
+              let neededAmount = 0;
 
-            // Helper: Check if source has enough funds
-            if (currentBalances[sourceIdx] < amountToTransfer) {
-              amountToTransfer = currentBalances[sourceIdx];
-            }
-
-            if (amountToTransfer > 0) {
-              // Adjust Cost Basis before transfer
-              // When moving Capital from Source, we carry pro-rata cost basis OUT of Source
-              // But we treat it as NEW Investment (Principal) INTO Destination
-              // This resets the "Gain" clock for the destination?
-              // YES: Tax event happens on switch. Technically STP = Redemption + Investment.
-              // So we should calculate TAX on this switch too!
-              // For simplicity in this version, let's assume "Cost Basis Transfer" without Tax Event?
-              // User requirement: "Yearly Wise Projections...". 
-              // Real world: Switch IS taxable.
-              // Let's implement TAX ON SWITCH.
-
-              const ratio = currentCostBasis[sourceIdx] / (currentBalances[sourceIdx] > 0 ? currentBalances[sourceIdx] : 1);
-              const principalPart = amountToTransfer * ratio;
-              const gainPart = amountToTransfer - principalPart;
-
-              // Tax the gain
-              if (gainPart > 0) {
-                if (this.funds[sourceIdx].taxCategory === 'Equity') {
-                  totalEquityGains += gainPart;
-                } else {
-                  totalDebtGains += gainPart;
-                }
+              // Determine Base Withdrawal for Shortfall Calculation
+              // If destination fund has direct withdrawals, use that.
+              // If destination fund has 0 direct withdrawals (storage bucket), use the Plan's Total Annual Withdrawal (Proxy for spending need).
+              let baseWithdrawal = currentAnnualWithdrawals[destIdx];
+              if (baseWithdrawal <= 0) {
+                baseWithdrawal = currentAnnualWithdrawals.reduce((sum, val) => sum + val, 0);
               }
 
-              currentBalances[sourceIdx] -= amountToTransfer;
-              currentCostBasis[sourceIdx] -= principalPart;
+              let projectedWithdrawal = baseWithdrawal * (1 + this.inflationRate / 100); // Start from next year
 
-              currentBalances[destIdx] += amountToTransfer;
-              currentCostBasis[destIdx] += amountToTransfer; // Full amount enters as new principal
+              // Use rule-specific years or default to 3
+              const yearsToCover = rule.shortfallYears || 3;
+
+              for (let k = 1; k <= yearsToCover; k++) {
+                neededAmount += projectedWithdrawal;
+                projectedWithdrawal *= (1 + this.inflationRate / 100);
+              }
+
+              if (currentBalances[destIdx] >= neededAmount) {
+                // No shortfall. Defer checking to next year.
+                performTransfer = false;
+                // yearResult.fundResults[destIdx].skippedRebalance = true; // No longer needed, using logs
+                ruleNextDueYears[rIdx] = yearIndex + 1; // Check again next year
+              } else {
+                // Shortfall exists. Transfer strictly what is needed.
+                amountToTransfer = neededAmount - currentBalances[destIdx];
+                // performTransfer remains true
+              }
+            } else {
+              // Standard fixed/percentage logic
+              if (rule.percentageAmount && rule.percentageAmount > 0) {
+                amountToTransfer = currentBalances[sourceIdx] * (rule.percentageAmount / 100);
+              } else {
+                amountToTransfer = rule.amount;
+              }
+            }
+
+            if (performTransfer && amountToTransfer > 0) {
+              // Helper: Check if source has enough funds
+              if (currentBalances[sourceIdx] < amountToTransfer) {
+                amountToTransfer = currentBalances[sourceIdx];
+              }
+
+              if (amountToTransfer > 0) {
+                // Adjust Cost Basis
+                const ratio = currentCostBasis[sourceIdx] / (currentBalances[sourceIdx] > 0 ? currentBalances[sourceIdx] : 1);
+                const principalPart = amountToTransfer * ratio;
+                const gainPart = amountToTransfer - principalPart;
+
+                // Tax the gain
+                if (gainPart > 0) {
+                  if (this.funds[sourceIdx].taxCategory === 'Equity') {
+                    totalEquityGains += gainPart;
+                  } else {
+                    totalDebtGains += gainPart;
+                  }
+                }
+
+                currentBalances[sourceIdx] -= amountToTransfer;
+                currentCostBasis[sourceIdx] -= principalPart;
+
+                currentBalances[destIdx] += amountToTransfer;
+                currentCostBasis[destIdx] += amountToTransfer;
+
+                // Update Result
+                yearResult.fundResults[sourceIdx].rebalancingOut += amountToTransfer;
+                yearResult.fundResults[sourceIdx].closingBalance = currentBalances[sourceIdx];
+                yearResult.fundResults[sourceIdx].logs.push({
+                  type: 'out',
+                  relatedFundName: this.funds[destIdx].name,
+                  amount: amountToTransfer,
+                  reason: `Rebalance to ${this.funds[destIdx].name}`
+                });
+
+                yearResult.fundResults[destIdx].rebalancingIn += amountToTransfer;
+                yearResult.fundResults[destIdx].closingBalance = currentBalances[destIdx];
+                yearResult.fundResults[destIdx].logs.push({
+                  type: 'in',
+                  relatedFundName: this.funds[sourceIdx].name,
+                  amount: amountToTransfer,
+                  reason: rule.isShortfallBased ? `Top-up (Shortfall < ${rule.shortfallYears} yrs)` : `Periodic Rebalance`
+                });
+
+                // Rule executed successfully. Reset schedule.
+                ruleNextDueYears[rIdx] = yearIndex + rule.frequency;
+              }
+            } else if (!performTransfer && rule.isShortfallBased) {
+              // Log the skip
+              yearResult.fundResults[destIdx].logs.push({
+                type: 'skip',
+                relatedFundName: this.funds[sourceIdx].name,
+                reason: `Target > ${rule.shortfallYears || 3} yrs expenses. Deferred.`
+              });
             }
           }
         }
