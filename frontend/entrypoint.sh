@@ -9,4 +9,4 @@ if [ -f /app/proxy.docker.conf.json ]; then
 fi
 
 echo "Starting Angular dev server with proxy..."
-exec npx ng serve --host 0.0.0.0 --port 4200 --proxy-config proxy.conf.json
+exec npm run start:proxy
