@@ -8,11 +8,12 @@ import { EventBusService } from '../services/event-bus.service';
 import { RecommendationsService } from '../services/recommendations.service';
 import { Subscription } from 'rxjs';
 import { FundDetailsComponent } from '../recommendations/fund-details/fund-details.component';
+import { CompareFundsComponent } from './compare-funds/compare-funds.component';
 
 @Component({
   selector: 'app-mutual-funds',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FundDetailsComponent],
+  imports: [CommonModule, FormsModule, RouterModule, FundDetailsComponent, CompareFundsComponent],
   templateUrl: './mutual-funds.component.html',
   styleUrl: './mutual-funds.component.scss'
 })
@@ -36,6 +37,10 @@ export class MutualFundsComponent implements OnInit, OnDestroy {
 
   // Selection properties
   selectedFundCode: string | null = null;
+
+  // Comparison properties
+  selectedForComparison: string[] = [];
+  isComparing: boolean = false;
 
   private subscriptions: Subscription = new Subscription();
 
@@ -128,6 +133,7 @@ export class MutualFundsComponent implements OnInit, OnDestroy {
     this.searchError = null;
     this.searchResults = [];
     this.selectedFundCode = null; // Clear selection on new search
+    this.isComparing = false;
     this.offset = 0;
     this.hasMoreResults = false;
 
@@ -175,12 +181,14 @@ export class MutualFundsComponent implements OnInit, OnDestroy {
     this.searchResults = [];
     this.searchError = null;
     this.selectedFundCode = null;
+    this.isComparing = false;
     this.offset = 0;
     this.hasMoreResults = false;
   }
 
   onSelectFund(code: string): void {
     this.selectedFundCode = code;
+    this.isComparing = false;
   }
 
   clearSelection(): void {
@@ -188,6 +196,34 @@ export class MutualFundsComponent implements OnInit, OnDestroy {
   }
 
   isInitialState(): boolean {
-    return !this.searchQuery && this.searchResults.length === 0 && !this.selectedFundCode;
+    return !this.searchQuery && this.searchResults.length === 0 && !this.selectedFundCode && !this.isComparing;
+  }
+
+  // Comparison methods
+  toggleCompare(fundCode: string, event: Event) {
+    event.stopPropagation();
+    const idx = this.selectedForComparison.indexOf(fundCode);
+    if (idx > -1) {
+      this.selectedForComparison.splice(idx, 1);
+    } else {
+      if (this.selectedForComparison.length >= 4) {
+        alert("You can compare up to 4 funds at a time.");
+        return;
+      }
+      this.selectedForComparison.push(fundCode);
+    }
+  }
+
+  isComparingFund(fundCode: string): boolean {
+    return this.selectedForComparison.includes(fundCode);
+  }
+
+  startComparison() {
+    this.isComparing = true;
+    this.selectedFundCode = null;
+  }
+
+  closeComparison() {
+    this.isComparing = false;
   }
 }

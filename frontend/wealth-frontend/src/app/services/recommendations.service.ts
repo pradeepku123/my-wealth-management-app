@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { ApiService } from './api.service';
 import { MutualFund } from '../models/mutual-fund.model';
 
@@ -21,5 +21,10 @@ export class RecommendationsService {
 
     searchFunds(query: string, limit: number = 20, offset: number = 0): Observable<any> {
         return this.apiService.get<any>(`${this.BASE_URL}/search?query=${query}&limit=${limit}&offset=${offset}`);
+    }
+
+    getMultipleFundDetails(schemeCodes: string[]): Observable<any[]> {
+        const requests = schemeCodes.map(code => this.getFundDetails(code));
+        return forkJoin(requests);
     }
 }

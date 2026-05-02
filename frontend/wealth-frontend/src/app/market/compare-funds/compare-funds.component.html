@@ -1,0 +1,75 @@
+<div class="compare-funds-container fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0"><i class="bi bi-layout-split me-2 text-primary"></i> Compare Mutual Funds</h2>
+    <button class="btn btn-outline-secondary" (click)="closeCompare.emit()">
+      <i class="bi bi-x-lg me-1"></i> Close Comparison
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3 text-muted">Fetching latest fund details for comparison...</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+  </div>
+
+  <div class="table-responsive shadow-sm rounded border bg-white" *ngIf="!loading && !error && fundsData.length > 0">
+    <table class="table table-hover table-bordered m-0 align-middle">
+      <thead class="table-light text-center align-top">
+        <tr>
+          <th scope="col" class="text-start bg-white" style="min-width: 150px; position: sticky; left: 0; z-index: 2;">Features</th>
+          <th scope="col" *ngFor="let fund of fundsData" style="min-width: 250px;">
+            <div class="d-flex flex-column h-100">
+              <span class="badge bg-primary mb-2 align-self-center">{{ fund.meta.scheme_code }}</span>
+              <h5 class="text-primary mb-1">{{ fund.meta.scheme_name }}</h5>
+              <small class="text-muted">{{ fund.meta.fund_house }}</small>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Basic Info -->
+        <tr class="table-secondary">
+          <td colspan="100%" class="fw-bold"><i class="bi bi-info-circle me-2"></i>Basic Information</td>
+        </tr>
+        <tr>
+          <th scope="row" class="text-start bg-white" style="position: sticky; left: 0; z-index: 1;">Category</th>
+          <td class="text-center" *ngFor="let fund of fundsData">{{ fund.meta.scheme_category || 'N/A' }}</td>
+        </tr>
+        <tr>
+          <th scope="row" class="text-start bg-white" style="position: sticky; left: 0; z-index: 1;">Latest NAV</th>
+          <td class="text-center fw-bold" *ngFor="let fund of fundsData">
+            ₹{{ fund.data && fund.data[0] ? fund.data[0].nav : 'N/A' }}
+            <br>
+            <small class="text-muted fw-normal" style="font-size: 0.75rem;">As of {{ fund.data && fund.data[0] ? fund.data[0].date : 'N/A' }}</small>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row" class="text-start bg-white" style="position: sticky; left: 0; z-index: 1;">Expense Ratio</th>
+          <td class="text-center" *ngFor="let fund of fundsData">{{ fund.meta.expense_ratio || 'N/A' }}</td>
+        </tr>
+
+        <!-- Returns -->
+        <tr class="table-secondary">
+          <td colspan="100%" class="fw-bold"><i class="bi bi-graph-up-arrow me-2"></i>Trailing Returns</td>
+        </tr>
+        <tr *ngFor="let period of returnsPeriods">
+          <th scope="row" class="text-start bg-white" style="position: sticky; left: 0; z-index: 1;">{{ period }}</th>
+          <td class="text-center" *ngFor="let fund of fundsData">
+            <span *ngIf="fund.returns && fund.returns[period] !== null; else noData" 
+                  [class.text-success]="fund.returns[period] > 0"
+                  [class.text-danger]="fund.returns[period] < 0">
+              <i class="bi" [class.bi-arrow-up-right]="fund.returns[period] > 0" [class.bi-arrow-down-right]="fund.returns[period] < 0"></i>
+              {{ fund.returns[period] | number:'1.2-2' }}%
+            </span>
+            <ng-template #noData><span class="text-muted">N/A</span></ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
