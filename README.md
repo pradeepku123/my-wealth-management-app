@@ -16,6 +16,10 @@ A modern, full-stack wealth management application designed to help users track,
 |----------------|----------------------|
 | ![SWP](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/5.png?raw=true) | ![Inflation](https://github.com/pradeepku123/my-wealth-management-app/blob/main/frontend/wealth-frontend/assets/7.png?raw=true) |
 
+| Mutual Fund Compare | |
+|---------------------|---|
+| *Placeholder for compare.png* | |
+
 ## 🚀 Features
 
 ### 💰 Portfolio Management
@@ -38,9 +42,9 @@ A modern, full-stack wealth management application designed to help users track,
 - **SWP Calculator**: Plan Systematic Withdrawal Plans for regular income.
 - **Inflation Calculator**: Understand the impact of inflation on future value.
 
-### 🤖 Smart Recommendations
+### 🤖 Smart Recommendations & Market Analysis
 - **Personalized Suggestions**: Investment recommendations based on risk profile and goals.
-- **Fund Analysis**: Compare mutual funds to make informed decisions.
+- **Fund Analysis & Comparison**: Search, select, and compare up to 4 mutual funds side-by-side to make informed decisions based on Category, NAV, Expense Ratios, and Trailing Returns.
 
 ### 🛡️ Security & Administration
 - **Secure Authentication**: JWT-based login with role-based access control (RBAC).
