@@ -7,10 +7,7 @@ from app.db.base_class import Base
 
 
 def init_db(db: Session) -> None:
-    # Drop items table if it exists
-    db.execute(text("DROP TABLE IF EXISTS items CASCADE;"))
-    # Drop and re-create all tables
-    Base.metadata.drop_all(bind=engine)
+    # Create all tables if they don't exist
     Base.metadata.create_all(bind=engine)
 
     user = crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
