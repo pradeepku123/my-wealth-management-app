@@ -1,133 +1,115 @@
 <div class="sidebar-brand">
-  <i class="bi bi-bank2"></i>
-  <span>WealthTracker</span>
+  <div class="brand-icon">
+    <i class="bi bi-graph-up-arrow"></i>
+  </div>
+  <div class="brand-text">
+    <span class="brand-name">WealthOS</span>
+    <span class="brand-tag">Portfolio Manager</span>
+  </div>
 </div>
 
 <div class="d-flex flex-column py-2">
-  <div class="nav-category">Main Menu</div>
+  <div class="nav-category">Overview</div>
 
   <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-grid-fill me-3"></i>
-    <span>Dashboard</span>
+    <i class="bi bi-grid-fill me-3"></i><span>Dashboard</span>
   </a>
 
   <a routerLink="/portfolio" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-briefcase-fill me-3"></i>
-    <span>Portfolio</span>
+    <i class="bi bi-briefcase-fill me-3"></i><span>Portfolio</span>
   </a>
 
   <a routerLink="/mutual-funds" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-bar-chart-line-fill me-3"></i>
-    <span>Mutual Funds</span>
+    <i class="bi bi-bar-chart-line-fill me-3"></i><span>Mutual Funds</span>
   </a>
-
-
 
   <div class="nav-category mt-2">Planning</div>
 
   <a routerLink="/analytics" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-pie-chart-fill me-3"></i>
-    <span>Analytics</span>
+    <i class="bi bi-pie-chart-fill me-3"></i><span>Analytics</span>
   </a>
 
-  <a routerLink="/goals" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-bullseye me-3"></i>
-    <span>Goals</span>
+  <a routerLink="/goals" routerLinkActive="active"
+    class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-bullseye me-3"></i><span>Goals</span>
   </a>
 
   <a routerLink="/recommendations" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-star-fill me-3"></i>
-    <span>Recommendations</span>
+    <i class="bi bi-stars me-3"></i><span>Recommendations</span>
   </a>
 
   <a routerLink="/fact-sheet-analysis" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-file-earmark-text-fill me-3"></i>
-    <span>Fact Sheet Analyzer</span>
+    <i class="bi bi-file-earmark-text-fill me-3"></i><span>Fact Sheet Analyzer</span>
   </a>
 
   <a routerLink="/risk-profiling" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-shield-check me-3"></i>
-    <span>Risk Profiling</span>
+    <i class="bi bi-shield-check me-3"></i><span>Risk Profiling</span>
   </a>
 
   <a routerLink="/retirement" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-umbrella-fill me-3"></i>
-    <span>Retirement Planning</span>
+    <i class="bi bi-umbrella-fill me-3"></i><span>Retirement Planning</span>
   </a>
-
-
 
   <a href="javascript:void(0)" (click)="toggleCalculators()"
     class="sidebar-link text-decoration-none d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center">
-      <i class="bi bi-calculator me-3"></i>
-      <span>Calculators</span>
+      <i class="bi bi-calculator me-3"></i><span>Calculators</span>
     </div>
     <i class="bi small" [class.bi-chevron-down]="!showCalculators" [class.bi-chevron-up]="showCalculators"></i>
   </a>
 
-  <div *ngIf="showCalculators" class="bg-light-subtle rounded-3 mx-2 mb-2">
+  <div *ngIf="showCalculators" class="calc-submenu rounded-3 mx-2 mb-1">
     <a routerLink="/sip" routerLinkActive="active"
       class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
-      <i class="bi bi-calculator-fill me-3 small"></i>
-      <span class="small">SIP Calculator</span>
+      <i class="bi bi-calculator-fill me-3 small"></i><span class="small">SIP Calculator</span>
     </a>
-
     <a routerLink="/swp" routerLinkActive="active"
       class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
-      <i class="bi bi-cash-coin me-3 small"></i>
-      <span class="small">SWP Calculator</span>
+      <i class="bi bi-cash-coin me-3 small"></i><span class="small">SWP Calculator</span>
     </a>
-
     <a routerLink="/inflation" routerLinkActive="active"
       class="sidebar-link text-decoration-none d-flex align-items-center ps-4 py-2">
-      <i class="bi bi-graph-up-arrow me-3 small"></i>
-      <span class="small">Inflation Calculator</span>
+      <i class="bi bi-graph-up-arrow me-3 small"></i><span class="small">Inflation Calculator</span>
     </a>
   </div>
 
-  <a routerLink="/budget" routerLinkActive="active" class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-wallet2 me-3"></i>
-    <span>Budget Planner</span>
+  <a routerLink="/budget" routerLinkActive="active"
+    class="sidebar-link text-decoration-none d-flex align-items-center">
+    <i class="bi bi-wallet2 me-3"></i><span>Budget Planner</span>
   </a>
 
-  <div class="nav-category mt-2">System</div>
+  <div class="nav-category mt-2">Account</div>
 
   <a routerLink="/profile" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-person-gear me-3"></i>
-    <span>Profile & Settings</span>
+    <i class="bi bi-person-gear me-3"></i><span>Profile & Settings</span>
   </a>
 
   <a routerLink="/notifications" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-bell-fill me-3"></i>
-    <span>Notifications</span>
+    <i class="bi bi-bell-fill me-3"></i><span>Notifications</span>
   </a>
-
-
 
   @if (isAdmin()) {
   <a routerLink="/database-admin" routerLinkActive="active"
     class="sidebar-link text-decoration-none d-flex align-items-center">
-    <i class="bi bi-database-fill-gear me-3"></i>
-    <span>Database Admin</span>
+    <i class="bi bi-database-fill-gear me-3"></i><span>Database Admin</span>
   </a>
   }
 
-  <div class="mt-4 px-3">
+  <div class="mt-4 px-3 mb-3">
     <button (click)="onLogout()"
-      class="btn w-100 d-flex align-items-center justify-content-center text-danger bg-danger-subtle border-0 py-2 rounded-3">
-      <i class="bi bi-box-arrow-right me-2"></i>
-      <span class="fw-semibold">Logout</span>
+      class="logout-btn btn w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3">
+      <i class="bi bi-box-arrow-right"></i>
+      <span class="fw-semibold">Sign Out</span>
     </button>
   </div>
 </div>

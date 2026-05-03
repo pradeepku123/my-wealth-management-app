@@ -9,48 +9,92 @@ import { ThemeService } from '../../../services/theme.service';
   imports: [CommonModule, RouterModule],
   templateUrl: './header.component.html',
   styles: [`
-    :host {
-      display: block;
-    }
+    :host { display: block; }
+
     .navbar {
-      background-color: var(--bg-glass); /* Use variable instead of hardcoded rgba */
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0,0,0,0.05); /* This might need a var too, but low priority */
-      padding: 0.75rem 1.5rem;
+      padding: 0.75rem 0;
+      height: 60px;
     }
+
+    .sidebar-toggle-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: var(--bg-glass-light);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition-base);
+      flex-shrink: 0;
+
+      &:hover {
+        background: var(--bg-hover);
+        color: var(--primary-color);
+        border-color: var(--border-highlight);
+      }
+    }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: var(--bg-glass-light);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition-base);
+
+      &:hover {
+        background: var(--bg-hover);
+        color: var(--primary-color);
+        border-color: var(--border-highlight);
+      }
+    }
+
+    .market-badge {
+      background: var(--success-bg);
+      border: 1px solid rgba(0, 212, 170, 0.2);
+      border-radius: 99px;
+      padding: 0.3rem 0.8rem;
+      color: var(--accent-color);
+      font-size: 0.78rem;
+    }
+
+    .session-badge {
+      background: var(--warning-bg);
+      border: 1px solid var(--border-gold);
+      border-radius: 99px;
+      padding: 0.3rem 0.8rem;
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .user-role {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
     .user-avatar {
-      width: 40px;
-      height: 40px;
-      background-color: var(--accent-color);
+      width: 36px; height: 36px;
+      background: var(--accent-gradient);
       color: white;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-    .session-badge {
-      font-size: 0.8rem;
-      padding: 0.35em 0.8em;
-      border-radius: 20px;
-    }
-    .theme-toggle {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: background-color 0.2s;
-        cursor: pointer;
-        color: var(--text-secondary);
-        border: none;
-        background: transparent;
-    }
-    .theme-toggle:hover {
-        background-color: var(--primary-light);
-        color: var(--primary-color);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      font-family: 'Space Grotesk', sans-serif;
+      box-shadow: 0 2px 8px rgba(108, 99, 255, 0.4);
+      flex-shrink: 0;
     }
   `]
 })
