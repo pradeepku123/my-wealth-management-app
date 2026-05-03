@@ -74,14 +74,7 @@ export class RetirementPlanningComponent implements OnInit {
     { name: 'Bucket 4 (Wealth)', allocationAmount: 18500000, expectedGrowthRate: 12.0, withdrawalRate: 0, taxCategory: 'Equity' }
   ];
 
-  rebalancingRules: RebalancingRule[] = [
-    // Maintain 3 Years in Bucket 1 (Refill from Bucket 2)
-    { sourceFundIndex: 1, destinationFundIndex: 0, amount: 0, percentageAmount: 0, frequency: 1, isShortfallBased: true, shortfallYears: 3 },
-    // Maintain 6 Years in Bucket 2 (Refill from Bucket 3) (Assuming Bucket 2 covers 6 years: 4-9)
-    { sourceFundIndex: 2, destinationFundIndex: 1, amount: 0, percentageAmount: 0, frequency: 1, isShortfallBased: true, shortfallYears: 6 },
-    // Maintain 10 Years in Bucket 3 (Refill from Bucket 4) (Bucket 3 covers 10 years: 10-19)
-    { sourceFundIndex: 3, destinationFundIndex: 2, amount: 0, percentageAmount: 0, frequency: 1, isShortfallBased: true, shortfallYears: 10 }
-  ];
+  rebalancingRules: RebalancingRule[] = [];
 
 
   // Results
@@ -180,21 +173,7 @@ export class RetirementPlanningComponent implements OnInit {
     this.funds.splice(index, 1);
   }
 
-  addRebalancingRule() {
-    this.rebalancingRules.push({
-      sourceFundIndex: 0,
-      destinationFundIndex: 1,
-      amount: 0,
-      percentageAmount: 10,
-      frequency: 1,
-      isShortfallBased: false, // New flag
-      shortfallYears: 3
-    });
-  }
 
-  removeRebalancingRule(index: number) {
-    this.rebalancingRules.splice(index, 1);
-  }
 
   calculate() {
     const totalAllocated = this.funds.reduce((sum, f) => sum + f.allocationAmount, 0);
@@ -207,9 +186,7 @@ export class RetirementPlanningComponent implements OnInit {
     let currentCostBasis = this.funds.map(f => f.allocationAmount);
     let currentAnnualWithdrawals = this.funds.map(f => f.allocationAmount * (f.withdrawalRate / 100));
 
-    // Track next due year for each rule. Initially relative to year index 1.
-    // If Rule Frequency is 1, next due is Year 1. If 5, Year 5.
-    let ruleNextDueYears = this.rebalancingRules.map(r => r.frequency);
+
 
     for (let age = this.startAge; age <= this.endAge; age++) {
       const year = new Date().getFullYear() + (age - this.startAge);
@@ -340,120 +317,91 @@ export class RetirementPlanningComponent implements OnInit {
         yearTotalGrowth += annualGrowth;
       });
 
-      // Rebalancing Rules Logic (Source to Destination)
-      const yearIndex = age - this.startAge + 1;
+      // Rebalancing Rules Logic (Linear Cascading Approach)
+      let baseTotalWithdrawal = currentAnnualWithdrawals.reduce((sum, val) => sum + val, 0);
+      let nextYearWithdrawal = baseTotalWithdrawal * (1 + this.inflationRate / 100);
+      let yearTwoWithdrawal = nextYearWithdrawal * (1 + this.inflationRate / 100);
+      
+      let oneYearNeeded = nextYearWithdrawal;
+      let twoYearsNeeded = nextYearWithdrawal + yearTwoWithdrawal;
 
-      this.rebalancingRules.forEach((rule, rIdx) => {
-        // Check if rule is due in this year
-        if (ruleNextDueYears[rIdx] <= yearIndex) {
-          const sourceIdx = rule.sourceFundIndex;
-          const destIdx = rule.destinationFundIndex;
+      // Check trigger on Cashflow (Index 0)
+      if (this.funds.length > 1 && currentBalances[0] < oneYearNeeded) {
+        let deficits = new Array(this.funds.length).fill(0);
+        deficits[0] = twoYearsNeeded - currentBalances[0];
 
-          if (sourceIdx >= 0 && sourceIdx < currentBalances.length && destIdx >= 0 && destIdx < currentBalances.length && sourceIdx !== destIdx) {
-            let amountToTransfer = 0;
-            let performTransfer = true;
+        for (let i = 1; i < this.funds.length; i++) {
+          let totalDeficit = deficits.reduce((a, b) => a + b, 0);
+          if (totalDeficit <= 0.01) break;
 
-            if (rule.isShortfallBased) {
-              // Buffer Logic ("Top-Up Model")
-              let neededAmount = 0;
+          let amountToTake = Math.min(totalDeficit, currentBalances[i]);
 
-              // Determine Base Withdrawal for Shortfall Calculation
-              // If destination fund has direct withdrawals, use that.
-              // If destination fund has 0 direct withdrawals (storage bucket), use the Plan's Total Annual Withdrawal (Proxy for spending need).
-              let baseWithdrawal = currentAnnualWithdrawals[destIdx];
-              if (baseWithdrawal <= 0) {
-                baseWithdrawal = currentAnnualWithdrawals.reduce((sum, val) => sum + val, 0);
-              }
+          if (amountToTake > 0) {
+            let remainingAmount = amountToTake;
 
-              let projectedWithdrawal = baseWithdrawal * (1 + this.inflationRate / 100); // Start from next year
+            // Distribute to lower funds
+            for (let j = 0; j < i; j++) {
+              if (deficits[j] > 0.01) {
+                let fillAmount = Math.min(deficits[j], remainingAmount);
+                if (fillAmount > 0) {
+                  // Adjust Cost Basis for i
+                  const ratio = currentCostBasis[i] / (currentBalances[i] > 0 ? currentBalances[i] : 1);
+                  const principalPart = fillAmount * ratio;
+                  const gainPart = fillAmount - principalPart;
 
-              // Use rule-specific years or default to 3
-              const yearsToCover = rule.shortfallYears || 3;
-
-              for (let k = 1; k <= yearsToCover; k++) {
-                neededAmount += projectedWithdrawal;
-                projectedWithdrawal *= (1 + this.inflationRate / 100);
-              }
-
-              if (currentBalances[destIdx] >= neededAmount) {
-                // No shortfall. Defer checking to next year.
-                performTransfer = false;
-                // yearResult.fundResults[destIdx].skippedRebalance = true; // No longer needed, using logs
-                ruleNextDueYears[rIdx] = yearIndex + 1; // Check again next year
-              } else {
-                // Shortfall exists. Transfer strictly what is needed.
-                amountToTransfer = neededAmount - currentBalances[destIdx];
-                // performTransfer remains true
-              }
-            } else {
-              // Standard fixed/percentage logic
-              if (rule.percentageAmount && rule.percentageAmount > 0) {
-                amountToTransfer = currentBalances[sourceIdx] * (rule.percentageAmount / 100);
-              } else {
-                amountToTransfer = rule.amount;
-              }
-            }
-
-            if (performTransfer && amountToTransfer > 0) {
-              // Helper: Check if source has enough funds
-              if (currentBalances[sourceIdx] < amountToTransfer) {
-                amountToTransfer = currentBalances[sourceIdx];
-              }
-
-              if (amountToTransfer > 0) {
-                // Adjust Cost Basis
-                const ratio = currentCostBasis[sourceIdx] / (currentBalances[sourceIdx] > 0 ? currentBalances[sourceIdx] : 1);
-                const principalPart = amountToTransfer * ratio;
-                const gainPart = amountToTransfer - principalPart;
-
-                // Tax the gain
-                if (gainPart > 0) {
-                  if (this.funds[sourceIdx].taxCategory === 'Equity') {
-                    totalEquityGains += gainPart;
-                  } else {
-                    totalDebtGains += gainPart;
+                  if (gainPart > 0) {
+                    if (this.funds[i].taxCategory === 'Equity') {
+                      totalEquityGains += gainPart;
+                    } else if (this.funds[i].taxCategory === 'Debt') {
+                      totalDebtGains += gainPart;
+                    }
                   }
+
+                  currentBalances[i] -= fillAmount;
+                  currentCostBasis[i] -= principalPart;
+
+                  currentBalances[j] += fillAmount;
+                  currentCostBasis[j] += fillAmount;
+
+                  // Update Results
+                  yearResult.fundResults[i].rebalancingOut += fillAmount;
+                  yearResult.fundResults[i].closingBalance = currentBalances[i];
+                  yearResult.fundResults[i].logs.push({
+                    type: 'out',
+                    relatedFundName: this.funds[j].name,
+                    amount: fillAmount,
+                    reason: `Linear Cascade: Top-up ${this.funds[j].name}`
+                  });
+
+                  yearResult.fundResults[j].rebalancingIn += fillAmount;
+                  yearResult.fundResults[j].closingBalance = currentBalances[j];
+                  yearResult.fundResults[j].logs.push({
+                    type: 'in',
+                    relatedFundName: this.funds[i].name,
+                    amount: fillAmount,
+                    reason: `Linear Cascade: Top-up from ${this.funds[i].name}`
+                  });
+
+                  deficits[j] -= fillAmount;
+                  remainingAmount -= fillAmount;
                 }
-
-                currentBalances[sourceIdx] -= amountToTransfer;
-                currentCostBasis[sourceIdx] -= principalPart;
-
-                currentBalances[destIdx] += amountToTransfer;
-                currentCostBasis[destIdx] += amountToTransfer;
-
-                // Update Result
-                yearResult.fundResults[sourceIdx].rebalancingOut += amountToTransfer;
-                yearResult.fundResults[sourceIdx].closingBalance = currentBalances[sourceIdx];
-                yearResult.fundResults[sourceIdx].logs.push({
-                  type: 'out',
-                  relatedFundName: this.funds[destIdx].name,
-                  amount: amountToTransfer,
-                  reason: `Rebalance to ${this.funds[destIdx].name}`
-                });
-
-                yearResult.fundResults[destIdx].rebalancingIn += amountToTransfer;
-                yearResult.fundResults[destIdx].closingBalance = currentBalances[destIdx];
-                yearResult.fundResults[destIdx].logs.push({
-                  type: 'in',
-                  relatedFundName: this.funds[sourceIdx].name,
-                  amount: amountToTransfer,
-                  reason: rule.isShortfallBased ? `Top-up (Shortfall < ${rule.shortfallYears} yrs)` : `Periodic Rebalance`
-                });
-
-                // Rule executed successfully. Reset schedule.
-                ruleNextDueYears[rIdx] = yearIndex + rule.frequency;
               }
-            } else if (!performTransfer && rule.isShortfallBased) {
-              // Log the skip
-              yearResult.fundResults[destIdx].logs.push({
-                type: 'skip',
-                relatedFundName: this.funds[sourceIdx].name,
-                reason: `Target > ${rule.shortfallYears || 3} yrs expenses. Deferred.`
-              });
             }
           }
+
+          let remainingTotalDeficit = deficits.reduce((a, b) => a + b, 0);
+          if (remainingTotalDeficit > 0.01) {
+            // Fund i was completely exhausted, it needs to be topped up to 2 years from next fund
+            deficits[i] = twoYearsNeeded;
+          }
         }
-      });
+      } else if (this.funds.length > 1) {
+          yearResult.fundResults[0].logs.push({
+            type: 'skip',
+            relatedFundName: 'Higher Funds',
+            reason: `Target > 1 yr expenses. Deferred.`
+          });
+      }
 
       // --- TAX CALCULATION (New Regime) ---
       // 1. Equity: 12.5% on gains > 1.25L

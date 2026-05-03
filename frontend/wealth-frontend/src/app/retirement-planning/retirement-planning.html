@@ -44,107 +44,18 @@
                     <!-- Bucket Strategy Rules -->
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0">Bucket Strategy (Rebalancing Rules)</h5>
-                            <button class="btn btn-sm btn-outline-primary" (click)="addRebalancingRule()">
-                                <i class="bi bi-plus-lg"></i> Add Rule
-                            </button>
+                            <h5 class="fw-bold mb-0">Bucket Strategy (Linear Cascading)</h5>
                         </div>
-                        <div class="table-responsive bg-light-subtle rounded-3 border p-3"
-                            *ngIf="rebalancingRules.length > 0">
-                            <table class="table table-borderless table-sm align-middle mb-0">
-                                <thead>
-                                    <tr class="text-secondary small text-uppercase">
-                                        <th>Frequency (Yrs)</th>
-                                        <th>Source Fund</th>
-                                        <th>Target Fund</th>
-                                        <th>Amount</th>
-                                        <th>Condition</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let rule of rebalancingRules; let i = index">
-                                        <td style="width: 15%;">
-                                            <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-white">Every</span>
-                                                <input type="number" class="form-control form-control-sm"
-                                                    [(ngModel)]="rule.frequency" min="1">
-                                            </div>
-                                        </td>
-                                        <td style="width: 25%;">
-                                            <select class="form-select form-select-sm"
-                                                [(ngModel)]="rule.sourceFundIndex">
-                                                <option *ngFor="let f of funds; let fi = index" [ngValue]="fi">
-                                                    {{f.name}}</option>
-                                            </select>
-                                        </td>
-                                        <td style="width: 5%;">
-                                            <i class="bi bi-arrow-right text-muted"></i>
-                                        </td>
-                                        <td style="width: 25%;">
-                                            <select class="form-select form-select-sm"
-                                                [(ngModel)]="rule.destinationFundIndex">
-                                                <option *ngFor="let f of funds; let fi = index" [ngValue]="fi">
-                                                    {{f.name}}</option>
-                                            </select>
-                                        </td>
-                                        <td style="width: 20%;">
-                                            <div class="input-group input-group-sm" *ngIf="!rule.isShortfallBased">
-                                                <select class="form-select bg-light text-muted" style="max-width: 60px;"
-                                                    [(ngModel)]="rule.percentageAmount"
-                                                    (change)="rule.amount = 0; rule.percentageAmount = rule.percentageAmount ? rule.percentageAmount : 0">
-                                                    <option [ngValue]="undefined">Fixed</option>
-                                                    <option [ngValue]="0">%</option>
-                                                </select>
-
-                                                <!-- Fixed Amount Input -->
-                                                <ng-container
-                                                    *ngIf="rule.percentageAmount === undefined; else percentageInput">
-                                                    <span class="input-group-text border-0 bg-white">₹</span>
-                                                    <input type="number" class="form-control" [(ngModel)]="rule.amount">
-                                                </ng-container>
-
-                                                <!-- Percentage Input -->
-                                                <ng-template #percentageInput>
-                                                    <input type="number" class="form-control"
-                                                        [(ngModel)]="rule.percentageAmount">
-                                                    <span class="input-group-text border-0 bg-white">%</span>
-                                                </ng-template>
-                                            </div>
-                                            <div *ngIf="rule.isShortfallBased"
-                                                class="text-muted small fst-italic pt-1 text-center border rounded bg-light">
-                                                <i class="bi bi-magic me-1"></i> Auto (Top-Up)
-                                            </div>
-                                            <!-- Shortfall Years Input -->
-                                            <div *ngIf="rule.isShortfallBased" class="input-group input-group-sm mt-1">
-                                                <span class="input-group-text bg-white border-end-0">
-                                                    <i class="bi bi-clock-history text-muted"></i>
-                                                </span>
-                                                <input type="number" class="form-control border-start-0"
-                                                    [(ngModel)]="rule.shortfallYears" placeholder="Yrs" min="1" max="20"
-                                                    title="Target Years of Coverage">
-                                            </div>
-                                        </td>
-                                        <td style="width: 15%;">
-                                            <div class="form-check form-switch pt-1"
-                                                title="Only rebalance if destination fund has less than 3 years of withdrawals">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="rule.isShortfallBased">
-                                                <label class="form-check-label small text-muted">Shortfall Only</label>
-                                            </div>
-                                        </td>
-                                        <td class="text-end">
-                                            <button class="btn btn-link text-danger p-0"
-                                                (click)="removeRebalancingRule(i)">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="text-muted small fst-italic mt-2" *ngIf="rebalancingRules.length === 0">
-                            No rebalancing rules configured. Funds will grow and deplete independently.
+                        <div class="bg-light-subtle rounded-3 border p-3">
+                            <p class="mb-1 fw-bold text-primary">Waterfall Rebalancing Logic:</p>
+                            <p class="small text-muted mb-0">
+                                <strong>Trigger:</strong> When Cashflow (Fund 1) balance falls below 1 year of projected expenses.<br>
+                                <strong>Action:</strong> <br>
+                                1. Target 2 years of expenses for Cashflow, funded by Stability.<br>
+                                2. If Stability is exhausted, cascade to Growth to fill 2 years for Cashflow AND 2 years for Stability.<br>
+                                3. If Growth is exhausted, cascade to Wealth to fill all lower funds to 2 years.<br>
+                                <span class="text-secondary fst-italic">Funds are evaluated in order from top to bottom.</span>
+                            </p>
                         </div>
                     </div>
 
