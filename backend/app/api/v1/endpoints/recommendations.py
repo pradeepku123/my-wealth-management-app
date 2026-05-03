@@ -23,7 +23,7 @@ FUNDS_UNIVERSE = {
     ],
     "Mid Cap": [
         "140228", # Edelweiss Mid Cap Fund - Direct Plan - Growth
-        "127042", # Motilal Oswal Mid Cap Fund - Direct Plan - Growth
+        "150584", # WhiteOak Capital Mid Cap Fund Direct Plan Growth
     ],
     "Small Cap": [
         "147946", # Bandhan Small Cap Fund - Direct Plan - Growth
@@ -31,6 +31,12 @@ FUNDS_UNIVERSE = {
     ],
     "Hybrid": [
         "120334", # ICIC Pru Multi Asset Fund - Direct Plan - Growth
+        "152056", # DSP Multi Asset Allocation Fund Direct Growth
+    ]
+    ,
+    "MultiCap": [
+        "101161", # Nippon india Multi cap Fund Direct Growth
+        "149185", # Kotak Multicap Fund - Direct Growth
     ]
     ,
     "Debt": [
