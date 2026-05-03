@@ -151,27 +151,5 @@ export class SidebarComponent implements AfterViewInit {
     this.logout.emit();
   }
 
-  showConfirm = false;
 
-  populateTestData() {
-    if (!this.showConfirm) {
-      this.showConfirm = true;
-      // Auto-hide confirmation after 3 seconds if not clicked
-      setTimeout(() => {
-        this.showConfirm = false;
-      }, 3000);
-      return;
-    }
-
-    this.showConfirm = false;
-    this.http.post(`${this.apiUrl}/test-data/populate`, {}).subscribe({
-      next: (response: any) => {
-        // Use a toast or snackbar if available, otherwise just reload
-        window.location.reload();
-      },
-      error: (error) => {
-        console.error('Error populating test data:', error);
-      }
-    });
-  }
 }
